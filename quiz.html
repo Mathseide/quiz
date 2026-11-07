@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Quiz</title>
+<style>
+  :root { --bleu:#1f4e79; --vert:#2e7d32; --rouge:#c62828; --gris:#f2f4f7; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; font-family:-apple-system, "Segoe UI", Helvetica, Arial, sans-serif; background:var(--gris); color:#1a1a1a; }
+  .wrap { max-width:760px; margin:0 auto; padding:24px 18px 60px; }
+  h1 { color:var(--bleu); font-size:1.6rem; margin:0 0 4px; }
+  .sous { color:#555; margin:0 0 22px; }
+  .carte { background:#fff; border-radius:14px; padding:22px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  label { display:block; font-weight:600; margin:14px 0 6px; }
+  input[type=text], input[type=number] { width:100%; font-size:1.2rem; padding:14px; border:2px solid #ccd3dc; border-radius:10px; }
+  input:focus { outline:none; border-color:var(--bleu); }
+  .btn { display:inline-block; font-size:1.15rem; padding:14px 26px; border:none; border-radius:10px; background:var(--bleu); color:#fff; cursor:pointer; margin-top:20px; }
+  .btn.sec { background:#fff; color:var(--bleu); border:2px solid var(--bleu); }
+  .btn:disabled { opacity:.4; }
+  .nav { display:flex; justify-content:space-between; gap:10px; }
+  .progress { height:8px; background:#dde3ea; border-radius:4px; margin-bottom:18px; overflow:hidden; }
+  .progress div { height:100%; background:var(--bleu); transition:width .3s; }
+  .num { color:#666; font-size:.95rem; margin-bottom:6px; }
+  .enonce { font-size:1.3rem; line-height:1.5; margin:0 0 18px; }
+  .pts { font-size:.9rem; color:#666; }
+  .choix { display:block; width:100%; text-align:left; font-size:1.15rem; padding:16px 18px; margin:10px 0; border:2px solid #ccd3dc; border-radius:10px; background:#fff; cursor:pointer; }
+  .choix.sel { border-color:var(--bleu); background:#e8f0f9; font-weight:600; }
+  .recap li { margin:6px 0; }
+  .ok { color:var(--vert); } .ko { color:var(--rouge); }
+  .note { font-size:2.2rem; font-weight:700; color:var(--bleu); text-align:center; margin:10px 0; }
+  .msg { padding:12px; border-radius:10px; margin-top:16px; }
+  .msg.info { background:#e8f0f9; } .msg.err { background:#fdecea; }
+  .cache { display:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 id="titre"></h1>
+  <p class="sous" id="sousTitre"></p>
+  <div class="carte" id="ecran"></div>
+</div>
+
+<script>
+/* =====================================================================
+   CONFIGURATION — c'est la seule partie à modifier
+   ===================================================================== */
+const CONFIG = {
+  titre: "Quiz — Généralités sur les fonctions",
+  sousTitre: "S6 maths 5 périodes",
+  emailEnseignant: "maths.eide@gmail.com",
+
+  // URL du script Google Apps Script (envoi automatique).
+  // Laisser vide "" pour utiliser l'app Mail de l'iPad à la place.
+  urlAppsScript: "https://script.google.com/macros/s/AKfycbxm7AVQea6Fr2ph2iWXSaT45YFIthvk5JCTXJdbBj1aVj8KAiF1FIOqRaE9GLghWQKh/exec",
+
+  noteSur: 10,               // la note finale est ramenée sur ce total
+  afficherNoteEleve: false,  // true = l'élève voit sa note à la fin
+  melangerQuestions: false,
+
+  /* Types de questions :
+     - "qcm"   : choix = [...], reponse = indice de la bonne réponse (0 = première)
+     - "vf"    : vrai/faux, reponse = true ou false
+     - "nombre": reponse = nombre attendu, tolerance (optionnelle, ex. 0.01)
+     - "texte" : reponses = ["accepté 1", "accepté 2"] (sans tenir compte des
+                 majuscules, des espaces ni des accents)
+     points : facultatif. Si aucune question n'a de points, le total est
+     réparti également. */
+  questions: [
+    { type:"nombre", enonce:"Soit f(x) = x² − 2x. Calculer f(3).", reponse:3, points:1 },
+    { type:"qcm", enonce:"Quel est l'ensemble de définition de f(x) = √(x − 2) ?",
+      choix:["ℝ", "]2 ; +∞[", "[2 ; +∞[", "]−∞ ; 2]"], reponse:2, points:1 },
+    { type:"qcm", enonce:"Quel est l'ensemble de définition de g(x) = 1 / (x + 4) ?",
+      choix:["ℝ \\ {4}", "ℝ \\ {−4}", "]−4 ; +∞[", "ℝ"], reponse:1, points:1 },
+    { type:"qcm", enonce:"Quels sont les antécédents de 9 par la fonction carré ?",
+      choix:["3 seulement", "−3 et 3", "81", "Aucun"], reponse:1, points:1 },
+    { type:"vf", enonce:"La fonction f(x) = x³ est une fonction impaire.", reponse:true, points:1 },
+    { type:"vf", enonce:"La fonction f(x) = x² + x est une fonction paire.", reponse:false, points:1 },
+    { type:"nombre", enonce:"Soit h(x) = 2x + 5. Quel est l'antécédent de 11 par h ?", reponse:3, points:1 },
+    { type:"qcm", enonce:"La courbe d'une fonction paire est symétrique par rapport…",
+      choix:["à l'axe des abscisses", "à l'axe des ordonnées", "à l'origine", "à la droite y = x"], reponse:1, points:1 },
+    { type:"qcm", enonce:"Si f est strictement décroissante sur ℝ et a < b, alors…",
+      choix:["f(a) < f(b)", "f(a) > f(b)", "f(a) = f(b)", "on ne peut rien dire"], reponse:1, points:1 },
+    { type:"nombre", enonce:"Soit f(x) = 1/x. Calculer f(0,25).", reponse:4, points:1 }
+  ]
+};
+/* ===================================================================== */
+
+const $ = s => document.querySelector(s);
+const ecran = $("#ecran");
+let eleve = { nom:"", classe:"" };
+let questions = [];
+let reponses = [];
+let idx = 0;
+let envoye = false;
+
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function normaliser(s){ return String(s).trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\s+/g," "); }
+function lireNombre(s){
+  s = String(s).trim().replace(/\s/g,"").replace(",",".").replace("−","-");
+  if (/^-?\d+(\.\d+)?\/-?\d+(\.\d+)?$/.test(s)) { const [a,b] = s.split("/").map(Number); return b ? a/b : NaN; }
+  return s === "" ? NaN : Number(s);
+}
+function arrondi(x){ return Math.round(x*100)/100; }
+
+function init(){
+  $("#titre").textContent = CONFIG.titre;
+  $("#sousTitre").textContent = CONFIG.sousTitre || "";
+  document.title = CONFIG.titre;
+  questions = CONFIG.questions.map((q,i) => ({...q, numOrig:i+1}));
+  if (CONFIG.melangerQuestions) questions.sort(() => Math.random() - .5);
+  const avecPoints = questions.some(q => typeof q.points === "number");
+  questions.forEach(q => { if (!avecPoints) q.points = CONFIG.noteSur / questions.length; else if (typeof q.points !== "number") q.points = 0; });
+  reponses = questions.map(() => null);
+  ecranAccueil();
+}
+
+function ecranAccueil(){
+  ecran.innerHTML = `
+    <p>${questions.length} questions. Lis bien chaque énoncé avant de répondre.</p>
+    <label for="nom">Prénom et nom</label>
+    <input type="text" id="nom" autocomplete="off" value="${esc(eleve.nom)}">
+    <label for="classe">Classe</label>
+    <input type="text" id="classe" autocomplete="off" value="${esc(eleve.classe)}">
+    <button class="btn" id="go">Commencer</button>`;
+  $("#go").onclick = () => {
+    eleve.nom = $("#nom").value.trim();
+    eleve.classe = $("#classe").value.trim();
+    if (!eleve.nom) { $("#nom").focus(); $("#nom").style.borderColor = "var(--rouge)"; return; }
+    idx = 0; ecranQuestion();
+  };
+}
+
+function ecranQuestion(){
+  const q = questions[idx];
+  const r = reponses[idx];
+  let zone = "";
+  if (q.type === "qcm") {
+    zone = q.choix.map((c,i) => `<button class="choix ${r===i?"sel":""}" data-v="${i}">${esc(c)}</button>`).join("");
+  } else if (q.type === "vf") {
+    zone = `<button class="choix ${r===true?"sel":""}" data-v="true">Vrai</button>
+            <button class="choix ${r===false?"sel":""}" data-v="false">Faux</button>`;
+  } else {
+    const mode = q.type === "nombre" ? 'inputmode="decimal"' : "";
+    zone = `<input type="text" id="saisie" ${mode} autocomplete="off" placeholder="Ta réponse" value="${r===null?"":esc(r)}">`;
+  }
+  const pts = arrondi(q.points);
+  ecran.innerHTML = `
+    <div class="progress"><div style="width:${(idx/questions.length)*100}%"></div></div>
+    <div class="num">Question ${idx+1} / ${questions.length} <span class="pts">· ${pts} pt${pts>1?"s":""}</span></div>
+    <p class="enonce">${esc(q.enonce)}</p>
+    ${zone}
+    <div class="nav">
+      <button class="btn sec" id="prec" ${idx===0?"disabled":""}>← Précédente</button>
+      <button class="btn" id="suiv">${idx===questions.length-1?"Terminer":"Suivante →"}</button>
+    </div>`;
+  ecran.querySelectorAll(".choix").forEach(b => b.onclick = () => {
+    const v = b.dataset.v;
+    reponses[idx] = q.type === "vf" ? (v === "true") : Number(v);
+    ecran.querySelectorAll(".choix").forEach(x => x.classList.remove("sel"));
+    b.classList.add("sel");
+  });
+  const saisie = $("#saisie");
+  if (saisie) saisie.oninput = () => { reponses[idx] = saisie.value.trim() === "" ? null : saisie.value; };
+  $("#prec").onclick = () => { idx--; ecranQuestion(); };
+  $("#suiv").onclick = () => { if (idx < questions.length-1) { idx++; ecranQuestion(); } else ecranVerification(); };
+}
+
+function ecranVerification(){
+  const vides = reponses.map((r,i) => r===null ? i+1 : null).filter(Boolean);
+  ecran.innerHTML = `
+    <h2>Avant d'envoyer</h2>
+    ${vides.length ? `<p class="ko">Tu n'as pas répondu aux questions : ${vides.join(", ")}.</p>` : `<p>Tu as répondu à toutes les questions.</p>`}
+    <p>Une fois envoyé, tu ne pourras plus modifier tes réponses.</p>
+    <div class="nav">
+      <button class="btn sec" id="retour">← Revoir mes réponses</button>
+      <button class="btn" id="envoyer">Envoyer</button>
+    </div>`;
+  $("#retour").onclick = () => { idx = 0; ecranQuestion(); };
+  $("#envoyer").onclick = () => envoyer();
+}
+
+function texteReponse(q, r){
+  if (r === null) return "(sans réponse)";
+  if (q.type === "qcm") return q.choix[r];
+  if (q.type === "vf") return r ? "Vrai" : "Faux";
+  return String(r);
+}
+function texteCorrection(q){
+  if (q.type === "qcm") return q.choix[q.reponse];
+  if (q.type === "vf") return q.reponse ? "Vrai" : "Faux";
+  if (q.type === "nombre") return String(q.reponse).replace(".", ",");
+  return q.reponses[0];
+}
+function estJuste(q, r){
+  if (r === null) return false;
+  if (q.type === "qcm" || q.type === "vf") return r === q.reponse;
+  if (q.type === "nombre") { const n = lireNombre(r); return !isNaN(n) && Math.abs(n - q.reponse) <= (q.tolerance || 1e-9); }
+  return q.reponses.some(a => normaliser(a) === normaliser(r));
+}
+
+function corriger(){
+  const total = questions.reduce((s,q) => s + q.points, 0);
+  let obtenu = 0;
+  const details = questions.map((q,i) => {
+    const juste = estJuste(q, reponses[i]);
+    if (juste) obtenu += q.points;
+    return { num:i+1, enonce:q.enonce, reponseEleve:texteReponse(q, reponses[i]),
+             correction:texteCorrection(q), juste, points:juste ? arrondi(q.points) : 0, bareme:arrondi(q.points) };
+  });
+  const note = total ? arrondi(obtenu / total * CONFIG.noteSur) : 0;
+  return { note, noteSur:CONFIG.noteSur, nbJustes:details.filter(d=>d.juste).length, details };
+}
+
+function texteMail(res){
+  const date = new Date().toLocaleString("fr-FR");
+  let t = `${CONFIG.titre}\nÉlève : ${eleve.nom}\nClasse : ${eleve.classe || "—"}\nDate : ${date}\n\n`;
+  t += `NOTE : ${String(res.note).replace(".",",")} / ${res.noteSur}  (${res.nbJustes} / ${res.details.length} réponses justes)\n\n`;
+  res.details.forEach(d => {
+    t += `Q${d.num}. ${d.enonce}\n`;
+    t += `   Réponse de l'élève : ${d.reponseEleve}\n`;
+    t += `   Correction : ${d.correction}\n`;
+    t += `   ${d.juste ? "✔ Juste" : "✘ Faux"} — ${String(d.points).replace(".",",")} / ${String(d.bareme).replace(".",",")}\n\n`;
+  });
+  return t;
+}
+
+async function envoyer(){
+  if (envoye) return;
+  const res = corriger();
+  const corps = texteMail(res);
+  const objet = `${CONFIG.titre} — ${eleve.nom} — ${String(res.note).replace(".",",")}/${res.noteSur}`;
+  $("#envoyer").disabled = true;
+
+  if (CONFIG.urlAppsScript) {
+    try {
+      await fetch(CONFIG.urlAppsScript, {
+        method:"POST", mode:"no-cors",
+        headers:{ "Content-Type":"text/plain;charset=utf-8" },
+        body: JSON.stringify({ quiz:CONFIG.titre, eleve:eleve.nom, classe:eleve.classe, objet, corps, ...res })
+      });
+      envoye = true;
+      ecranFin(res, `<div class="msg info">Tes réponses ont bien été envoyées à ton professeur.</div>`);
+      return;
+    } catch (e) {
+      ecranFin(res, `<div class="msg err">L'envoi automatique a échoué (connexion ?). Utilise le bouton ci-dessous.</div>`, objet, corps);
+      return;
+    }
+  }
+  ecranFin(res, `<div class="msg info">Appuie sur le bouton ci-dessous : l'app Mail s'ouvre, puis appuie sur <b>Envoyer</b>.</div>`, objet, corps);
+}
+
+function ecranFin(res, message, objet, corps){
+  const blocNote = CONFIG.afficherNoteEleve
+    ? `<div class="note">${String(res.note).replace(".",",")} / ${res.noteSur}</div>
+       <ul class="recap">${res.details.map(d => `<li class="${d.juste?"ok":"ko"}">Question ${d.num} : ${d.juste?"juste":"faux"}</li>`).join("")}</ul>`
+    : "";
+  const lien = objet
+    ? `<a class="btn" href="mailto:${encodeURIComponent(CONFIG.emailEnseignant)}?subject=${encodeURIComponent(objet)}&body=${encodeURIComponent(corps)}">Ouvrir Mail et envoyer</a>`
+    : "";
+  ecran.innerHTML = `<h2>Merci ${esc(eleve.nom)} !</h2>${blocNote}${message}${lien}`;
+}
+
+init();
+</script>
+</body>
+</html>

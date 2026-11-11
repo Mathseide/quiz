@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Quiz</title>
+<style>
+  :root { --bleu:#1f4e79; --vert:#2e7d32; --rouge:#c62828; --orange:#e65100; --gris:#f2f4f7; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; font-family:-apple-system, "Segoe UI", Helvetica, Arial, sans-serif; background:var(--gris); color:#1a1a1a; }
+  .wrap { max-width:760px; margin:0 auto; padding:24px 18px 60px; }
+  h1 { color:var(--bleu); font-size:1.6rem; margin:0 0 4px; }
+  .sous { color:#555; margin:0 0 22px; }
+  .carte { background:#fff; border-radius:14px; padding:22px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  label { display:block; font-weight:600; margin:14px 0 6px; }
+  input[type=text] { width:100%; font-size:1.2rem; padding:14px; border:2px solid #ccd3dc; border-radius:10px; }
+  input:focus { outline:none; border-color:var(--bleu); }
+  .btn { display:inline-block; font-size:1.15rem; padding:14px 26px; border:none; border-radius:10px; background:var(--bleu); color:#fff; cursor:pointer; margin-top:20px; text-decoration:none; }
+  .btn.sec { background:#fff; color:var(--bleu); border:2px solid var(--bleu); }
+  .btn:disabled { opacity:.4; }
+  .nav { display:flex; justify-content:space-between; gap:10px; }
+  .progress { height:8px; background:#dde3ea; border-radius:4px; margin-bottom:18px; overflow:hidden; }
+  .progress div { height:100%; background:var(--bleu); transition:width .3s; }
+  .num { color:#666; font-size:.95rem; margin-bottom:6px; }
+  .enonce { font-size:1.3rem; line-height:1.5; margin:0 0 18px; }
+  .pts { font-size:.9rem; color:#666; }
+  .choix { display:block; width:100%; text-align:left; font-size:1.15rem; padding:16px 18px; margin:10px 0; border:2px solid #ccd3dc; border-radius:10px; background:#fff; cursor:pointer; color:#1a1a1a; }
+  .choix.sel { border-color:var(--bleu); background:#e8f0f9; font-weight:600; }
+  .recap li { margin:6px 0; }
+  .ok { color:var(--vert); } .ko { color:var(--rouge); }
+  .note { font-size:2.2rem; font-weight:700; color:var(--bleu); text-align:center; margin:10px 0; }
+  .msg { padding:12px; border-radius:10px; margin-top:16px; }
+  .msg.info { background:#e8f0f9; } .msg.err { background:#fdecea; } .msg.warn { background:#fff3e0; }
+  .corr { border-left:6px solid; border-radius:8px; padding:12px 14px; margin:12px 0; line-height:1.6; }
+  .corr.bon { border-color:var(--vert); background:#e8f5e9; } .corr.faux { border-color:var(--rouge); background:#fdecea; }
+  .corr-t { font-weight:700; } .expl { margin-top:6px; color:#333; font-style:italic; }
+  #chrono { position:sticky; top:0; z-index:5; display:none; text-align:center; font-size:1.4rem; font-weight:700;
+            padding:10px; background:var(--bleu); color:#fff; font-variant-numeric:tabular-nums; }
+  #chrono.urgent { background:var(--rouge); }
+</style>
+</head>
+<body>
+<div id="chrono"></div>
+<div class="wrap">
+  <h1 id="titre"></h1>
+  <p class="sous" id="sousTitre"></p>
+  <div class="carte" id="ecran"></div>
+</div>
+
+<script>
+/* =====================================================================
+   CONFIGURATION — c'est la seule partie à modifier
+   ===================================================================== */
+const CONFIG = {
+  titre: "Quiz — Calculs de base et exponentielle",
+  sousTitre: "S7 maths 3 périodes — cours d'appui",
+  emailEnseignant: "maths.eide@gmail.com",
+  urlAppsScript: "https://script.google.com/macros/s/AKfycbxm7AVQea6Fr2ph2iWXSaT45YFIthvk5JCTXJdbBj1aVj8KAiF1FIOqRaE9GLghWQKh/exec",
+
+  /* Temps
+     dureeMinutes  : durée accordée à chaque élève (0 = pas de chronomètre)
+     debut         : heure officielle du début, format "AAAA-MM-JJTHH:MM" ("" = pas d'heure imposée)
+     dernierDepart : après cette heure, on ne peut plus commencer ("" = pas de limite) */
+  dureeMinutes: 0,
+  debut: "",
+  dernierDepart: "",
+
+  noteSur: 10,
+  afficherNoteEleve: true,       // true = l'élève voit sa note après l'envoi
+  afficherCorrigeEleve: true,    // true = l'élève voit aussi ses erreurs et le corrigé
+  melangerQuestions: false,
+
+  /* Types : "qcm" (choix + reponse = indice, 0 = première), "vf" (reponse true/false),
+     "nombre" (reponse, tolerance facultative ; accepte aussi les fractions comme 5/6),
+     "texte" (reponses = [...]). points facultatif. explication facultative. */
+  questions: [
+    { type:"nombre", enonce:"Calculer : 3,25 + 1,8", reponse:5.05, points:1,
+      explication:"On aligne les virgules : 3,25 + 1,80 = 5,05." },
+    { type:"nombre", enonce:"Calculer : 1,2 × 0,3", reponse:0.36, points:1,
+      explication:"12 × 3 = 36, et il y a 2 chiffres après la virgule en tout (1 + 1) : 0,36." },
+    { type:"nombre", enonce:"Calculer : 1/2 + 1/3  (réponse sous forme de fraction, par exemple 7/4)", reponse:5/6, tolerance:1e-6, points:1,
+      explication:"On met au même dénominateur 6 : 1/2 = 3/6 et 1/3 = 2/6, donc 3/6 + 2/6 = 5/6." },
+    { type:"nombre", enonce:"Calculer et simplifier : 2/3 × 9/4  (réponse sous forme de fraction ou de décimal)", reponse:1.5, tolerance:1e-6, points:1,
+      explication:"On multiplie les numérateurs et les dénominateurs : (2 × 9)/(3 × 4) = 18/12 = 3/2 = 1,5." },
+    { type:"nombre", enonce:"e² × e³ = eⁿ. Quelle est la valeur de n ?", reponse:5, points:1,
+      explication:"eᵃ × eᵇ = eᵃ⁺ᵇ : on additionne les exposants, 2 + 3 = 5." },
+    { type:"nombre", enonce:"e⁷ ÷ e⁴ = eⁿ. Quelle est la valeur de n ?", reponse:3, points:1,
+      explication:"eᵃ ÷ eᵇ = eᵃ⁻ᵇ : on soustrait les exposants, 7 − 4 = 3." },
+    { type:"nombre", enonce:"(e²)⁴ = eⁿ. Quelle est la valeur de n ?", reponse:8, points:1,
+      explication:"(eᵃ)ᵇ = eᵃ×ᵇ : on multiplie les exposants, 2 × 4 = 8." },
+    { type:"nombre", enonce:"Résoudre l'équation : eˣ⁺¹ = e⁴.   x = ?", reponse:3, points:1,
+      explication:"Si eᵃ = eᵇ, alors a = b. Donc x + 1 = 4, d'où x = 3." },
+    { type:"qcm", enonce:"Simplifier : e²ˣ × eˣ⁺¹",
+      choix:["e³ˣ⁺¹", "e²ˣ⁺¹", "e³ˣ", "e²ˣ²⁺²ˣ"], reponse:0, points:1,
+      explication:"On additionne les exposants : 2x + (x + 1) = 3x + 1, donc e³ˣ⁺¹." },
+    { type:"qcm", enonce:"Simplifier : e⁵ˣ ÷ e²ˣ",
+      choix:["e⁷ˣ", "e³ˣ", "e¹⁰ˣ", "e³"], reponse:1, points:1,
+      explication:"On soustrait les exposants : 5x − 2x = 3x, donc e³ˣ." }
+  ]
+};
+/* ===================================================================== */
+
+const $ = s => document.querySelector(s);
+const ecran = $("#ecran");
+let eleve = { candidat:"", prenom:"" };
+let questions = [], reponses = [], idx = 0;
+let etat = null;          // { debutTs, reponses, termine } sauvegardé sur l'iPad
+let decalage = 0;         // écart entre l'heure du serveur et celle de l'iPad
+let minuteur = null, fini = false;
+
+/* ---------- utilitaires ---------- */
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function normaliser(s){ return String(s).trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\s+/g," "); }
+function lireNombre(s){
+  s = String(s).trim().replace(/\s/g,"").replace(",",".").replace("−","-");
+  if (/^-?\d+(\.\d+)?\/-?\d+(\.\d+)?$/.test(s)) { const [a,b] = s.split("/").map(Number); return b ? a/b : NaN; }
+  return s === "" ? NaN : Number(s);
+}
+function arrondi(x){ return Math.round(x*100)/100; }
+function virgule(x){ return String(x).replace(".", ","); }
+function maintenant(){ return Date.now() + decalage; }
+function heure(ts){ return new Date(ts).toLocaleTimeString("fr-FR", {hour:"2-digit", minute:"2-digit", second:"2-digit"}); }
+function dateHeure(ts){ return new Date(ts).toLocaleString("fr-FR"); }
+function mmss(ms){ ms = Math.max(0, ms); const s = Math.ceil(ms/1000); return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`; }
+function dureeTexte(ms){ const m = Math.floor(ms/60000), s = Math.round((ms%60000)/1000); return m ? `${m} min ${s} s` : `${s} s`; }
+const tsDebut = CONFIG.debut ? new Date(CONFIG.debut).getTime() : null;
+const tsDernier = CONFIG.dernierDepart ? new Date(CONFIG.dernierDepart).getTime() : null;
+const dureeMs = (CONFIG.dureeMinutes || 0) * 60000;
+
+/* ---------- sauvegarde sur l'iPad (reprise après rechargement) ---------- */
+function cle(){ return "quiz|" + CONFIG.titre + "|" + eleve.candidat; }
+function lireEtat(){ try { return JSON.parse(localStorage.getItem(cle())); } catch(e) { return null; } }
+function sauver(){ if (!etat) return; etat.reponses = reponses; try { localStorage.setItem(cle(), JSON.stringify(etat)); } catch(e) {} }
+
+/* ---------- heure du serveur ---------- */
+async function synchroniserHeure(){
+  try {
+    const r = await fetch(location.href, { method:"HEAD", cache:"no-store" });
+    const d = r.headers.get("Date");
+    if (d) decalage = new Date(d).getTime() + 500 - Date.now();
+  } catch(e) { /* hors ligne ou fichier local : heure de l'appareil */ }
+}
+
+/* ---------- démarrage ---------- */
+async function init(){
+  $("#titre").textContent = CONFIG.titre;
+  $("#sousTitre").textContent = CONFIG.sousTitre || "";
+  document.title = CONFIG.titre;
+  questions = CONFIG.questions.map((q,i) => ({...q, numOrig:i+1}));
+  if (CONFIG.melangerQuestions) questions.sort(() => Math.random() - .5);
+  const fixes = questions.filter(q => typeof q.points === "number");
+  const libres = questions.filter(q => typeof q.points !== "number");
+  const reste = Math.max(0, CONFIG.noteSur - fixes.reduce((s,q) => s + q.points, 0));
+  libres.forEach(q => q.points = reste / libres.length);
+  reponses = questions.map(() => null);
+  ecran.innerHTML = "<p>Chargement…</p>";
+  await synchroniserHeure();
+  ecranAccueil();
+}
+
+function infoCreneau(){
+  const t = maintenant();
+  if (tsDernier && t > tsDernier) return { ouvert:false, ferme:true, html:`<div class="msg err">Le quiz est fermé depuis ${heure(tsDernier)}.</div>` };
+  if (tsDebut && t < tsDebut) {
+    const memeJour = new Date(tsDebut).toDateString() === new Date(t).toDateString();
+    const quand = memeJour ? "à " + heure(tsDebut) : "le " + dateHeure(tsDebut);
+    const att = tsDebut - t;
+    const dans = att < 3600000 ? mmss(att) : `${Math.floor(att/3600000)} h ${String(Math.floor(att%3600000/60000)).padStart(2,"0")} min`;
+    return { ouvert:false, html:`<div class="msg info">Le quiz commencera <b>${quand}</b> — dans <b>${dans}</b>.</div>` };
+  }
+  let html = "";
+  if (dureeMs) html += `<p>Durée : <b>${CONFIG.dureeMinutes} minutes</b>. À la fin du temps, tes réponses sont envoyées automatiquement.</p>`;
+  if (tsDebut && t > tsDebut + 60000) html += `<div class="msg warn">Le quiz a commencé à ${heure(tsDebut)}. Ton retard sera signalé à ton professeur.</div>`;
+  return { ouvert:true, html };
+}
+
+function ecranAccueil(){
+  ecran.innerHTML = `
+    <p>${questions.length} questions. Lis bien chaque énoncé avant de répondre.</p>
+    <div id="creneau"></div>
+    <label for="candidat">Numéro de candidat</label>
+    <input type="text" id="candidat" inputmode="numeric" autocomplete="off" value="${esc(eleve.candidat)}">
+    <label for="prenom">Prénom</label>
+    <input type="text" id="prenom" autocomplete="off" value="${esc(eleve.prenom)}">
+    <button class="btn" id="go">Commencer</button>`;
+  const maj = () => {
+    if (!$("#creneau")) return clearInterval(minuteur);
+    const c = infoCreneau();
+    $("#creneau").innerHTML = c.html;
+    $("#go").disabled = !c.ouvert;
+  };
+  maj(); clearInterval(minuteur); minuteur = setInterval(maj, 1000);
+
+  $("#go").onclick = () => {
+    eleve.candidat = $("#candidat").value.trim();
+    eleve.prenom = $("#prenom").value.trim();
+    for (const id of ["candidat", "prenom"]) {
+      if (!eleve[id]) { $("#"+id).focus(); $("#"+id).style.borderColor = "var(--rouge)"; return; }
+    }
+    if (!infoCreneau().ouvert) return;
+    clearInterval(minuteur);
+    const ancien = lireEtat();
+    if (ancien && ancien.termine) {
+      ecran.innerHTML = `<h2>Déjà remis</h2><div class="msg info">Le candidat ${esc(eleve.candidat)} a déjà remis ce quiz sur cet iPad.</div>`;
+      return;
+    }
+    if (ancien && ancien.reponses && ancien.reponses.length === questions.length) {
+      etat = ancien; reponses = ancien.reponses;          // reprise après rechargement
+    } else {
+      etat = { debutTs: maintenant(), reponses, termine:false };
+    }
+    sauver();
+    lancerChrono();
+    idx = 0; ecranQuestion();
+  };
+}
+
+/* ---------- chronomètre ---------- */
+function lancerChrono(){
+  if (!dureeMs) return;
+  const el = $("#chrono"); el.style.display = "block";
+  const tic = () => {
+    const reste = etat.debutTs + dureeMs - maintenant();
+    el.textContent = "⏱ " + mmss(reste);
+    el.classList.toggle("urgent", reste < 60000);
+    if (reste <= 0) { clearInterval(minuteur); terminer("temps écoulé"); }
+  };
+  tic(); clearInterval(minuteur); minuteur = setInterval(tic, 500);
+}
+
+/* ---------- questions ---------- */
+function ecranQuestion(){
+  if (fini) return;
+  const q = questions[idx], r = reponses[idx];
+  let zone = "";
+  if (q.type === "qcm") {
+    zone = q.choix.map((c,i) => `<button class="choix ${r===i?"sel":""}" data-v="${i}">${esc(c)}</button>`).join("");
+  } else if (q.type === "vf") {
+    zone = `<button class="choix ${r===true?"sel":""}" data-v="true">Vrai</button>
+            <button class="choix ${r===false?"sel":""}" data-v="false">Faux</button>`;
+  } else {
+    const mode = q.type === "nombre" ? 'inputmode="decimal"' : "";
+    zone = `<input type="text" id="saisie" ${mode} autocomplete="off" placeholder="Ta réponse" value="${r===null?"":esc(r)}">`;
+  }
+  const pts = arrondi(q.points);
+  ecran.innerHTML = `
+    <div class="progress"><div style="width:${(idx/questions.length)*100}%"></div></div>
+    <div class="num">Question ${idx+1} / ${questions.length} <span class="pts">· ${virgule(pts)} pt${pts>1?"s":""}</span></div>
+    <p class="enonce">${esc(q.enonce)}</p>
+    ${zone}
+    <div class="nav">
+      <button class="btn sec" id="prec" ${idx===0?"disabled":""}>← Précédente</button>
+      <button class="btn" id="suiv">${idx===questions.length-1?"Terminer":"Suivante →"}</button>
+    </div>`;
+  ecran.querySelectorAll(".choix").forEach(b => b.onclick = () => {
+    reponses[idx] = q.type === "vf" ? (b.dataset.v === "true") : Number(b.dataset.v);
+    ecran.querySelectorAll(".choix").forEach(x => x.classList.remove("sel"));
+    b.classList.add("sel"); sauver();
+  });
+  const saisie = $("#saisie");
+  if (saisie) saisie.oninput = () => { reponses[idx] = saisie.value.trim() === "" ? null : saisie.value; sauver(); };
+  $("#prec").onclick = () => { idx--; ecranQuestion(); };
+  $("#suiv").onclick = () => { if (idx < questions.length-1) { idx++; ecranQuestion(); } else ecranVerification(); };
+}
+
+function ecranVerification(){
+  const vides = reponses.map((r,i) => r===null ? i+1 : null).filter(Boolean);
+  ecran.innerHTML = `
+    <h2>Avant d'envoyer</h2>
+    ${vides.length ? `<p class="ko">Tu n'as pas répondu aux questions : ${vides.join(", ")}.</p>` : `<p>Tu as répondu à toutes les questions.</p>`}
+    <p>Une fois envoyé, tu ne pourras plus modifier tes réponses.</p>
+    <div class="nav">
+      <button class="btn sec" id="retour">← Revoir mes réponses</button>
+      <button class="btn" id="envoyer">Envoyer</button>
+    </div>`;
+  $("#retour").onclick = () => { idx = 0; ecranQuestion(); };
+  $("#envoyer").onclick = () => terminer("remis par l'élève");
+}
+
+/* ---------- correction ---------- */
+function texteReponse(q, r){
+  if (r === null) return "(sans réponse)";
+  if (q.type === "qcm") return q.choix[r];
+  if (q.type === "vf") return r ? "Vrai" : "Faux";
+  return String(r);
+}
+function texteCorrection(q){
+  if (q.type === "qcm") return q.choix[q.reponse];
+  if (q.type === "vf") return q.reponse ? "Vrai" : "Faux";
+  if (q.type === "nombre") return virgule(q.reponse);
+  return q.reponses[0];
+}
+function estJuste(q, r){
+  if (r === null) return false;
+  if (q.type === "qcm" || q.type === "vf") return r === q.reponse;
+  if (q.type === "nombre") { const n = lireNombre(r); return !isNaN(n) && Math.abs(n - q.reponse) <= (q.tolerance || 1e-9); }
+  return q.reponses.some(a => normaliser(a) === normaliser(r));
+}
+function corriger(){
+  const total = questions.reduce((s,q) => s + q.points, 0);
+  let obtenu = 0;
+  const details = questions.map((q,i) => {
+    const juste = estJuste(q, reponses[i]);
+    if (juste) obtenu += q.points;
+    return { num:i+1, enonce:q.enonce, reponseEleve:texteReponse(q, reponses[i]),
+             correction:texteCorrection(q), explication:q.explication || "", juste,
+             points:juste ? arrondi(q.points) : 0, bareme:arrondi(q.points) };
+  });
+  const note = total ? arrondi(obtenu / total * CONFIG.noteSur) : 0;
+  return { note, noteSur:CONFIG.noteSur, nbJustes:details.filter(d=>d.juste).length, details };
+}
+
+/* ---------- fin et envoi ---------- */
+function terminer(finPar){
+  if (fini) return;
+  fini = true; clearInterval(minuteur);
+  $("#chrono").style.display = "none";
+  const finTs = maintenant();
+  const retardMs = tsDebut ? Math.max(0, etat.debutTs - tsDebut) : 0;
+  const temps = {
+    debut: dateHeure(etat.debutTs), remise: dateHeure(finTs),
+    dureeUtilisee: dureeTexte(finTs - etat.debutTs),
+    retardMin: Math.floor(retardMs / 60000),
+    retard: !tsDebut ? "pas d'heure imposée" : retardMs >= 60000 ? `en retard de ${dureeTexte(retardMs)} (début officiel ${heure(tsDebut)})` : "à l'heure",
+    finPar
+  };
+  etat.termine = true; sauver();
+  const res = corriger();
+  const objet = `${CONFIG.titre} — ${eleve.candidat} ${eleve.prenom} — ${virgule(res.note)}/${res.noteSur}`
+              + (temps.retardMin >= 1 ? ` — RETARD ${temps.retardMin} min` : "");
+  const corps = texteMail(res, temps);
+  const donnees = { quiz:CONFIG.titre, candidat:eleve.candidat, prenom:eleve.prenom, objet, corps, ...temps, ...res };
+  envoyer(res, donnees, finPar);
+}
+
+function texteMail(res, t){
+  let s = `${CONFIG.titre}\nN° de candidat : ${eleve.candidat}\nPrénom : ${eleve.prenom}\n`;
+  s += `Début : ${t.debut} — ${t.retard}\nRemise : ${t.remise} (${t.finPar}, durée ${t.dureeUtilisee})\n\n`;
+  s += `NOTE : ${virgule(res.note)} / ${res.noteSur}  (${res.nbJustes} / ${res.details.length} réponses justes)\n\n`;
+  res.details.forEach(d => {
+    s += `Q${d.num}. ${d.enonce}\n   Réponse de l'élève : ${d.reponseEleve}\n   Correction : ${d.correction}\n`;
+    s += `   ${d.juste ? "✔ Juste" : "✘ Faux"} — ${virgule(d.points)} / ${virgule(d.bareme)}\n\n`;
+  });
+  return s;
+}
+
+async function envoyer(res, donnees, finPar){
+  const intro = finPar === "temps écoulé" ? `<div class="msg warn">Le temps est écoulé.</div>` : "";
+  if (!CONFIG.urlAppsScript) {
+    const lien = `mailto:${encodeURIComponent(CONFIG.emailEnseignant)}?subject=${encodeURIComponent(donnees.objet)}&body=${encodeURIComponent(donnees.corps)}`;
+    return ecranFin(res, intro + `<div class="msg info">Appuie sur le bouton : l'app Mail s'ouvre, puis appuie sur <b>Envoyer</b>.</div><a class="btn" href="${lien}">Ouvrir Mail et envoyer</a>`);
+  }
+  ecranFin(res, intro + `<div class="msg info">Envoi en cours… ne ferme pas cette page.</div>`);
+  for (let essai = 1; ; essai++) {
+    try {
+      await fetch(CONFIG.urlAppsScript, { method:"POST", mode:"no-cors",
+        headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify(donnees) });
+      return ecranFin(res, intro + `<div class="msg info">Tes réponses ont bien été envoyées à ton professeur. Tu peux fermer cette page.</div>`);
+    } catch (e) {
+      ecranFin(res, intro + `<div class="msg err">Pas de connexion. Nouvel essai automatique dans quelques secondes (essai ${essai})… <b>Ne ferme pas cette page.</b></div>`);
+      await new Promise(r => setTimeout(r, 5000));
+    }
+  }
+}
+
+function ecranFin(res, message){
+  let bloc = "";
+  if (CONFIG.afficherNoteEleve || CONFIG.afficherCorrigeEleve)
+    bloc += `<div class="note">${virgule(res.note)} / ${res.noteSur}</div>
+             <p style="text-align:center">${res.nbJustes} réponse${res.nbJustes>1?"s":""} juste${res.nbJustes>1?"s":""} sur ${res.details.length}</p>`;
+  if (CONFIG.afficherCorrigeEleve)
+    bloc += `<h3>Corrigé</h3>` + res.details.map(d => `
+      <div class="corr ${d.juste?"bon":"faux"}">
+        <div class="corr-t">${d.juste?"✔":"✘"} Question ${d.num} <span class="pts">· ${virgule(d.points)} / ${virgule(d.bareme)}</span></div>
+        <div>${esc(d.enonce)}</div>
+        <div>Ta réponse : <b>${esc(d.reponseEleve)}</b></div>
+        ${d.juste ? "" : `<div>Bonne réponse : <b>${esc(d.correction)}</b></div>`}
+        ${d.explication ? `<div class="expl">${esc(d.explication)}</div>` : ""}
+      </div>`).join("");
+  ecran.innerHTML = `<h2>Merci ${esc(eleve.prenom)} !</h2>${message}${bloc}`;
+}
+
+init();
+</script>
+</body>
+</html>

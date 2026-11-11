@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Les angles – Activité de soutien</title>
+<style>
+:root{--bleu:#2563eb;--orange:#ea580c;--vert:#16a34a;--rouge:#dc2626;--violet:#7c3aed;--fond:#f4f6fb;--texte:#1f2937;--gris:#6b7280}
+*{box-sizing:border-box}
+html{touch-action:manipulation;-webkit-text-size-adjust:100%}
+body{margin:0;font-family:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif;background:var(--fond);color:var(--texte);font-size:19px;line-height:1.5}
+header{background:#1e3a8a;color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+header h1{font-size:22px;margin:0}
+header button{font:inherit;font-size:16px;background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:10px;padding:8px 14px;cursor:pointer}
+main{max-width:820px;margin:0 auto;padding:18px}
+.card{background:#fff;border-radius:16px;padding:18px 20px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:16px}
+.level{display:flex;align-items:center;gap:14px;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;background:#fff;border-radius:16px;padding:16px 18px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);border:2px solid transparent}
+.level.next{border-color:var(--bleu)}
+.level .num{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:20px;background:#e0e7ff;color:#1e3a8a;flex-shrink:0}
+.level.done .num{background:#dcfce7;color:var(--vert)}
+.level.locked{opacity:.45;cursor:not-allowed}
+.level .t{flex:1;font-weight:600}
+.level .s{display:block;font-size:15px;color:var(--gris);font-weight:400}
+.level .st{font-size:26px}
+.btn{font:inherit;font-weight:600;border:none;border-radius:12px;padding:12px 22px;background:var(--bleu);color:#fff;cursor:pointer;min-height:52px}
+.btn.sec{background:#e5e7eb;color:var(--texte)}
+.btn.red{background:var(--rouge)}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.opt{font:inherit;font-size:21px;padding:12px;border-radius:12px;border:2px solid #cbd5e1;background:#fff;cursor:pointer;min-height:60px;color:var(--texte)}
+.opt.ok{border-color:var(--vert);background:#dcfce7}
+.opt.ko{border-color:var(--rouge);background:#fee2e2}
+.opt:disabled{cursor:default}
+.fig{display:flex;justify-content:center;margin:6px 0}
+.fig svg{width:100%;max-width:500px;height:auto}
+.prompt{font-size:21px;font-weight:600;margin:10px 0 4px}
+.hat{position:relative;display:inline-block;padding-top:.3em;line-height:1;white-space:nowrap}
+.hat::before{content:"";position:absolute;left:-1px;right:-1px;top:0;height:.34em;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 30' preserveAspectRatio='none'><path d='M3 27 L50 4 L97 27' fill='none' stroke='%231f2937' stroke-width='2.2' vector-effect='non-scaling-stroke'/></svg>") no-repeat center/100% 100%}
+.fb{margin-top:14px;padding:14px 16px;border-radius:12px;display:none}
+.fb.ok{display:block;background:#dcfce7;border-left:6px solid var(--vert)}
+.fb.ko{display:block;background:#fee2e2;border-left:6px solid var(--rouge)}
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.badge{background:#e0e7ff;color:#1e3a8a;border-radius:999px;padding:3px 12px;font-weight:700;font-size:16px;margin-right:8px}
+.dots{display:flex;gap:8px;margin:10px 0}
+.dot{width:18px;height:18px;border-radius:50%;background:#e5e7eb}
+.dot.ok{background:var(--vert)}.dot.ko{background:var(--rouge)}.dot.cur{box-shadow:0 0 0 3px var(--bleu)}
+.numrow{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.numrow input{font:inherit;font-size:26px;width:130px;padding:8px 12px;border:2px solid #cbd5e1;border-radius:12px;text-align:center}
+.numrow .deg{font-size:26px;font-weight:700}
+.rappel{background:#eff6ff;border-left:6px solid var(--bleu)}
+.rappel h3{margin:0 0 8px}
+.rappel ul{margin:6px 0;padding-left:22px}
+details.mini{margin:6px 0 4px;background:#eff6ff;border-radius:12px;padding:8px 14px}
+details.mini summary{cursor:pointer;font-weight:600;color:#1e3a8a}
+.actions{margin-top:14px}
+.big{font-size:44px;font-weight:800;text-align:center;margin:6px 0}
+.center{text-align:center}
+.trophy{background:linear-gradient(135deg,#fef3c7,#dcfce7);border:2px solid #facc15}
+label.nm{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+label.nm input{font:inherit;padding:8px 12px;border:2px solid #cbd5e1;border-radius:10px;flex:1;min-width:180px}
+.leg{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle;margin-right:4px}
+@media (max-width:520px){.opts{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><h1>📐 Les angles – soutien</h1><button id="home" type="button">Menu</button></header>
+<main id="app"></main>
+<script>
+/* ====== Réglages ====== */
+const CFG = { N: 6, SEUIL: 5 };          // 6 questions par série, 5 bonnes réponses pour valider
+const KEY = 'angles-soutien-v1';
+
+/* ====== Progression (sauvegardée sur l'iPad) ====== */
+let prog = { done:[false,false,false,false,false], dates:[], nom:'' };
+try { const s = localStorage.getItem(KEY); if (s) prog = Object.assign(prog, JSON.parse(s)); } catch(e) {}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(prog)); } catch(e) {} }
+
+/* ====== Outils ====== */
+const rnd = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const LET = 'ABCDEFGHIJKLMNPRSTUVXYZ'.split('');
+const letters = n => shuffle(LET).slice(0,n);
+const hat = s => `<span class="hat">${s}</span>`;
+const R = Math.PI/180;
+const norm = t => ((t%360)+360)%360;
+const COL = { bleu:'#2563eb', orange:'#ea580c', vert:'#16a34a', violet:'#7c3aed' };
+const f = n => n.toFixed(1);
+const flip = (a,v,b) => Math.random()<.5 ? a+v+b : b+v+a;
+const sameAngle = (m,n) => m[1]===n[1] && ((m[0]===n[0]&&m[2]===n[2])||(m[0]===n[2]&&m[2]===n[0]));
+
+/* ====== Dessin SVG (angles en degrés, sens trigonométrique) ====== */
+const ptV = (V,r,t) => [V[0]+r*Math.cos(t*R), V[1]-r*Math.sin(t*R)];
+const dirOf = (V,P) => norm(Math.atan2(-(P[1]-V[1]), P[0]-V[0])/R);
+const svg = c => `<svg viewBox="0 0 360 260" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,system-ui,sans-serif">${c}</svg>`;
+const seg = (P,Q,col='#111',w=2.5) => `<line x1="${f(P[0])}" y1="${f(P[1])}" x2="${f(Q[0])}" y2="${f(Q[1])}" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
+const txt = (P,s,col='#111',size=17) => `<text x="${f(P[0])}" y="${f(P[1])}" fill="${col}" font-size="${size}" font-weight="700" text-anchor="middle" dominant-baseline="central">${s}</text>`;
+const dot = P => `<circle cx="${f(P[0])}" cy="${f(P[1])}" r="3.2" fill="#111"/>`;
+const away = (P,from,d=17) => { const dx=P[0]-from[0], dy=P[1]-from[1], n=Math.hypot(dx,dy)||1; return [P[0]+dx/n*d, P[1]+dy/n*d]; };
+function sector(V,r,t1,t2,col,op=.35){
+  const span = norm(t2-t1), a = ptV(V,r,t1), b = ptV(V,r,t2);
+  return `<path d="M${f(V[0])} ${f(V[1])} L${f(a[0])} ${f(a[1])} A${r} ${r} 0 ${span>180?1:0} 0 ${f(b[0])} ${f(b[1])} Z" fill="${col}" fill-opacity="${op}" stroke="${col}" stroke-width="2"/>`;
+}
+function inner(V,U,W){ let t1=dirOf(V,U), t2=dirOf(V,W); if (norm(t2-t1)>180) [t1,t2]=[t2,t1]; const span=norm(t2-t1); return {t1,t2,span,mid:t1+span/2}; }
+
+/* ====== Niveau 1 : quadrilatère avec une diagonale ====== */
+const Q_EDGES = [[0,1],[1,2],[2,3],[3,0],[0,2]];
+const Q_SMALL = [{v:0,a:1,b:2},{v:0,a:2,b:3},{v:2,a:3,b:0},{v:2,a:0,b:1},{v:1,a:0,b:2},{v:3,a:2,b:0}];
+const Q_ALL = Q_SMALL.concat([{v:0,a:1,b:3},{v:2,a:1,b:3}]);
+function makeQuad(){
+  const base=[40,140,220,320];
+  const P = base.map(b => { const t=b+rnd(-15,15), k=.8+Math.random()*.2; return [180+150*k*Math.cos(t*R), 130-100*k*Math.sin(t*R)]; });
+  return { P, L:letters(4) };
+}
+function drawQuad(q,hl){
+  let s='';
+  hl.forEach(h => { const V=q.P[h.g.v], I=inner(V,q.P[h.g.a],q.P[h.g.b]), r=h.r||30;
+    s += sector(V,r,I.t1,I.t2,h.col,.4); if (h.lab) s += txt(ptV(V,r+17,I.mid),h.lab,h.col,19); });
+  Q_EDGES.forEach(([i,j]) => s += seg(q.P[i],q.P[j]));
+  q.P.forEach((P,i) => s += dot(P) + txt(away(P,[180,130]),q.L[i]));
+  return svg(s);
+}
+function gen1a(){
+  const q=makeQuad(), g=pick(Q_ALL), A=q.L[g.a], V=q.L[g.v], B=q.L[g.b];
+  const good = flip(A,V,B);
+  const cands = [V+A+B, A+B+V, ...shuffle(Q_ALL.filter(x=>x!==g&&x.v===g.v)).map(o=>flip(q.L[o.a],q.L[o.v],q.L[o.b])), V+B+A, B+A+V,
+    ...shuffle(Q_ALL.filter(x=>x!==g)).map(o=>flip(q.L[o.a],q.L[o.v],q.L[o.b]))];
+  const opts=[good];
+  for (const c of cands){ if (opts.length===4) break; if (!opts.some(o=>sameAngle(o,c))) opts.push(c); }
+  const sh = shuffle(opts);
+  return { fig:drawQuad(q,[{g,col:COL.bleu}]), prompt:'Comment se nomme l’angle coloré en bleu ?', kind:'mcq',
+    opts:sh.map(hat), good:sh.indexOf(good),
+    expl:`Le sommet de l’angle bleu est le point <b>${V}</b> : sa lettre s’écrit <b>au milieu</b>. L’angle se nomme ${hat(A+V+B)} ou ${hat(B+V+A)}.` };
+}
+function gen1b(){
+  const q=makeQuad(), three=shuffle(Q_SMALL).slice(0,3), ti=rnd(0,2), g=three[ti];
+  const cols=[COL.bleu,COL.orange,COL.violet];
+  const A=q.L[g.a], V=q.L[g.v], B=q.L[g.b], nm=flip(A,V,B);
+  return { fig:drawQuad(q,three.map((x,k)=>({g:x,col:cols[k],lab:String(k+1)}))),
+    prompt:`Où se trouve l’angle ${hat(nm)} ?`, kind:'mcq',
+    opts:[0,1,2].map(k=>`<span style="color:${cols[k]};font-weight:700">Angle ${k+1}</span>`), good:ti,
+    expl:`Dans ${hat(nm)}, la lettre du milieu est <b>${V}</b> : c’est le sommet. L’angle est formé par les côtés [${V}${A}) et [${V}${B}) : c’est l’angle ${ti+1}.` };
+}
+
+/* ====== Niveau 2 : angles adjacents ====== */
+function makeFan(){ const s=rnd(0,359), r=[s]; for (let i=0;i<4;i++) r.push(r[r.length-1]+rnd(30,42)); return { O:[180,130], r, L:letters(5) }; }
+function drawFan(F,hl){
+  let s='';
+  hl.forEach(h => s += sector(F.O,h.r||40,F.r[h.i],F.r[h.j],h.col,h.op||.4));
+  F.r.forEach((t,k) => { const E=ptV(F.O,100,t); s += seg(F.O,E) + dot(E) + txt(ptV(F.O,117,t),F.L[k]); });
+  const mid=(F.r[0]+F.r[F.r.length-1])/2;
+  return svg(s + dot(F.O) + txt(ptV(F.O,19,mid+180),'O'));
+}
+const fanName = (F,i,j) => flip(F.L[i],'O',F.L[j]);
+function gen2a(){
+  const cas = pick(['adj','adj','adj','over','noside','diff']);
+  const yes = cas==='adj';
+  if (cas==='diff'){
+    const L=letters(4), O=[95,130], P=[255,130], ta=rnd(55,115), tb=rnd(45,110);
+    const A=ptV(O,85,ta), B=ptV(P,85,180+tb);
+    let s = sector(O,34,0,ta,COL.bleu,.4) + sector(P,34,180,180+tb,COL.orange,.4);
+    s += seg(O,A)+seg(O,P)+seg(P,B)+dot(O)+dot(P)+dot(A)+dot(B);
+    s += txt(ptV(O,20,180+ta/2),L[0]) + txt(ptV(P,20,tb/2),L[1]) + txt(away(A,O),L[2]) + txt(away(B,P),L[3]);
+    return { fig:svg(s), prompt:`Les angles ${hat(flip(L[2],L[0],L[1]))} et ${hat(flip(L[0],L[1],L[3]))} sont-ils adjacents ?`, kind:'mcq',
+      opts:['Oui','Non'], good:1,
+      expl:`Non : ils <b>n’ont pas le même sommet</b> (l’un a pour sommet ${L[0]}, l’autre ${L[1]}). Des angles adjacents ont toujours le même sommet.` };
+  }
+  const F=makeFan(); let h1,h2,expl;
+  if (cas==='adj'){ const i=rnd(0,2); h1=[i,i+1]; h2=[i+1,i+2];
+    expl=`Oui : même sommet O, un côté commun [O${F.L[i+1]}), et les deux angles sont <b>de part et d’autre</b> de ce côté commun.`; }
+  else if (cas==='over'){ const i=rnd(0,2); h1=[i,i+2]; h2=pick([[i,i+1],[i+1,i+2]]);
+    expl=`Non : ils ont le même sommet et un côté commun, mais ils <b>se chevauchent</b> (l’orange est à l’intérieur du bleu). Ils ne sont pas de part et d’autre du côté commun.`; }
+  else { const i=rnd(0,1); h1=[i,i+1]; h2=[i+2,i+3];
+    expl=`Non : ils ont le même sommet O, mais <b>aucun côté commun</b>.`; }
+  const big = cas==='over';
+  return { fig:drawFan(F,[{i:h1[0],j:h1[1],col:COL.bleu,r:big?62:40,op:big?.25:.4},{i:h2[0],j:h2[1],col:COL.orange,r:big?36:40}]),
+    prompt:`Les angles ${hat(fanName(F,...h1))} (bleu) et ${hat(fanName(F,...h2))} (orange) sont-ils adjacents ?`, kind:'mcq',
+    opts:['Oui','Non'], good:yes?0:1, expl };
+}
+function gen2b(){
+  const F=makeFan(), i=rnd(1,2), pairs=[];
+  for (let j=0;j<5;j++) for (let k=j+1;k<5;k++) if (!(j===i&&k===i+1)) pairs.push([j,k]);
+  const isAdj = ([j,k]) => (k===i&&j<i) || (j===i+1&&k>i+1);
+  const c = pick(pairs.filter(isAdj)), ds = shuffle(pairs.filter(p=>!isAdj(p))).slice(0,3);
+  const all = shuffle([c,...ds]), given = fanName(F,i,i+1), shared = c[1]===i ? F.L[i] : F.L[i+1];
+  const cn = fanName(F,...c);
+  return { fig:drawFan(F,[{i,j:i+1,col:COL.bleu}]), prompt:`Quel angle est adjacent à l’angle ${hat(given)} (en bleu) ?`, kind:'mcq',
+    opts:all.map(p => p===c ? hat(cn) : hat(fanName(F,...p))), good:all.indexOf(c),
+    expl:`${hat(cn)} a le même sommet O, le côté commun [O${shared}) avec ${hat(given)}, et les deux angles sont de part et d’autre de ce côté sans se chevaucher.` };
+}
+
+/* ====== Niveau 3 : angles opposés par le sommet ====== */
+function makeCross(a,d,L){ a = a ?? rnd(0,179); d = d ?? rnd(40,140); L = L || letters(4);
+  return { O:[180,130], d, rays:[{t:a,n:L[0]},{t:a+d,n:L[1]},{t:a+180,n:L[2]},{t:a+d+180,n:L[3]}] }; }
+const crossName = (X,k) => flip(X.rays[k].n,'O',X.rays[(k+1)%4].n);
+const crossSpan = (X,k) => k%2===0 ? X.d : 180-X.d;
+function drawCross(X,hl){
+  let s='';
+  hl.forEach(h => { const t1=X.rays[h.k].t, sp=crossSpan(X,h.k);
+    s += sector(X.O,34,t1,t1+sp,h.col,.4); if (h.lab) s += txt(ptV(X.O,sp<50?64:54,t1+sp/2),h.lab,h.col,18); });
+  [0,1].forEach(k => { const t=X.rays[k].t; s += seg(ptV(X.O,104,t),ptV(X.O,104,t+180)); });
+  X.rays.forEach(r => { const P=ptV(X.O,92,r.t); s += dot(P) + txt(ptV(X.O,118,r.t),r.n); });
+  const free = [0,1,2,3].find(k => !hl.some(h=>h.k===k));
+  return svg(s + dot(X.O) + txt(ptV(X.O,20,X.rays[free].t+crossSpan(X,free)/2),'O'));
+}
+function gen3a(){
+  const X=makeCross(), k=rnd(0,3), opp=Math.random()<.55, k2=opp?(k+2)%4:(k+1)%4;
+  const n1=crossName(X,k), n2=crossName(X,k2), sh=X.rays[(k+1)%4].n;
+  return { fig:drawCross(X,[{k,col:COL.bleu},{k:k2,col:COL.orange}]),
+    prompt:`Les angles ${hat(n1)} (bleu) et ${hat(n2)} (orange) sont-ils opposés par le sommet ?`, kind:'mcq', opts:['Oui','Non'], good:opp?0:1,
+    expl: opp ? `Oui : ils ont le même sommet O et leurs côtés sont <b>dans le prolongement</b> l’un de l’autre (sur les droites (${X.rays[0].n}${X.rays[2].n}) et (${X.rays[1].n}${X.rays[3].n})). Ils sont « face à face ».`
+              : `Non : ils ont un côté commun [O${sh}) : ce sont des angles <b>adjacents</b>. Des angles opposés par le sommet sont « face à face ».` };
+}
+function gen3b(){
+  const X=makeCross(), k=rnd(0,3), others=shuffle([1,2,3].map(j=>(k+j)%4)), good=(k+2)%4;
+  return { fig:drawCross(X,[{k,col:COL.bleu}]), prompt:`Quel angle est opposé par le sommet à l’angle ${hat(crossName(X,k))} (en bleu) ?`, kind:'mcq',
+    opts:others.map(j=>hat(crossName(X,j))), good:others.indexOf(good),
+    expl:`L’angle opposé par le sommet est celui qui est « face à face » avec l’angle bleu, de l’autre côté du point O : ${hat(crossName(X,good))}.` };
+}
+function gen3c(){
+  const X=makeCross(), k=rnd(0,3), k2=(k+2)%4, v=crossSpan(X,k), n1=crossName(X,k), n2=crossName(X,k2);
+  return { fig:drawCross(X,[{k,col:COL.bleu,lab:v+'°'},{k:k2,col:COL.orange,lab:'?'}]),
+    prompt:`L’angle ${hat(n1)} mesure ${v}°. Combien mesure l’angle ${hat(n2)} ?`, kind:'num', ans:v,
+    expl:`${hat(n1)} et ${hat(n2)} sont opposés par le sommet : ils ont <b>la même mesure</b>. ${hat(n2)} = ${v}°.` };
+}
+
+/* ====== Niveau 4 : angles dans un triangle ====== */
+function makeTri(angs,L,phi){
+  const [a,b,c]=angs, k=Math.sin(c*R)/Math.sin(a*R);
+  phi = phi ?? rnd(0,359);
+  let m=[[k*Math.cos(b*R),k*Math.sin(b*R)],[0,0],[1,0]];
+  m = m.map(([x,y]) => [x*Math.cos(phi*R)-y*Math.sin(phi*R), -(x*Math.sin(phi*R)+y*Math.cos(phi*R))]);
+  const xs=m.map(p=>p[0]), ys=m.map(p=>p[1]), x0=Math.min(...xs), y0=Math.min(...ys), w=Math.max(...xs)-x0, h=Math.max(...ys)-y0;
+  const s=Math.min(270/w,190/h);
+  const P=m.map(([x,y]) => [180+(x-x0-w/2)*s, 130+(y-y0-h/2)*s]);
+  return { P, L:L||letters(3), ang:angs };
+}
+const triName = (T,i) => flip(T.L[(i+1)%3],T.L[i],T.L[(i+2)%3]);
+function drawTri(T,marks,ticks){
+  let s=''; const G=[(T.P[0][0]+T.P[1][0]+T.P[2][0])/3,(T.P[0][1]+T.P[1][1]+T.P[2][1])/3];
+  marks.forEach((m,i) => { if (!m) return; const V=T.P[i], U=T.P[(i+1)%3], W=T.P[(i+2)%3];
+    if (m.type==='right'){ const u=[(U[0]-V[0]),(U[1]-V[1])], w=[(W[0]-V[0]),(W[1]-V[1])], nu=Math.hypot(...u), nw=Math.hypot(...w), q=15;
+      const A=[V[0]+u[0]/nu*q,V[1]+u[1]/nu*q], C=[V[0]+w[0]/nw*q,V[1]+w[1]/nw*q], B=[A[0]+w[0]/nw*q,A[1]+w[1]/nw*q];
+      s += `<polyline points="${f(A[0])},${f(A[1])} ${f(B[0])},${f(B[1])} ${f(C[0])},${f(C[1])}" fill="none" stroke="${COL.bleu}" stroke-width="2.2"/>`; return; }
+    const I=inner(V,U,W), col = m.type==='q' ? COL.orange : COL.bleu;
+    s += sector(V,28,I.t1,I.t2,col,.3);
+    s += txt(ptV(V,T.ang[i]<45?56:44,I.mid), m.type==='q' ? '?' : T.ang[i]+'°', col, 17); });
+  (ticks||[]).forEach(([i,j]) => { const A=T.P[i], B=T.P[j], M=[(A[0]+B[0])/2,(A[1]+B[1])/2], d=[B[0]-A[0],B[1]-A[1]], n=Math.hypot(...d), p=[-d[1]/n*8,d[0]/n*8];
+    s += seg([M[0]-p[0],M[1]-p[1]],[M[0]+p[0],M[1]+p[1]],'#111',2.5); });
+  s += `<polygon points="${T.P.map(p=>f(p[0])+','+f(p[1])).join(' ')}" fill="none" stroke="#111" stroke-width="2.5" stroke-linejoin="round"/>`;
+  T.P.forEach((P,i) => s += txt(away(P,G,18),T.L[i]));
+  return svg(s);
+}
+function gen4(){
+  const cas = pick(['gen','gen','gen','rect','iso']);
+  const L=letters(3), tn = L.join('');
+  if (cas==='gen'){
+    const b=rnd(35,85), c=rnd(35,Math.min(85,145-b)), a=180-b-c, angs=shuffle([a,b,c]);
+    const T=makeTri(angs,L), u=rnd(0,2), known=[0,1,2].filter(i=>i!==u);
+    const marks=[0,1,2].map(i => ({type: i===u?'q':'val'}));
+    return { fig:drawTri(T,marks), prompt:`Calcule la mesure de l’angle ${hat(triName(T,u))}.`, kind:'num', ans:angs[u],
+      expl:`La somme des angles d’un triangle vaut <b>180°</b>.<br>${hat(triName(T,u))} = 180° − ${angs[known[0]]}° − ${angs[known[1]]}° = <b>${angs[u]}°</b>.` };
+  }
+  if (cas==='rect'){
+    const x=rnd(25,65), rv=rnd(0,2), angs=[0,0,0]; const rest=shuffle([0,1,2].filter(i=>i!==rv));
+    angs[rv]=90; angs[rest[0]]=x; angs[rest[1]]=90-x;
+    const T=makeTri(angs,L), u=rest[1];
+    const marks=[0,1,2].map(i => i===rv?{type:'right'}:{type:i===u?'q':'val'});
+    return { fig:drawTri(T,marks), prompt:`Le triangle ${tn} est rectangle en ${L[rv]}. Calcule la mesure de l’angle ${hat(triName(T,u))}.`, kind:'num', ans:90-x,
+      expl:`Le triangle est rectangle en ${L[rv]} : ${hat(triName(T,rv))} = 90°. La somme des angles vaut 180°.<br>${hat(triName(T,u))} = 180° − 90° − ${x}° = <b>${90-x}°</b>.` };
+  }
+  const a=2*rnd(15,55), base=(180-a)/2, angs=[a,base,base], T=makeTri(angs,L);
+  const apexGiven = Math.random()<.5;
+  const bn1=triName(T,1), bn2=triName(T,2), an=triName(T,0);
+  if (apexGiven){
+    return { fig:drawTri(T,[{type:'val'},{type:'q'},null],[[0,1],[0,2]]),
+      prompt:`Le triangle ${tn} est isocèle en ${L[0]}. Calcule la mesure de l’angle ${hat(bn1)}.`, kind:'num', ans:base,
+      expl:`Le triangle est isocèle en ${L[0]} : les angles à la base ${hat(bn1)} et ${hat(bn2)} ont <b>la même mesure</b>.<br>Ensemble, ils mesurent 180° − ${a}° = ${180-a}°, donc ${hat(bn1)} = ${180-a}° ÷ 2 = <b>${base}°</b>.` };
+  }
+  return { fig:drawTri(T,[{type:'q'},{type:'val'},null],[[0,1],[0,2]]),
+    prompt:`Le triangle ${tn} est isocèle en ${L[0]}. Calcule la mesure de l’angle ${hat(an)}.`, kind:'num', ans:a,
+    expl:`Le triangle est isocèle en ${L[0]} : ${hat(bn2)} = ${hat(bn1)} = ${base}°.<br>${hat(an)} = 180° − ${base}° − ${base}° = <b>${a}°</b>.` };
+}
+
+/* ====== Niveau 5 : correspondants, alternes-internes, alternes-externes ====== */
+const PQ = th => ({HD:[0,th],HG:[th,180],BG:[180,180+th],BD:[180+th,360]});
+function drawPar(th,ph,hl){
+  const c=Math.cos(ph*R), sn=Math.sin(ph*R), toS=(x,y)=>[180+x*c-y*sn, 130-(x*sn+y*c)];
+  const cot=Math.cos(th*R)/Math.sin(th*R), P1=toS(50*cot,50), P2=toS(-50*cot,-50), Q=PQ(th);
+  let s='';
+  hl.forEach(h => { const [t1,t2]=Q[h.q]; s += sector(h.p===1?P1:P2,27,t1+ph,t2+ph,h.col,.45); });
+  s += seg(toS(-165,50),toS(165,50)) + seg(toS(-165,-50),toS(165,-50));
+  s += seg(toS(-105*Math.cos(th*R),-105*Math.sin(th*R)),toS(105*Math.cos(th*R),105*Math.sin(th*R)),'#475569');
+  s += txt(toS(-148,64),'(d)','#111',16) + txt(toS(-148,-36),'(d′)','#111',16);
+  s += txt(toS(100*Math.cos(th*R)+18*Math.sin(th*R),100*Math.sin(th*R)-18*Math.cos(th*R)),'(t)','#475569',16);
+  return svg(s);
+}
+const P5 = {
+  corr:[['HD','HD'],['HG','HG'],['BG','BG'],['BD','BD']],
+  ai:[['BG','HD'],['BD','HG']],
+  ae:[['HG','BD'],['HD','BG']],
+  coint:[['BG','HG'],['BD','HD']],
+  coext:[['HG','BG'],['HD','BD']]
+};
+function gen5(){
+  const cas = pick(['corr','corr','corr','ai','ai','ai','ae','ae','coint','coext']);
+  const th = Math.random()<.5 ? rnd(52,78) : rnd(102,128), ph=rnd(-20,20);
+  const [q1,q2] = pick(P5[cas]); const cols = shuffle([COL.bleu,COL.orange]);
+  const opts=['Correspondants','Alternes-internes','Alternes-externes','Aucun des trois'];
+  const good = {corr:0,ai:1,ae:2,coint:3,coext:3}[cas];
+  const E = {
+    corr:`<b>Correspondants</b> : les deux angles sont <b>du même côté</b> de la sécante (t) et « à la même place » à chaque intersection : l’un est à l’intérieur, l’autre à l’extérieur des droites (d) et (d′).`,
+    ai:`<b>Alternes-internes</b> : les deux angles sont <b>entre</b> les droites (d) et (d′) (internes) et <b>de part et d’autre</b> de la sécante (t) (alternes).`,
+    ae:`<b>Alternes-externes</b> : les deux angles sont <b>à l’extérieur</b> des droites (d) et (d′) (externes) et <b>de part et d’autre</b> de la sécante (t) (alternes).`,
+    coint:`<b>Aucun des trois</b> : les deux angles sont bien entre les droites (internes), mais ils sont <b>du même côté</b> de la sécante : ils ne sont pas alternes. Ils ne sont pas non plus « à la même place ».`,
+    coext:`<b>Aucun des trois</b> : les deux angles sont bien à l’extérieur des droites (externes), mais ils sont <b>du même côté</b> de la sécante : ils ne sont pas alternes. Ils ne sont pas non plus « à la même place ».`
+  }[cas];
+  return { fig:drawPar(th,ph,[{p:1,q:q1,col:cols[0]},{p:2,q:q2,col:cols[1]}]),
+    prompt:`Les droites (d) et (d′) sont coupées par la sécante (t). Les deux angles colorés sont…`, kind:'mcq', opts, good, expl:E };
+}
+
+/* ====== Rappels de cours ====== */
+function rappel1(){
+  const B=[80,190], A=[300,175], C=[230,40], I=inner(B,A,C);
+  const fig = svg(sector(B,40,I.t1,I.t2,COL.bleu,.4)+seg(B,A)+seg(B,C)+dot(A)+dot(B)+dot(C)+txt(away(A,B),'A')+txt(away(C,B),'C')+txt([66,206],'B'));
+  return `<h3>📘 Rappel – Nommer un angle</h3><div class="fig">${fig}</div>
+  <ul><li>Un angle se nomme avec <b>trois lettres</b> et un chapeau.</li>
+  <li>La lettre du <b>milieu</b> est le <b>sommet</b> de l’angle.</li>
+  <li>L’angle bleu se nomme ${hat('ABC')} ou ${hat('CBA')}. Son sommet est B, ses côtés sont [BA) et [BC).</li></ul>`;
+}
+function rappel2(){
+  const F={O:[180,140],r:[15,70,130],L:['A','B','C']};
+  return `<h3>📘 Rappel – Angles adjacents</h3><div class="fig">${drawFan(F,[{i:0,j:1,col:COL.bleu},{i:1,j:2,col:COL.orange}])}</div>
+  <p>Deux angles sont <b>adjacents</b> s’ils :</p>
+  <ul><li>ont le <b>même sommet</b> ;</li><li>ont un <b>côté commun</b> ;</li><li>sont situés <b>de part et d’autre</b> de ce côté commun (ils ne se chevauchent pas).</li></ul>
+  <p>${hat('AOB')} et ${hat('BOC')} sont adjacents : sommet O, côté commun [OB).</p>`;
+}
+function rappel3(){
+  const X=makeCross(20,60,['A','C','B','D']);
+  return `<h3>📘 Rappel – Angles opposés par le sommet</h3><div class="fig">${drawCross(X,[{k:0,col:COL.bleu,lab:'60°'},{k:2,col:COL.bleu,lab:'60°'}])}</div>
+  <ul><li>Deux droites sécantes en O forment quatre angles.</li>
+  <li>Deux angles sont <b>opposés par le sommet</b> s’ils ont le même sommet et que leurs côtés sont <b>dans le prolongement</b> l’un de l’autre : ils sont « face à face ».</li>
+  <li>Deux angles opposés par le sommet ont <b>la même mesure</b> : ${hat('AOC')} = ${hat('BOD')}.</li></ul>`;
+}
+function rappel4(){
+  const T=makeTri([70,50,60],['A','B','C'],10);
+  return `<h3>📘 Rappel – Angles d’un triangle</h3><div class="fig">${drawTri(T,[{type:'val'},{type:'val'},{type:'val'}])}</div>
+  <ul><li>Dans un triangle, la <b>somme des trois angles vaut 180°</b> : 70° + 50° + 60° = 180°.</li>
+  <li>Pour trouver un angle : <b>180° − les deux angles connus</b>.</li>
+  <li>Triangle <b>rectangle</b> : un angle mesure 90°.</li>
+  <li>Triangle <b>isocèle</b> : les deux angles à la base ont la même mesure.</li></ul>`;
+}
+function rappel5(){
+  const fig = drawPar(65,0,[{p:1,q:'HG',col:COL.bleu},{p:2,q:'HG',col:COL.bleu},{p:1,q:'BG',col:COL.orange},{p:2,q:'HD',col:COL.orange},{p:1,q:'HD',col:COL.vert},{p:2,q:'BG',col:COL.vert}]);
+  return `<h3>📘 Rappel – Deux droites et une sécante</h3><div class="fig">${fig}</div>
+  <ul><li><b>Internes</b> = entre les deux droites (d) et (d′). <b>Externes</b> = à l’extérieur.</li>
+  <li><b>Alternes</b> = de part et d’autre de la sécante (t).</li>
+  <li><span class="leg" style="background:${COL.bleu}"></span><b>Correspondants</b> : même côté de (t), « à la même place » aux deux intersections.</li>
+  <li><span class="leg" style="background:${COL.orange}"></span><b>Alternes-internes</b> : entre les droites, de part et d’autre de (t).</li>
+  <li><span class="leg" style="background:${COL.vert}"></span><b>Alternes-externes</b> : à l’extérieur des droites, de part et d’autre de (t).</li></ul>
+  <p>Si (d) et (d′) sont parallèles, ces paires d’angles ont la même mesure.</p>`;
+}
+
+/* ====== Niveaux ====== */
+const LEVELS = [
+  { titre:'Nommer un angle', desc:'Lire et écrire le nom d’un angle', rappel:rappel1, gen:()=>pick([gen1a,gen1b])() },
+  { titre:'Angles adjacents', desc:'Reconnaître deux angles adjacents', rappel:rappel2, gen:()=>pick([gen2a,gen2a,gen2b])() },
+  { titre:'Angles opposés par le sommet', desc:'Reconnaître et utiliser', rappel:rappel3, gen:()=>pick([gen3a,gen3b,gen3c])() },
+  { titre:'Angles dans un triangle', desc:'Calculer un angle avec la somme 180°', rappel:rappel4, gen:gen4 },
+  { titre:'Correspondants et alternes', desc:'Correspondants, alternes-internes, alternes-externes', rappel:rappel5, gen:gen5 }
+];
+
+/* ====== Interface ====== */
+const app = document.getElementById('app');
+let cur = null;
+const unlocked = i => i===0 || prog.done[i-1];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function menu(){
+  cur = null;
+  const all = prog.done.every(Boolean);
+  const nextI = prog.done.findIndex(d=>!d);
+  let h = '';
+  if (all) h += `<div class="card trophy center"><div class="big">🏆</div><h2 style="margin:0">Bravo ${esc(prog.nom||'')} !</h2>
+    <p>Tu as validé les 5 étapes sur les angles.<br><small>Dernière validation : ${esc(prog.dates[4]||'')}</small></p></div>`;
+  h += `<div class="card"><label class="nm">Ton prénom : <input id="nom" value="${esc(prog.nom||'')}" placeholder="Prénom Nom" autocomplete="off"></label>
+    <p style="margin:10px 0 0;color:var(--gris);font-size:16px">Chaque étape : ${CFG.N} questions. Il faut au moins ${CFG.SEUIL} bonnes réponses pour la valider et débloquer la suivante.</p></div>`;
+  LEVELS.forEach((L,i) => {
+    const d=prog.done[i], u=unlocked(i);
+    h += `<button class="level ${d?'done':''} ${u?'':'locked'} ${i===nextI?'next':''}" data-l="${i}" ${u?'':'disabled'}>
+      <span class="num">${i+1}</span><span class="t">${L.titre}<span class="s">${L.desc}</span></span>
+      <span class="st">${d?'✅':(u?'▶️':'🔒')}</span></button>`;
+  });
+  h += `<div class="center" id="rz"><button class="btn sec" id="reset" style="font-size:15px;min-height:40px;padding:8px 14px">Effacer ma progression</button></div>`;
+  app.innerHTML = h;
+  document.getElementById('nom').addEventListener('input', e => { prog.nom = e.target.value; save(); });
+  app.querySelectorAll('.level').forEach(b => b.addEventListener('click', () => { const i=+b.dataset.l; if (unlocked(i)) startLevel(i); }));
+  document.getElementById('reset').addEventListener('click', () => {
+    document.getElementById('rz').innerHTML = `<p>Tout effacer ? Il faudra tout recommencer.</p><div class="row" style="justify-content:center">
+      <button class="btn red" id="rzy">Oui, effacer</button><button class="btn sec" id="rzn">Annuler</button></div>`;
+    document.getElementById('rzy').onclick = () => { prog = { done:[false,false,false,false,false], dates:[], nom:prog.nom }; save(); menu(); };
+    document.getElementById('rzn').onclick = menu;
+  });
+  window.scrollTo(0,0);
+}
+
+function startLevel(l){
+  cur = { lvl:l, i:0, score:0, res:[] };
+  app.innerHTML = `<div class="card rappel">${LEVELS[l].rappel()}</div>
+    <div class="row"><button class="btn" id="go">Commencer les questions ▶</button><button class="btn sec" id="back">Retour au menu</button></div>`;
+  document.getElementById('go').onclick = newQuestion;
+  document.getElementById('back').onclick = menu;
+  window.scrollTo(0,0);
+}
+
+function dotsHtml(){
+  let s=''; for (let k=0;k<CFG.N;k++){ const r=cur.res[k]; s += `<span class="dot ${r===true?'ok':r===false?'ko':''} ${k===cur.i&&r===undefined?'cur':''}"></span>`; }
+  return s;
+}
+
+function newQuestion(){
+  const L=LEVELS[cur.lvl], q=L.gen(); cur.q=q; cur.answered=false;
+  app.innerHTML = `<div class="card">
+    <div class="qhead"><div><span class="badge">Étape ${cur.lvl+1}</span><b>${L.titre}</b></div><span style="color:var(--gris)">Question ${cur.i+1} / ${CFG.N}</span></div>
+    <div class="dots" id="dots">${dotsHtml()}</div>
+    <details class="mini"><summary>📘 Revoir le rappel</summary>${L.rappel()}</details>
+    <div class="fig">${q.fig}</div>
+    <p class="prompt">${q.prompt}</p>
+    ${q.kind==='mcq'
+      ? `<div class="opts">${q.opts.map((o,k)=>`<button class="opt" data-k="${k}">${o}</button>`).join('')}</div>`
+      : `<div class="numrow"><input id="num" inputmode="decimal" autocomplete="off" enterkeyhint="done"><span class="deg">°</span><button class="btn" id="val">Valider</button></div><div id="warn" style="color:var(--rouge);margin-top:6px"></div>`}
+    <div class="fb" id="fb"></div><div class="actions" id="act"></div></div>`;
+  if (q.kind==='mcq'){
+    app.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => {
+      if (cur.answered) return;
+      const k=+b.dataset.k, ok = k===q.good;
+      app.querySelectorAll('.opt').forEach(x => { x.disabled=true; if (+x.dataset.k===q.good) x.classList.add('ok'); });
+      if (!ok) b.classList.add('ko');
+      answer(ok,'');
+    }));
+  } else {
+    const inp=document.getElementById('num');
+    const go = () => {
+      if (cur.answered) return;
+      const v = parseFloat(inp.value.replace(',','.').replace('°','').trim());
+      if (isNaN(v)) { document.getElementById('warn').textContent='Écris un nombre.'; return; }
+      inp.disabled=true; document.getElementById('val').disabled=true;
+      const ok = Math.abs(v-q.ans)<1e-9;
+      answer(ok, ok ? '' : `La bonne réponse est <b>${q.ans}°</b>.<br>`);
+    };
+    document.getElementById('val').onclick = go;
+    inp.addEventListener('keydown', e => { if (e.key==='Enter') go(); });
+  }
+  window.scrollTo(0,0);
+}
+
+function answer(ok,extra){
+  cur.answered=true; cur.res.push(ok); if (ok) cur.score++;
+  const fb=document.getElementById('fb');
+  fb.className='fb '+(ok?'ok':'ko');
+  fb.innerHTML = (ok?'<b>✅ Bravo !</b><br>':'<b>❌ Pas tout à fait.</b><br>') + extra + cur.q.expl;
+  document.getElementById('dots').innerHTML = dotsHtml();
+  const last = cur.i===CFG.N-1;
+  document.getElementById('act').innerHTML = `<button class="btn" id="nx">${last?'Voir mon résultat':'Question suivante ▶'}</button>`;
+  document.getElementById('nx').onclick = () => { cur.i++; if (cur.i<CFG.N) newQuestion(); else endSeries(); };
+  setTimeout(() => document.getElementById('nx').scrollIntoView({behavior:'smooth',block:'center'}), 50);
+}
+
+function endSeries(){
+  const l=cur.lvl, ok = cur.score>=CFG.SEUIL;
+  if (ok){ prog.done[l]=true; prog.dates[l]=new Date().toLocaleString('fr-FR'); save(); }
+  const lastLevel = l===LEVELS.length-1;
+  app.innerHTML = `<div class="card center ${ok?'trophy':''}">
+    <div class="big">${ok?'🎉':'💪'}</div>
+    <h2 style="margin:0">${cur.score} / ${CFG.N}</h2>
+    <p>${ok ? `Étape ${l+1} validée !` + (lastLevel ? ' Tu as terminé toute l’activité.' : ' L’étape suivante est débloquée.')
+            : `Il faut au moins ${CFG.SEUIL} bonnes réponses. Relis le rappel et recommence une nouvelle série.`}</p>
+    <div class="row" style="justify-content:center">
+      ${ok ? (lastLevel ? `<button class="btn" id="m">Voir le menu</button>` : `<button class="btn" id="n">Étape suivante ▶</button><button class="btn sec" id="m">Menu</button>`)
+           : `<button class="btn" id="r">Recommencer l’étape</button><button class="btn sec" id="m">Menu</button>`}
+    </div></div>`;
+  const b = id => document.getElementById(id);
+  if (b('m')) b('m').onclick = menu;
+  if (b('n')) b('n').onclick = () => startLevel(l+1);
+  if (b('r')) b('r').onclick = () => startLevel(l);
+  window.scrollTo(0,0);
+}
+
+document.getElementById('home').onclick = menu;
+menu();
+</script>
+</body>
+</html>

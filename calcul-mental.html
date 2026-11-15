@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Calcul mental</title>
+<style>
+:root{
+  --bg:#f4f6fb; --text:#1e293b; --muted:#64748b; --white:#fff;
+  --blue:#2563eb; --blue-lt:#dbeafe; --green:#16a34a; --green-lt:#dcfce7;
+  --red:#dc2626; --red-lt:#fee2e2; --gray:#cbd5e1; --orange:#ea580c;
+  --dis-bg:#e8ecf2; --dis-fg:#a0acbd; --shadow:#d7dce6;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+  user-select:none;-webkit-user-select:none;touch-action:manipulation;overflow:hidden}
+.screen{position:fixed;inset:0;display:none;flex-direction:column;padding:clamp(10px,2vmin,24px)}
+.screen.on{display:flex}
+button{font:inherit;font-weight:700;border:0;border-radius:clamp(10px,1.8vmin,20px);
+  background:var(--white);color:var(--text);box-shadow:0 4px 0 var(--shadow);cursor:pointer;
+  transition:transform .06s, filter .06s}
+button:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 var(--shadow);filter:brightness(.88)}
+button:disabled{background:var(--dis-bg);color:var(--dis-fg);box-shadow:none;cursor:default}
+button.on{background:var(--blue);color:var(--white)}
+button.go{background:var(--green);color:var(--white)}
+button.soft{background:var(--blue-lt);color:var(--blue)}
+button.erase{background:var(--red-lt);color:var(--red)}
+button.quiet{color:var(--muted)}
+
+/* ---------- réglages */
+#setup{overflow-y:auto;align-items:center}
+#setup h1{margin:.2em 0 0;font-size:clamp(30px,6vmin,60px);text-align:center}
+#setup .sub{color:var(--muted);font-size:clamp(15px,2.4vmin,24px);margin:.2em 0 1em;text-align:center}
+.grid{display:grid;grid-template-columns:auto 1fr;gap:clamp(8px,1.6vmin,16px) clamp(10px,2vmin,22px);
+  align-items:center;width:min(1040px,100%)}
+.lbl{font-weight:700;font-size:clamp(14px,2.3vmin,22px)}
+.lbl.off{color:var(--dis-fg)}
+.row{display:flex;flex-wrap:wrap;gap:clamp(6px,1.2vmin,12px);align-items:center}
+.row button{min-height:clamp(44px,7vmin,62px);padding:0 clamp(10px,1.8vmin,20px);font-size:clamp(15px,2.4vmin,24px)}
+.row button.op{min-width:clamp(56px,9vmin,96px);font-size:clamp(26px,4.4vmin,42px)}
+.row button.tb{min-width:clamp(44px,6vmin,56px);padding:0}
+.val{min-width:3.6em;text-align:center;font-weight:700;font-size:clamp(20px,3.4vmin,32px)}
+.val.off{color:var(--dis-fg)}
+.hint{color:var(--muted);font-size:clamp(13px,2vmin,19px)}
+#start{margin-top:clamp(14px,3vmin,30px);min-width:min(440px,90vw);min-height:clamp(64px,11vmin,96px);font-size:clamp(28px,5vmin,44px)}
+#problem{margin-top:clamp(14px,3vmin,30px);color:var(--orange);font-weight:700;font-size:clamp(18px,3vmin,30px);min-height:1.5em}
+.foot{margin-top:auto;padding-top:12px;color:var(--muted);font-size:13px;text-align:center}
+
+/* ---------- partie */
+#quiz .top{display:flex;align-items:center;gap:12px}
+#quiz .top .h{flex:1;font-weight:700;color:var(--muted);font-size:clamp(16px,3vmin,30px)}
+#quiz .top button{padding:.4em 1.2em;font-size:clamp(15px,2.4vmin,24px)}
+.bar{height:clamp(6px,1vmin,10px);background:var(--gray);border-radius:99px;margin:10px 0 14px;overflow:hidden}
+.bar>div{height:100%;width:0;background:var(--blue);border-radius:99px;transition:width .25s}
+.play{flex:1;display:flex;gap:clamp(16px,3vmin,40px);min-height:0}
+.ask{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0}
+#q{font-weight:700;white-space:nowrap;line-height:1.1}
+#box{margin-top:3vmin;width:min(460px,90%);height:clamp(70px,18vmin,170px);border:3px solid var(--gray);
+  border-radius:clamp(14px,2.6vmin,28px);background:var(--white);display:flex;align-items:center;justify-content:center;
+  font-weight:700;white-space:nowrap;overflow:hidden}
+#box.ok{background:var(--green-lt);color:var(--green)}
+#box.ko{background:var(--red-lt);color:var(--red)}
+#box.empty{color:var(--gray)}
+#timer{width:min(460px,90%);margin-top:16px;display:none}
+#timer .t{height:14px;background:var(--gray);border-radius:99px;overflow:hidden}
+#timer .t>div{height:100%;background:var(--green);border-radius:99px}
+#timer .s{text-align:center;font-weight:700;margin-top:4px;font-size:clamp(14px,2.2vmin,22px)}
+#fb{margin-top:3vmin;min-height:1.3em;font-weight:700;text-align:center;font-size:clamp(20px,4.4vmin,50px)}
+#fb.score{font-weight:400;color:var(--muted);font-size:clamp(16px,3vmin,30px)}
+.pad{width:min(42vw,560px);display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(5,1fr);gap:clamp(8px,1.4vmin,14px)}
+.pad button{font-size:clamp(28px,6.5vmin,60px)}
+.pad button.erase{font-size:clamp(15px,3vmin,30px)}
+.pad #ok{grid-column:1/4;font-size:clamp(22px,4.4vmin,40px)}
+@media (orientation:portrait){
+  .play{flex-direction:column}
+  .pad{width:100%;height:50vh}
+}
+
+/* ---------- résultat */
+#result{align-items:center;overflow-y:auto;text-align:center}
+#result h2{margin:.3em 0 0;font-size:clamp(28px,5vmin,48px)}
+#big{font-weight:700;font-size:clamp(50px,13vmin,120px);line-height:1.15}
+#msg{font-weight:700;font-size:clamp(20px,4vmin,36px)}
+#info{color:var(--muted);font-size:clamp(14px,2.2vmin,22px);margin:.6em 0 1em}
+#errs h3{margin:.4em 0;font-size:clamp(18px,3vmin,28px)}
+#errs ul{list-style:none;padding:0;margin:0;columns:auto 20em;column-gap:2em;color:var(--red);font-size:clamp(15px,2.5vmin,24px)}
+#errs li{padding:.15em 0;break-inside:avoid}
+.btns{display:flex;gap:20px;margin-top:auto;padding-top:20px;flex-wrap:wrap;justify-content:center}
+.btns button{min-width:min(300px,42vw);min-height:clamp(64px,11vmin,100px);font-size:clamp(24px,4.2vmin,38px)}
+</style>
+</head>
+<body>
+
+<!-- ======================= RÉGLAGES ======================= -->
+<section id="setup" class="screen on">
+  <h1>Calcul mental</h1>
+  <div class="sub">Tables, opérations et nombres décimaux</div>
+  <div class="grid">
+    <div class="lbl">Opérations</div>
+    <div class="row" id="ops"></div>
+
+    <div class="lbl" id="lTables">Tables (× ÷)</div>
+    <div class="row" id="tables"></div>
+
+    <div class="lbl" id="lMax">Multiplié jusqu'à</div>
+    <div class="row" id="maxF"></div>
+
+    <div class="lbl" id="lRange">Nombres (+ −)</div>
+    <div class="row" id="range"></div>
+
+    <div class="lbl">Décimales</div>
+    <div class="row" id="dec"></div>
+
+    <div class="lbl">Mode</div>
+    <div class="row" id="mode"></div>
+
+    <div class="lbl" id="lCount">Questions</div>
+    <div class="row" id="count"></div>
+  </div>
+  <button id="start" class="go">Commencer</button>
+  <div id="problem"></div>
+  <div class="foot">Au clavier : chiffres, virgule, Entrée pour valider, Échap pour arrêter</div>
+</section>
+
+<!-- ======================= PARTIE ======================= -->
+<section id="quiz" class="screen">
+  <div class="top"><div class="h" id="head"></div><button class="quiet" id="stop">Arrêter</button></div>
+  <div class="bar"><div id="prog"></div></div>
+  <div class="play">
+    <div class="ask">
+      <div id="q"></div>
+      <div id="box"></div>
+      <div id="timer"><div class="t"><div id="tbar"></div></div><div class="s" id="tlbl"></div></div>
+      <div id="fb"></div>
+    </div>
+    <div class="pad" id="pad"></div>
+  </div>
+</section>
+
+<!-- ======================= RÉSULTAT ======================= -->
+<section id="result" class="screen">
+  <h2>Résultat</h2>
+  <div id="big"></div>
+  <div id="msg"></div>
+  <div id="info"></div>
+  <div id="errs"></div>
+  <div class="btns">
+    <button class="go" id="again">Rejouer</button>
+    <button id="toSetup">Réglages</button>
+  </div>
+</section>
+
+<script>
+"use strict";
+/* ------------------------------------------------------------------ nombres
+   Tous les nombres sont en millièmes (entiers) : 1,25 → 1250. */
+const OPS = ["×","÷","+","−"];
+const RANGES = [10,20,100,1000];
+const MODES = ["Libre","Temps par question","Contre la montre"];
+
+function fmt(v){
+  let neg = v < 0; if (neg) v = -v;
+  let s = String(Math.floor(v/1000)), f = v % 1000;
+  if (f) s += "," + String(1000+f).slice(1).replace(/0+$/,"");
+  return (neg ? "-" : "") + s;
+}
+function parse(s){
+  s = s.trim().replace(".",",");
+  if (!s || s === ",") return null;
+  const p = s.split(",");
+  if (p.length > 2 || !/^\d*$/.test(p[0])) return null;
+  let v = Number(p[0] || 0) * 1000;
+  if (p.length === 2){
+    let f = p[1];
+    if (!/^\d*$/.test(f)) return null;
+    if (f.length > 3){ if (/[1-9]/.test(f.slice(3))) return null; f = f.slice(0,3); }
+    v += Number((f + "000").slice(0,3));
+  }
+  return v;
+}
+const rnd = n => Math.floor(Math.random()*n);
+function shuffle(a){ for (let i=a.length-1;i>0;i--){ const j=rnd(i+1); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function durLabel(s){ return s < 60 ? s+" s" : (s%60 ? Math.floor(s/60)+" min "+(s%60)+" s" : (s/60)+" min"); }
+function clock(ms){ const s = Math.max(0, Math.ceil(ms/1000)); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+
+/* ------------------------------------------------------------------ réglages */
+const DEF = {ops:[true,false,false,false], tables:Array(13).fill(false), maxF:10, range:20, dec:0, mode:0, nbQ:10, secQ:10, dur:60};
+let st = structuredClone(DEF);
+try {
+  const saved = JSON.parse(localStorage.getItem("calcmental") || "null");
+  if (saved && Array.isArray(saved.ops) && Array.isArray(saved.tables)) st = Object.assign(st, saved);
+} catch(e) {}
+function save(){ try { localStorage.setItem("calcmental", JSON.stringify(st)); } catch(e) {} }
+
+const usesTables = () => st.ops[0] || st.ops[1];
+const usesRange  = () => st.ops[2] || st.ops[3];
+const selTables  = () => st.tables.map((on,i)=>on?i:0).filter(Boolean);
+function problem(){
+  if (!st.ops.some(Boolean)) return "Choisis au moins une opération";
+  if (usesTables() && !selTables().length) return "Choisis au moins une table";
+  return "";
+}
+
+const $ = id => document.getElementById(id);
+function mk(parent, label, cls, onclick, disabled){
+  const b = document.createElement("button");
+  b.textContent = label; if (cls) b.className = cls;
+  b.disabled = !!disabled;
+  b.addEventListener("click", () => { onclick(); save(); renderSetup(); });
+  parent.appendChild(b); return b;
+}
+function stepper(parent, val, canMinus, minus, canPlus, plus, enabled){
+  mk(parent, "−", "", minus, !enabled || !canMinus);
+  const v = document.createElement("span"); v.className = "val" + (enabled ? "" : " off"); v.textContent = val;
+  parent.appendChild(v);
+  mk(parent, "+", "", plus, !enabled || !canPlus);
+}
+
+function renderSetup(){
+  const T = usesTables(), R = usesRange();
+  for (const id of ["ops","tables","maxF","range","dec","mode","count"]) $(id).innerHTML = "";
+  OPS.forEach((o,i) => mk($("ops"), o, "op"+(st.ops[i]?" on":""), () => st.ops[i] = !st.ops[i]));
+
+  $("lTables").className = "lbl" + (T?"":" off");
+  for (let t=1;t<=12;t++) mk($("tables"), t, "tb"+(st.tables[t]?" on":""), () => st.tables[t] = !st.tables[t], !T);
+  const all = selTables().length === 12;
+  mk($("tables"), all ? "Aucune" : "Toutes", "soft", () => { for (let t=1;t<=12;t++) st.tables[t] = !all; }, !T);
+
+  $("lMax").className = "lbl" + (T?"":" off");
+  stepper($("maxF"), "× "+st.maxF, st.maxF>5, ()=>st.maxF--, st.maxF<12, ()=>st.maxF++, T);
+
+  $("lRange").className = "lbl" + (R?"":" off");
+  RANGES.forEach(v => mk($("range"), "jusqu'à "+v, st.range===v?"on":"", () => st.range = v, !R));
+
+  for (let d=0; d<=3; d++) mk($("dec"), d ? d : "Aucune", st.dec===d?"on":"", () => st.dec = d);
+  const h = document.createElement("span"); h.className = "hint"; h.textContent = "chiffres après la virgule"; $("dec").appendChild(h);
+
+  MODES.forEach((m,i) => mk($("mode"), m, st.mode===i?"on":"", () => st.mode = i));
+
+  const c = $("count"), nq = st.mode !== 2;
+  $("lCount").className = "lbl" + (nq?"":" off");
+  stepper(c, st.nbQ, st.nbQ>5, ()=>st.nbQ-=5, st.nbQ<100, ()=>st.nbQ+=5, nq);
+  if (st.mode === 1){
+    const l = document.createElement("span"); l.className = "lbl"; l.style.marginLeft = "1.2em"; l.textContent = "Par question"; c.appendChild(l);
+    stepper(c, durLabel(st.secQ), st.secQ>3, ()=>st.secQ -= st.secQ>10?5:1, st.secQ<60, ()=>st.secQ += st.secQ>=10?5:1, true);
+  } else if (st.mode === 2){
+    const l = document.createElement("span"); l.className = "lbl"; l.style.marginLeft = "1.2em"; l.textContent = "Durée"; c.appendChild(l);
+    stepper(c, durLabel(st.dur), st.dur>30, ()=>st.dur-=30, st.dur<600, ()=>st.dur+=30, true);
+  }
+
+  const p = problem();
+  $("problem").textContent = p;
+  $("start").style.display = p ? "none" : "";
+}
+
+/* ------------------------------------------------------------------ questions */
+let G; // partie en cours
+function newGen(){
+  const pools = [[],[]];
+  function draw(op){
+    if (!pools[op].length){
+      for (const t of selTables()) for (let m=1;m<=G.s.maxF;m++) pools[op].push([t,m]);
+      shuffle(pools[op]);
+    }
+    return pools[op].pop();
+  }
+  function decK(){ const d = G.s.dec; if (!d || rnd(5)===0) return 0; return 1 + rnd(d); }
+  function one(){
+    const ops = G.s.ops.map((on,i)=>on?i:-1).filter(i=>i>=0);
+    const op = ops[rnd(ops.length)], k = decK(), sc = 1000 / 10**k;
+    const q = {op};
+    if (op === 0){ const [t,m] = draw(0); q.a=t*1000; q.b=m*sc; q.r=t*m*sc; if (rnd(2)) [q.a,q.b]=[q.b,q.a]; }
+    else if (op === 1){ const [t,m] = draw(1); q.a=t*m*sc; q.b=t*1000; q.r=m*sc; }
+    else if (op === 2){ const mx = G.s.range*10**k, s = 2+rnd(mx-1), a = 1+rnd(s-1); q.a=a*sc; q.b=(s-a)*sc; q.r=s*sc; }
+    else { const mx = G.s.range*10**k, a = 2+rnd(mx-1), b = 1+rnd(a-1); q.a=a*sc; q.b=b*sc; q.r=(a-b)*sc; }
+    return q;
+  }
+  let last = null;
+  return () => {
+    let q = one();
+    for (let i=0; i<10 && last && q.op===last.op && q.a===last.a && q.b===last.b; i++) q = one();
+    return last = q;
+  };
+}
+const qText = q => fmt(q.a)+" "+OPS[q.op]+" "+fmt(q.b);
+const qFull = q => qText(q)+" = "+fmt(q.r);
+
+/* ------------------------------------------------------------------ partie */
+function show(id){ for (const s of document.querySelectorAll(".screen")) s.classList.toggle("on", s.id===id); }
+
+function startQuiz(){
+  if (problem()) return;
+  G = {s: structuredClone(st), idx:0, answered:0, score:0, mistakes:[], start:Date.now(), fb:false, ans:""};
+  G.next = newGen();
+  if (G.s.mode === 2) G.end = G.start + G.s.dur*1000;
+  clearTimeout(G.t); clearInterval(tick.id);
+  newQuestion();
+  show("quiz");
+  if (G.s.mode) tick.id = setInterval(tick, 100);
+  renderQuiz();
+}
+function newQuestion(){
+  G.q = G.next(); G.ans = ""; G.fb = false; G.timedOut = false;
+  if (G.s.mode === 1) G.deadline = Date.now() + G.s.secQ*1000;
+}
+function delay(ok){ return G.s.mode === 2 ? (ok?450:1600) : (ok?900:2300); }
+function validate(){
+  if (!G || G.fb || !G.ans) return;
+  const v = parse(G.ans);
+  G.ok = v !== null && v === G.q.r;
+  G.answered++;
+  if (G.ok) G.score++; else G.mistakes.push(qFull(G.q)+"  (toi : "+G.ans+")");
+  G.fb = true;
+  G.t = setTimeout(nextQuestion, delay(G.ok));
+  renderQuiz();
+}
+function nextQuestion(){
+  clearTimeout(G.t);
+  if (!$("quiz").classList.contains("on")) return;
+  G.idx++;
+  if (G.s.mode !== 2 && G.idx >= G.s.nbQ) return finish();
+  newQuestion(); renderQuiz();
+}
+function tick(){
+  if (!G || !$("quiz").classList.contains("on")){ clearInterval(tick.id); return; }
+  const now = Date.now();
+  if (G.s.mode === 2 && now >= G.end) return finish();
+  if (G.s.mode === 1 && !G.fb && now >= G.deadline){
+    G.answered++; G.ok = false; G.timedOut = true; G.fb = true;
+    G.mistakes.push(qFull(G.q)+"  (temps écoulé)");
+    G.t = setTimeout(nextQuestion, delay(false));
+  }
+  renderQuiz();
+}
+function stopQuiz(){ clearTimeout(G && G.t); clearInterval(tick.id); show("setup"); renderSetup(); }
+function key(k){
+  if (!G || G.fb) return;
+  if (k === "Effacer") G.ans = G.ans.slice(0,-1);
+  else if (k === ","){
+    if (G.s.dec && !G.ans.includes(",") && G.ans.length < 9) G.ans = (G.ans || "0") + ",";
+  } else {
+    const i = G.ans.indexOf(",");
+    if (i >= 0 && G.ans.length - i - 1 >= 3) return;
+    if (G.ans.length < 9){ if (G.ans === "0") G.ans = ""; G.ans += k; }
+  }
+  renderQuiz();
+}
+
+// pavé
+const KEYS = ["7","8","9","4","5","6","1","2","3",",","0","Effacer"];
+const keyBtns = {};
+for (const k of KEYS){
+  const b = document.createElement("button");
+  b.textContent = k; if (k === "Effacer") b.className = "erase";
+  b.addEventListener("pointerdown", e => { e.preventDefault(); if (!b.disabled) key(k); });
+  $("pad").appendChild(b); keyBtns[k] = b;
+}
+const okBtn = document.createElement("button");
+okBtn.id = "ok"; okBtn.className = "go"; okBtn.textContent = "Valider";
+okBtn.addEventListener("pointerdown", e => { e.preventDefault(); if (!okBtn.disabled) validate(); });
+$("pad").appendChild(okBtn);
+
+function fitText(el, maxPx, boxW, len){
+  el.style.fontSize = Math.max(16, Math.min(maxPx, boxW / (0.62*Math.max(1,len)))) + "px";
+}
+function renderQuiz(){
+  const now = Date.now(), s = G.s;
+  let head = "Question "+(G.idx+1)+" / "+s.nbQ, done = G.idx / s.nbQ, barCol = "var(--blue)";
+  if (s.mode === 2){
+    const left = G.end - now;
+    head = "Temps restant " + clock(left) + "   ·   Score : " + G.score;
+    done = 1 - left/(s.dur*1000);
+    if (left < 10000) barCol = "var(--orange)";
+  }
+  $("head").textContent = head;
+  $("prog").style.width = Math.min(100, Math.max(0, done*100)) + "%";
+  $("prog").style.background = barCol;
+
+  const ask = document.querySelector(".ask"), aw = ask.clientWidth || 500;
+  const qt = qText(G.q);
+  $("q").textContent = qt;
+  fitText($("q"), Math.min(window.innerHeight*0.16, 140), aw*0.95, qt.length);
+
+  const box = $("box");
+  box.className = G.fb ? (G.ok ? "ok" : "ko") : (G.ans ? "" : "empty");
+  const disp = G.timedOut ? "—" : (G.ans || "?");
+  box.textContent = disp;
+  fitText(box, box.clientHeight*0.72 || 80, (box.clientWidth || 300)*0.9, disp.length);
+
+  const tm = $("timer");
+  if (s.mode === 1){
+    tm.style.display = "block";
+    const left = G.fb ? 0 : G.deadline - now, f = Math.max(0, Math.min(1, left/(s.secQ*1000)));
+    const c = f < .25 ? "var(--red)" : f < .5 ? "var(--orange)" : "var(--green)";
+    $("tbar").style.width = (f*100)+"%"; $("tbar").style.background = c;
+    $("tlbl").textContent = G.fb ? "" : clock(left); $("tlbl").style.color = c;
+  } else tm.style.display = "none";
+
+  const fb = $("fb");
+  if (G.fb && G.ok){ fb.className = ""; fb.style.color = "var(--green)"; fb.textContent = "Bravo !"; }
+  else if (G.fb){ fb.className = ""; fb.style.color = "var(--red)"; fb.textContent = (G.timedOut ? "Temps écoulé !  " : "Non…  ") + qFull(G.q); }
+  else if (s.mode !== 2){ fb.className = "score"; fb.style.color = ""; fb.textContent = "Score : " + G.score; }
+  else fb.textContent = "";
+
+  for (const k of KEYS) keyBtns[k].disabled = G.fb || (k === "," && !s.dec);
+  okBtn.disabled = G.fb || !G.ans;
+}
+
+function finish(){
+  clearTimeout(G.t); clearInterval(tick.id);
+  const s = G.s, n = G.answered;
+  G.elapsed = s.mode === 2 ? s.dur*1000 : Date.now() - G.start;
+  const pct = n ? 100*G.score/n : 0;
+  let col = "var(--green)", msg = "Très bien !";
+  if (!n){ col = "var(--muted)"; msg = "Aucune réponse"; }
+  else if (pct === 100) msg = "Parfait, aucune erreur !";
+  else if (pct >= 80) {}
+  else if (pct >= 50){ col = "var(--orange)"; msg = "Pas mal, continue !"; }
+  else { col = "var(--red)"; msg = "Encore un peu d'entraînement !"; }
+  const pl = x => x > 1 ? "s" : "";
+  $("big").textContent = s.mode === 2 ? G.score+" bonne"+pl(G.score)+" réponse"+pl(G.score) : G.score+" / "+n;
+  $("big").style.color = col;
+  $("msg").textContent = s.mode === 2 ? "en "+durLabel(s.dur)+", sur "+n+" essai"+pl(n)+" — "+msg : msg;
+  $("msg").style.color = col;
+
+  const parts = [s.ops.map((o,i)=>o?OPS[i]:"").filter(Boolean).join(" ")];
+  if (s.ops[0]||s.ops[1]) parts.push("tables "+s.tables.map((o,i)=>o?i:0).filter(Boolean).join("-")+" (×"+s.maxF+")");
+  if (s.ops[2]||s.ops[3]) parts.push("jusqu'à "+s.range);
+  if (s.dec) parts.push(s.dec+" déc.");
+  parts.push(s.mode===1 ? s.secQ+" s / question" : s.mode===2 ? "chrono "+durLabel(s.dur) : "libre");
+  if (s.mode !== 2 && n){
+    const sec = Math.round(G.elapsed/1000);
+    parts.push(Math.floor(sec/60)+" min "+String(sec%60).padStart(2,"0")+" s ("+(G.elapsed/1000/n).toFixed(1).replace(".",",")+" s par question)");
+  }
+  $("info").textContent = parts.join("  ·  ");
+
+  const e = $("errs"); e.innerHTML = "";
+  if (G.mistakes.length){
+    const h = document.createElement("h3"); h.textContent = "À revoir :"; e.appendChild(h);
+    const ul = document.createElement("ul");
+    for (const m of G.mistakes){ const li = document.createElement("li"); li.textContent = m; ul.appendChild(li); }
+    e.appendChild(ul);
+  }
+  show("result");
+}
+
+/* ------------------------------------------------------------------ événements */
+$("start").addEventListener("click", startQuiz);
+$("stop").addEventListener("click", stopQuiz);
+$("again").addEventListener("click", startQuiz);
+$("toSetup").addEventListener("click", () => { show("setup"); renderSetup(); });
+
+document.addEventListener("keydown", e => {
+  const on = id => $(id).classList.contains("on");
+  if (on("quiz")){
+    if (/^[0-9]$/.test(e.key)) key(e.key);
+    else if (e.key === "," || e.key === "." || e.key === "Decimal") key(",");
+    else if (e.key === "Backspace") key("Effacer");
+    else if (e.key === "Enter"){ if (G.fb) nextQuestion(); else validate(); }
+    else if (e.key === "Escape") stopQuiz();
+    else return;
+    e.preventDefault();
+  } else if (on("setup") && e.key === "Enter"){ e.preventDefault(); startQuiz(); }
+  else if (on("result")){
+    if (e.key === "Enter"){ e.preventDefault(); startQuiz(); }
+    else if (e.key === "Escape"){ show("setup"); renderSetup(); }
+  }
+});
+window.addEventListener("resize", () => { if (G && $("quiz").classList.contains("on")) renderQuiz(); });
+
+renderSetup();
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+:root { --fond:#f4f6fb; --texte:#1f2937; --gris:#6b7280; --bord:#e5e7eb; --accent:#1f4e79; }
+* { box-sizing:border-box; }
+body { margin:0; font-family:-apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background:var(--fond); color:var(--texte); line-height:1.5; }
+a { color:var(--accent); }
+.contenu { max-width:960px; margin:0 auto; padding:0 18px; }
+.entete { background:#1f4e79; }
+.entete .contenu { padding-top:14px; padding-bottom:14px; }
+.marque { color:#fff; text-decoration:none; font-weight:700; font-size:1.25rem; letter-spacing:.2px; }
+main { padding-top:14px; padding-bottom:40px; }
+.fil { font-size:.9rem; color:var(--gris); margin-bottom:6px; }
+.fil a { color:var(--gris); text-decoration:none; } .fil a:hover { text-decoration:underline; }
+.titre-page { display:flex; justify-content:space-between; align-items:center; gap:16px; margin:6px 0 16px; }
+h1 { margin:0; font-size:1.7rem; color:var(--accent); }
+.qr-page { display:flex; flex-direction:column; align-items:center; font-size:.75rem; color:var(--gris); }
+.qr-page .qr { width:84px; }
+.intro { color:var(--gris); margin-top:0; }
+.onglets { display:flex; gap:6px; flex-wrap:wrap; margin:0 0 18px; border-bottom:2px solid var(--bord); }
+.onglets a { padding:10px 14px; text-decoration:none; color:var(--gris); font-weight:600; border-bottom:3px solid transparent; margin-bottom:-2px; }
+.onglets a.actif, .onglets a:hover { color:var(--accent); border-bottom-color:var(--accent); }
+.grille { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:14px; }
+.grille.mois { grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); }
+.carte-classe, .carte-section, .carte-mois { display:flex; flex-direction:column; gap:4px; background:#fff; border-radius:14px; padding:20px;
+  text-decoration:none; color:var(--texte); box-shadow:0 1px 3px rgba(0,0,0,.06); border-top:5px solid var(--accent); transition:transform .12s, box-shadow .12s; }
+.carte-classe:hover, .carte-section:hover, .carte-mois:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,.08); }
+.carte-classe .nom { font-size:1.45rem; font-weight:700; color:var(--accent); }
+.carte-section .ic { font-size:1.8rem; } .carte-section .nom, .carte-mois .nom { font-size:1.15rem; font-weight:700; }
+.info { color:var(--gris); font-size:.9rem; }
+table.docs { width:100%; border-collapse:collapse; background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+.docs th { text-align:left; background:var(--accent); color:#fff; padding:10px 14px; font-size:.9rem; }
+.docs td { padding:12px 14px; border-top:1px solid var(--bord); vertical-align:middle; }
+.docs a.doc { font-weight:600; font-size:1.05rem; text-decoration:none; } .docs a.doc:hover { text-decoration:underline; }
+.code { color:var(--gris); font-size:.8rem; font-family:ui-monospace, Consolas, monospace; }
+.date { white-space:nowrap; color:var(--gris); }
+.cqr { width:110px; }
+button.qr { display:block; width:96px; padding:0; border:none; background:none; cursor:zoom-in; }
+button.qr svg { display:block; width:100%; height:auto; }
+.vide { background:#fff; border-radius:14px; padding:22px; color:var(--gris); text-align:center; }
+.pagemois { display:flex; justify-content:space-between; margin-top:16px; }
+.pagemois a { text-decoration:none; font-weight:600; }
+.pied { color:var(--gris); font-size:.85rem; padding-top:10px; padding-bottom:30px; border-top:1px solid var(--bord); }
+#zoom { position:fixed; inset:0; background:rgba(15,23,42,.75); display:flex; align-items:center; justify-content:center; z-index:10; padding:16px; }
+#zoom[hidden] { display:none; }
+.zoom-carte { background:#fff; border-radius:16px; padding:24px; text-align:center; width:min(92vw, 560px); }
+#zoom-qr svg { width:100%; height:auto; }
+#zoom-titre { font-size:1.3rem; font-weight:700; margin:10px 0 2px; }
+#zoom-url { color:var(--gris); font-family:ui-monospace, Consolas, monospace; font-size:.85rem; word-break:break-all; margin:0 0 12px; }
+#zoom-fermer { font-size:1rem; padding:10px 22px; border:none; border-radius:10px; background:#1f4e79; color:#fff; cursor:pointer; }
+@media (max-width:560px) {
+  h1 { font-size:1.35rem; } .qr-page { display:none; }
+  .docs .date { display:none; } .docs th:nth-child(2) { display:none; }
+  .cqr { width:76px; } button.qr { width:64px; }
+  .onglets { gap:0; flex-wrap:nowrap; overflow-x:auto; } .onglets a { padding:10px 8px; font-size:.9rem; white-space:nowrap; }
+}

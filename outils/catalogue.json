@@ -1,0 +1,12 @@
+{
+  "site": {
+    "titre": "Maths à l'EIDE",
+    "adresse": "https://mathseide.github.io/quiz/"
+  },
+  "classes": ["S3FR1", "S4ma4FRA", "S5ma6FRA", "S6ma5FRB", "S7ma3FRA"],
+  "mois": ["2026-11", "2026-12", "2027-01", "2027-02", "2027-03", "2027-04", "2027-05", "2027-06"],
+  "documents": [
+    { "code": "S6ma5FRB-Quiz-261107", "titre": "Généralités sur les fonctions", "fichier": "fonctions.html" },
+    { "code": "S7ma3FRA-Quiz-261111", "titre": "Calculs de base et exponentielle", "fichier": "appui-s7-exp.html" }
+  ]
+}

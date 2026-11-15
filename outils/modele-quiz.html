@@ -29,6 +29,9 @@
   .enonce { font-size:1.3rem; line-height:1.5; margin:0 0 18px; }
   .pts { font-size:.9rem; color:#666; }
   .choix { display:block; width:100%; text-align:left; font-size:1.15rem; padding:16px 18px; margin:10px 0; border:2px solid #ccd3dc; border-radius:10px; background:#fff; cursor:pointer; color:#1a1a1a; }
+  @media (max-width:480px) { .btn { padding:12px 16px; font-size:1rem; white-space:nowrap; } .wrap { padding:16px 12px 40px; } }
+  .symboles { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .sym { min-width:52px; font-size:1.3rem; padding:10px 14px; border:2px solid #ccd3dc; border-radius:10px; background:#fff; color:#1a1a1a; }
   .choix.sel { border-color:var(--bleu); background:#e8f0f9; font-weight:600; }
   .recap li { margin:6px 0; }
   .ok { color:var(--vert); } .ko { color:var(--rouge); }
@@ -255,8 +258,9 @@ function ecranQuestion(){
     zone = `<button class="choix ${r===true?"sel":""}" data-v="true">Vrai</button>
             <button class="choix ${r===false?"sel":""}" data-v="false">Faux</button>`;
   } else {
-    const mode = q.type === "nombre" ? 'inputmode="decimal"' : "";
-    zone = `<input type="text" id="saisie" ${mode} autocomplete="off" placeholder="Ta réponse" value="${r===null?"":esc(r)}">`;
+    const symboles = q.type === "nombre" ? ["/", "−", ","] : ["/", "−", ",", "x", "^", "(", ")"];
+    zone = `<input type="text" id="saisie" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Ta réponse" value="${r===null?"":esc(r)}">
+            <div class="symboles">${symboles.map(c => `<button type="button" class="sym" data-c="${c}">${c}</button>`).join("")}</div>`;
   }
   const pts = arrondi(q.points);
   ecran.innerHTML = `
@@ -275,6 +279,16 @@ function ecranQuestion(){
   });
   const saisie = $("#saisie");
   if (saisie) saisie.oninput = () => { reponses[idx] = saisie.value.trim() === "" ? null : saisie.value; sauver(); };
+  ecran.querySelectorAll(".sym").forEach(bt => {
+    bt.onmousedown = e => e.preventDefault();          // garde le clavier ouvert
+    bt.onclick = () => {
+      const c = bt.dataset.c === "−" ? "-" : bt.dataset.c;
+      const d = saisie.selectionStart ?? saisie.value.length, f = saisie.selectionEnd ?? d;
+      saisie.value = saisie.value.slice(0, d) + c + saisie.value.slice(f);
+      saisie.setSelectionRange(d + c.length, d + c.length); saisie.focus();
+      saisie.oninput();
+    };
+  });
   $("#prec").onclick = () => { idx--; ecranQuestion(); };
   $("#suiv").onclick = () => { if (idx < questions.length-1) { idx++; ecranQuestion(); } else ecranVerification(); };
   maths(ecran);

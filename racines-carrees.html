@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Racines carrées</title>
+<style>
+:root{--bg:#f2f4fa;--ink:#1c2242;--muted:#6a7096;--card:#fff;--pri:#3d5afe;--pri2:#2a3fd1;--ok:#1fa463;--ko:#e5484d;--warn:#e9a100;--line:#e3e6f1}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+input,textarea,select{user-select:text;-webkit-user-select:text;font-family:inherit}
+button{font-family:inherit;color:inherit;cursor:pointer}
+#app{min-height:100vh;display:flex;flex-direction:column}
+.m{font-family:"Cambria Math",Cambria,"STIX Two Math","Times New Roman",serif}
+/* ---------- math ---------- */
+.rad{position:relative;display:inline-block;padding-left:.6em;margin-left:.04em;line-height:1;white-space:nowrap}
+.rad>.rs{position:absolute;left:0;top:0;bottom:-.1em;width:.62em;height:calc(100% + .1em);overflow:visible}
+.rad>.rs path{fill:none;stroke:currentColor;stroke-width:.075em;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.rad>.rc{display:inline-block;border-top:.075em solid currentColor;padding:.1em .1em 0 .05em;line-height:1.08}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 .08em;line-height:1.05}
+.fr>.fn{border-bottom:.065em solid currentColor;padding:0 .14em .06em}
+.fr>.fd{padding:.06em .14em 0}
+.fr .fr{font-size:.9em}
+sup{font-size:.6em;line-height:0}
+.ph{color:#b7bdd8}
+.caret{display:inline-block;width:.06em;height:1em;background:var(--pri);vertical-align:-.12em;margin-left:.04em;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+/* ---------- layout ---------- */
+.top{display:flex;align-items:center;gap:12px;padding:10px 18px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.brand{font-weight:800;font-size:22px;display:flex;align-items:center;gap:12px;background:none;border:0;padding:4px}
+.logo{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,#3d5afe,#7c5cff);color:#fff;display:grid;place-items:center;font-size:24px}
+.spacer{flex:1}
+.chip{display:inline-flex;align-items:center;gap:8px;background:#eef1ff;color:var(--pri2);border-radius:999px;padding:10px 16px;font-weight:700;font-size:17px;border:0;min-height:48px}
+.ibtn{width:52px;height:52px;border-radius:14px;border:2px solid var(--line);background:#fff;font-size:24px;display:grid;place-items:center}
+.wrap{max-width:1320px;margin:0 auto;padding:22px;width:100%}
+h1{font-size:32px;margin:6px 0 4px}
+h2{font-size:24px;margin:18px 0 10px}
+.sub{color:var(--muted);font-size:18px;margin:0 0 18px}
+.btn{border:0;border-radius:16px;padding:14px 24px;font-size:20px;font-weight:700;background:var(--pri);color:#fff;min-height:58px;display:inline-flex;align-items:center;justify-content:center;gap:10px}
+.btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line)}
+.btn.green{background:var(--ok)}
+.btn.red{background:var(--ko)}
+.btn.small{min-height:44px;padding:8px 16px;font-size:17px;border-radius:12px}
+.btn:active,.tile:active,.key:active,.opt:active,.chip:active,.ibtn:active{transform:scale(.97)}
+.btn[disabled]{opacity:.4}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.card{background:#fff;border-radius:22px;padding:22px;box-shadow:0 2px 0 var(--line),0 10px 26px rgba(30,40,90,.06)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.tile{background:#fff;border:0;border-radius:22px;padding:18px 18px 16px;text-align:left;box-shadow:0 2px 0 var(--line),0 10px 24px rgba(30,40,90,.06);border-top:8px solid var(--c);min-height:178px;display:flex;flex-direction:column;gap:6px;position:relative}
+.ticon{font-size:30px;color:var(--c);min-height:58px;display:flex;align-items:center;font-weight:600}
+.ttitle{font-size:21px;font-weight:800}
+.tdesc{font-size:15px;color:var(--muted);line-height:1.35}
+.lv{display:flex;gap:6px;margin-top:auto;padding-top:8px}
+.lv span{font-size:13px;font-weight:800;border-radius:8px;padding:3px 8px;background:#eef0f6;color:#9aa0bd}
+.lv span.g{background:#dff5e8;color:#138a50}.lv span.o{background:#fff1d6;color:#a86e00}.lv span.r{background:#fde4e4;color:#b42f33}
+/* config */
+.cfg{display:grid;grid-template-columns:1.1fr 1fr;gap:20px}
+@media (max-width:950px){.cfg{grid-template-columns:1fr}}
+.choice{display:grid;gap:12px}
+.ch{border:3px solid var(--line);background:#fff;border-radius:18px;padding:14px 18px;text-align:left;min-height:72px}
+.ch b{font-size:20px;display:block}
+.ch span{color:var(--muted);font-size:15px}
+.ch.on{border-color:var(--pri);background:#f1f4ff}
+.lesson{font-size:19px;line-height:1.75}
+.lesson .ex{background:#f5f7ff;border-radius:14px;padding:10px 16px;margin:10px 0;font-size:24px}
+.lesson .warn{background:#fff6e2;border-radius:14px;padding:10px 16px;margin:10px 0}
+.sqtab{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;font-size:18px}
+.sqtab div{background:#f5f7ff;border-radius:10px;padding:6px;text-align:center}
+/* game */
+.gbar{display:flex;align-items:center;gap:14px;padding:12px 20px;background:#fff;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.gbar .tt{font-weight:800;font-size:19px}
+.prog{flex:1;min-width:120px;height:14px;background:#edf0f8;border-radius:99px;overflow:hidden}
+.prog>div{height:100%;background:linear-gradient(90deg,#3d5afe,#7c5cff);border-radius:99px;transition:width .3s}
+.stat{font-size:20px;font-weight:800;padding:6px 14px;border-radius:12px;background:#f2f4fa;white-space:nowrap}
+.stat.t{font-variant-numeric:tabular-nums}
+.stat.hot{background:#fff0e0;color:#c35a00}
+.game{flex:1;display:grid;grid-template-columns:1fr minmax(360px,430px);gap:20px;padding:18px 20px;max-width:1440px;margin:0 auto;width:100%;align-items:start;align-content:start}
+@media (max-width:960px),(orientation:portrait){.game{grid-template-columns:1fr}}
+.qcol{display:flex;flex-direction:column;gap:16px}
+.qcard{background:#fff;border-radius:26px;padding:28px 22px;min-height:300px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:22px;box-shadow:0 2px 0 var(--line),0 10px 26px rgba(30,40,90,.06);transition:background .2s}
+.qcard.shake{animation:shake .35s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.qlabel{font-size:26px;color:var(--muted);text-align:center;font-weight:600;line-height:1.35;max-width:900px}
+.qlabel.big{font-size:30px;color:var(--ink)}
+.qexpr{font-size:clamp(40px,5.6vw,74px);display:flex;align-items:center;gap:.28em;flex-wrap:wrap;justify-content:center}
+.ansbox{min-width:1.8em;min-height:1.35em;padding:.06em .3em;border-bottom:.07em solid var(--pri);display:inline-flex;align-items:center;justify-content:center;background:#f1f4ff;border-radius:.2em .2em 0 0;color:var(--pri2)}
+.ansbox.act{box-shadow:0 0 0 4px #c9d3ff}
+.ansbox.good{background:#e3f7ec;color:#11804a;border-color:var(--ok)}
+.ansbox.bad{background:#fdeaea;color:#b42f33;border-color:var(--ko)}
+.keypad{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.key{height:80px;font-size:34px;border-radius:18px;border:0;background:#fff;box-shadow:0 4px 0 #d6dbeb;font-weight:700;color:var(--ink)}
+.key.m{font-family:"Cambria Math",Cambria,serif}
+.key:active{box-shadow:0 1px 0 #d6dbeb}
+.key.ok{background:var(--ok);color:#fff;box-shadow:0 4px 0 #13804b;font-size:30px}
+.key.del{background:#ffecec;color:#c33}
+.key.sp{background:#eef1ff;color:var(--pri2)}
+.key.off{opacity:.25;pointer-events:none}
+.key.wide{grid-column:span 2}
+.opts{display:grid;gap:12px}
+.opts.two{grid-template-columns:1fr 1fr}
+.opt{min-height:84px;font-size:26px;border-radius:20px;background:#fff;border:3px solid var(--line);padding:10px 16px;box-shadow:0 4px 0 #dfe3f0;line-height:1.3}
+.opt.big{min-height:130px;font-size:30px;font-weight:800}
+.opt.good{background:#e3f7ec;border-color:var(--ok)}
+.opt.bad{background:#fdeaea;border-color:var(--ko)}
+.opt[disabled]{cursor:default}
+.fb{border-radius:22px;padding:18px 22px;font-size:20px;display:none;line-height:1.5}
+.fb.ok{display:block;background:#e7f8ef;border:2px solid #b5e6c9}
+.fb.ko{display:block;background:#fff1f1;border:2px solid #f3c4c4}
+.fb.al{display:block;background:#fff7e2;border:2px solid #f0d995}
+.fb .h{font-size:24px;font-weight:800;margin-bottom:4px}
+.corr{font-size:26px;line-height:2.15;margin-top:6px}
+.corr small{font-family:"Segoe UI",system-ui,sans-serif;font-size:17px;color:var(--muted);line-height:1.4;display:inline-block}
+.fbrow{display:flex;justify-content:flex-end;margin-top:10px}
+/* results */
+.big-score{font-size:86px;font-weight:900;line-height:1}
+.stars{font-size:54px;letter-spacing:6px}
+.err{border-top:1px solid var(--line);padding:14px 0;display:grid;gap:4px}
+.err .q{font-size:22px}
+.err .a{font-size:20px}
+.err .a .m{font-size:24px}
+/* teacher */
+.tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.tab{border:0;background:#fff;border-radius:14px;padding:12px 20px;font-size:18px;font-weight:700;min-height:52px;border:2px solid var(--line)}
+.tab.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.two-col{display:grid;grid-template-columns:300px minmax(0,1fr);gap:18px}
+@media (max-width:900px){.two-col{grid-template-columns:1fr}}
+.list{display:grid;gap:8px}
+.li{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px 14px;min-height:56px;font-size:18px;text-align:left;width:100%}
+.li.on{border-color:var(--pri);background:#f1f4ff}
+.li .n{flex:1;font-weight:700}
+.li .c{color:var(--muted);font-size:15px}
+.stud{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+textarea,input[type=text],input[type=password]{width:100%;font-size:19px;padding:12px 14px;border-radius:12px;border:2px solid var(--line);background:#fff;color:var(--ink)}
+textarea{min-height:120px}
+table.res{border-collapse:separate;border-spacing:0;width:100%;font-size:16px}
+table.res th,table.res td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:center}
+table.res th{position:sticky;top:0;background:#fff;font-size:13px;color:var(--muted);vertical-align:bottom}
+table.res td:first-child,table.res th:first-child{text-align:left}
+.pc{display:inline-block;min-width:52px;border-radius:9px;padding:4px 6px;font-weight:800}
+.pc.g{background:#dff5e8;color:#138a50}.pc.o{background:#fff1d6;color:#a86e00}.pc.r{background:#fde4e4;color:#b42f33}.pc.n{color:#c0c5da}
+.scroll{overflow:auto;max-height:62vh;max-width:100%}
+.who{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.who .tile{min-height:110px;justify-content:center;font-size:22px;font-weight:800;border-top-color:var(--pri)}
+.empty{color:var(--muted);font-size:18px;padding:20px;text-align:center}
+/* modal */
+.ov{position:fixed;inset:0;background:rgba(20,24,50,.45);display:grid;place-items:center;z-index:50;padding:20px}
+.mbox{background:#fff;border-radius:24px;padding:24px;max-width:640px;width:100%;max-height:90vh;overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.3)}
+.mbox.wide{max-width:900px}
+.mbox h3{margin:0 0 12px;font-size:24px}
+.mbtns{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+.pinpad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:330px;margin:10px auto}
+.pindots{text-align:center;font-size:40px;letter-spacing:12px;min-height:56px}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#1c2242;color:#fff;padding:14px 22px;border-radius:14px;font-size:18px;z-index:60;max-width:90vw}
+.note{color:var(--muted);font-size:15px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="ovroot"></div>
+<script>
+"use strict";
+const PROF = window.__RC_PROF__ === true || /[?&]prof\b/.test(location.search);
+
+/* =================== Outils =================== */
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;};
+const isSq=n=>n>=0&&Math.round(Math.sqrt(n))**2===n;
+function sqf(n){ // n = a² × b, b sans facteur carré
+  for(let k=Math.floor(Math.sqrt(n));k>1;k--){ if(n%(k*k)===0) return [k,n/(k*k)]; }
+  return [1,n];
+}
+const MINUS='−', TIMES='×';
+const fmt=x=>{const s=String(parseFloat((+x).toFixed(6))).replace('.',',');return s.startsWith('-')?MINUS+s.slice(1):s;};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const SVGR='<svg class="rs" viewBox="0 0 10 24" preserveAspectRatio="none" aria-hidden="true"><path d="M0.4 13.6 L2.6 12.2 L5.3 22.8 L9.3 0.9 L10.2 0.9"/></svg>';
+const R=x=>`<span class="rad">${SVGR}<span class="rc">${x}</span></span>`;
+const F=(n,d)=>`<span class="fr"><span class="fn">${n}</span><span class="fd">${d}</span></span>`;
+const P=x=>`(${x})`;
+const sq=x=>`${x}<sup>2</sup>`;
+const LT=' &lt; ';
+
+/* Nombre de la forme s·k·√r / d */
+function mk(num,r=1,den=1){
+  if(num===0||r===0) return {s:1,k:0,r:1,d:1};
+  const s=Math.sign(num)*Math.sign(den);
+  num=Math.abs(num); den=Math.abs(den);
+  const [a,b]=sqf(r); num*=a; r=b;
+  const g=gcd(num,den);
+  return {s,k:num/g,r,d:den/g};
+}
+function rxHtml(e){
+  if(e.k===0) return '0';
+  const core=(e.k===1&&e.r>1?'':String(e.k))+(e.r>1?R(e.r):'');
+  return (e.s<0?MINUS:'')+(e.d>1?F(core,e.d):core);
+}
+function rxPlain(e){
+  if(e.k===0) return '0';
+  return (e.s<0?'-':'')+(e.k===1&&e.r>1?'':e.k)+(e.r>1?'√'+e.r:'')+(e.d>1?'/'+e.d:'');
+}
+/* somme de termes {c, h} : c coefficient signé, h = html de la racine */
+function sumH(terms){
+  return terms.map((t,i)=>{const a=Math.abs(t.c);const co=(a===1&&t.h)?'':a;const sg=t.c<0?(i?' '+MINUS+' ':MINUS):(i?' + ':'');return sg+co+t.h;}).join('');
+}
+function coefList(cs){return cs.map((c,i)=>i===0?(c<0?MINUS+(-c):c):(c<0?' '+MINUS+' '+(-c):' + '+c)).join('');}
+
+/* ---------- Analyse de la réponse tapée ---------- */
+function parseAns(str){
+  const m=str.match(/^(-?)(\d+(?:,\d+)?)?(?:√(\d+))?(?:\/(\d+))?$/);
+  if(!m) return null;
+  const [ ,neg,cs,rs,ds]=m;
+  if(!cs&&!rs) return null;
+  let cN=1,cD=1,dec=false;
+  if(cs){ if(cs.includes(',')){dec=true;const [i,f]=cs.split(',');cD=10**f.length;cN=parseInt(i+f,10);} else cN=parseInt(cs,10); }
+  const r=rs?parseInt(rs,10):1, d=ds?parseInt(ds,10):1;
+  if(d===0) return null;
+  return {neg:!!neg,cN,cD,r,d,hasRad:!!rs,hasDen:!!ds,dec,hasCoef:!!cs};
+}
+function checkKp(str,e){
+  const p=parseAns(str);
+  if(!p) return {status:'invalid'};
+  const uz=p.cN===0||p.r===0, ez=e.k===0;
+  if(uz||ez) return {status:(uz&&ez)?'ok':'ko'};
+  const lhs=p.cN*p.cN*p.r*e.d*e.d;
+  const rhs=e.k*e.k*e.r*p.cD*p.cD*p.d*p.d;
+  if(lhs!==rhs||(p.neg?-1:1)!==e.s) return {status:'ko'};
+  // valeur juste : l'écriture est-elle simplifiée ?
+  if(p.hasRad&&p.r===1) return {status:'almost',why:`${R(1)} = 1 : inutile de l'écrire.`};
+  if(p.hasRad){const [a]=sqf(p.r); if(a>1) return {status:'almost',why:`On peut encore simplifier ${R(p.r)} : ${p.r} = ${a*a} ${TIMES} ${p.r/(a*a)}.`};}
+  if(p.hasDen&&p.d===1) return {status:'almost',why:'Inutile de diviser par 1.'};
+  if(p.hasDen&&p.dec) return {status:'almost',why:'Évite les nombres à virgule dans une fraction.'};
+  if(p.hasDen&&gcd(p.cN,p.d)>1) return {status:'almost',why:'La fraction peut encore être simplifiée.'};
+  if(p.dec&&p.hasRad) return {status:'almost',why:'Écris le résultat avec une fraction plutôt qu\'un nombre à virgule.'};
+  return {status:'ok'};
+}
+function inputHtml(str,caret){
+  const C=caret?'<span class="caret"></span>':'';
+  if(!str) return caret?C:'<span class="ph">?</span>';
+  const part=(s,last)=>{
+    s=s.replace(/-/g,MINUS);
+    const i=s.indexOf('√');
+    if(i<0) return s+(last?C:'');
+    const inner=s.slice(i+1);
+    return s.slice(0,i)+R((inner||'&#8199;')+(last?C:''));
+  };
+  const j=str.indexOf('/');
+  if(j<0) return part(str,true);
+  return F(part(str.slice(0,j),false),part(str.slice(j+1),true)||C||'&#8199;');
+}
+
+/* ---------- Fabriques de questions ---------- */
+function kp(label,expr,ans,corr,ansHtml){return {type:'kp',label,expr,ans,ansHtml:ansHtml||rxHtml(ans),corr};}
+function mcq(label,expr,good,wrongs,corr,opt={}){
+  const w=[...new Set(wrongs.map(String))].filter(x=>x!==String(good)).slice(0,opt.n||3);
+  const all=opt.fixed?[good,...w]:shuffle([good,...w]);
+  return {type:'mcq',label,expr,opts:all.map(String),correct:all.indexOf(good),ansHtml:String(good),corr,big:opt.big};
+}
+function vf(label,expr,truth,corr){return {type:'mcq',label,expr,opts:['Vrai','Faux'],correct:truth?0:1,ansHtml:truth?'Vrai':'Faux',corr,big:true,two:true};}
+function enc(expr,a,corr){return {type:'enc',label:'Encadre par deux entiers consécutifs',expr,ans:[a,a+1],ansHtml:`${a}${LT}${expr}${LT}${a+1}`,corr};}
+const nonSq=(lo,hi)=>{let n;do{n=ri(lo,hi);}while(isSq(n));return n;};
+
+/* ---------- Équation x² = a  (a = p/q) ---------- */
+const X='<i>x</i>';
+function eqQ(p,q=1,dec=false,eqHtml=null){
+  const aH=q===1?fmt(p):dec?fmt(p/q):(p<0?MINUS:'')+F(Math.abs(p),q);
+  const base=`${sq(X)} = ${aH}`;
+  const eq=eqHtml||base;
+  const nsol=p>0?2:p===0?1:0;
+  let corr=eqHtml?`${eqHtml} ⇔ ${base}<br>`:'';
+  let sols=[],ansHtml;
+  if(nsol===0){
+    corr+=`${aH} est négatif et un carré n’est jamais négatif : <b>aucune solution</b>.`;
+    ansHtml='Aucune solution';
+  }else if(nsol===1){
+    sols=[mk(0)];
+    corr+=`${base} ⇔ ${X} = 0 : <b>une seule solution</b>.`;
+    ansHtml=`Une solution : ${X} = 0`;
+  }else{
+    const pos=mk(1,p*q,q), neg={...pos,s:-1};
+    sols=[pos,neg];
+    const h=dec?fmt(Math.sqrt(p/q)):rxHtml(pos);
+    const rA=R(aH);
+    corr+=`${aH} &gt; 0 : <b>deux solutions</b>.<br>${base} ⇔ ${X} = ${rA} &nbsp;ou&nbsp; ${X} = ${MINUS}${rA}`;
+    if(rA!==h) corr+=`<br>⇔ ${X} = ${h} &nbsp;ou&nbsp; ${X} = ${MINUS}${h}`;
+    ansHtml=`${X} = ${h} &nbsp;ou&nbsp; ${X} = ${MINUS}${h}`;
+  }
+  return {type:'eq',label:'Résous l’équation :',expr:eq,nsol,sols,corr,ansHtml,
+    opts:['Aucune solution','Une solution','Deux solutions'],correct:nsol,big:true};
+}
+
+/* =================== Thèmes =================== */
+const THEMES=[
+{id:'carres',title:'Les carrés',color:'#ff7a59',icon:()=>`n<sup>2</sup> ${TIMES} ${R('n')}`,
+ desc:'Les 20 premiers carrés, et retrouver le nombre de départ.',
+ levels:['Carrés et racines jusqu’à 12','Carrés jusqu’à 20','Négatifs, décimaux, fractions'],
+ lesson:()=>`<p>Le <b>carré</b> d’un nombre <i>a</i>, c’est <i>a</i> ${TIMES} <i>a</i>, noté <i>a</i><sup>2</sup>.</p>
+ <div class="ex m">7<sup>2</sup> = 7 ${TIMES} 7 = 49 &nbsp;&nbsp; ${P(MINUS+'3')}<sup>2</sup> = 9 &nbsp;&nbsp; mais &nbsp; ${MINUS}3<sup>2</sup> = ${MINUS}9</div>
+ <p>À connaître par cœur :</p><div class="sqtab m">${Array.from({length:20},(_,i)=>`<div>${sq(i+1)} = <b>${(i+1)**2}</b></div>`).join('')}</div>`,
+ gen(L){
+  if(L<3){
+    const n=L===1?ri(2,12):ri(4,20), N=n*n, t=pick(['sq','sq','root','inv']);
+    if(t==='sq') return kp('Calcule :',sq(n),mk(N),`${sq(n)} = ${n} ${TIMES} ${n} = ${N}`);
+    if(t==='root') return kp('Calcule :',R(N),mk(n),`${R(N)} = ${n} &nbsp; car &nbsp; ${sq(n)} = ${N} &nbsp; et ${n} est positif.`);
+    return kp(`Quel nombre positif a pour carré ${N} ?`,'',mk(n),`${sq(n)} = ${N}, &nbsp; donc c’est ${n} = ${R(N)}`);
+  }
+  const t=pick(['neg','negsq','dec','decroot','frac','fracroot']), n=ri(2,15);
+  if(t==='neg') return kp('Calcule :',sq(P(MINUS+n)),mk(n*n),`${sq(P(MINUS+n))} = ${P(MINUS+n)} ${TIMES} ${P(MINUS+n)} = ${n*n}<br><small>Le carré d’un nombre est toujours positif.</small>`);
+  if(t==='negsq') return kp('Calcule :',MINUS+sq(n),mk(-n*n),`${MINUS}${sq(n)} = ${MINUS}${P(n+' '+TIMES+' '+n)} = ${MINUS}${n*n}<br><small>Sans parenthèses, le carré ne porte que sur ${n}, pas sur le signe ${MINUS}.</small>`);
+  if(t==='dec'||t==='decroot'){
+    const k=pick([1,2,3,4,5,6,7,8,9,11,12,13,15]), x=k/10, X=k*k/100;
+    if(t==='dec') return kp('Calcule :',sq(fmt(x)),mk(k*k,1,100),`${sq(fmt(x))} = ${fmt(x)} ${TIMES} ${fmt(x)} = ${fmt(X)}`,fmt(X));
+    return kp('Calcule :',R(fmt(X)),mk(k,1,10),`${R(fmt(X))} = ${fmt(x)} &nbsp; car &nbsp; ${sq(fmt(x))} = ${fmt(X)}`,fmt(x));
+  }
+  let p,q; do{q=ri(2,10);p=ri(1,q-1);}while(gcd(p,q)!==1);
+  if(t==='frac') return kp('Calcule :',sq(P(F(p,q))),mk(p*p,1,q*q),`${sq(P(F(p,q)))} = ${F(sq(p),sq(q))} = ${F(p*p,q*q)}`);
+  return kp('Calcule :',R(F(p*p,q*q)),mk(p,1,q),`${R(F(p*p,q*q))} = ${F(R(p*p),R(q*q))} = ${F(p,q)}`);
+ }},
+
+{id:'vocab',title:'Définition et vocabulaire',color:'#7c5cff',icon:()=>`${R('a')} ?`,
+ desc:'Carré ou racine carrée ? Radical, radicande… et les pièges classiques.',
+ levels:['Carré ou racine carrée ?','Vocabulaire et définition','Vrai ou faux : les pièges'],
+ lesson:()=>`<p>Pour un nombre <i>a</i> ≥ 0, <b>${R('a')}</b> est le nombre <b>positif</b> dont le carré est égal à <i>a</i>.</p>
+ <div class="ex m">${R(49)} = 7 &nbsp; car &nbsp; 7<sup>2</sup> = 49 &nbsp; et 7 ≥ 0</div>
+ <p>Le symbole √ s’appelle le <b>radical</b> ; le nombre sous la racine s’appelle le <b>radicande</b>.</p>
+ <p>Élever au carré et prendre la racine carrée sont des opérations <b>réciproques</b> :</p>
+ <div class="ex m">7 &nbsp;→<sup>( )²</sup>→&nbsp; 49 &nbsp;→<sup>√</sup>→&nbsp; 7 &nbsp;&nbsp;&nbsp; ${sq(P(R('a')))} = a</div>
+ <div class="warn">⚠️ ${R(MINUS+'4')} n’existe pas dans ℝ. &nbsp; ⚠️ <span class="m">${R('a + b')} ≠ ${R('a')} + ${R('b')}</span> &nbsp; (exemple : <span class="m">${R(9)} + ${R(16)} = 7</span> mais <span class="m">${R(25)} = 5</span>)</div>`,
+ gen(L){
+  const n=ri(3,12), N=n*n;
+  if(L===1){
+    const t=ri(1,7);
+    if(t===1) return mcq(`Le <b>carré</b> de ${n} est :`,'',N,[2*n,R(n),n+2],`Le carré de ${n} : ${n} ${TIMES} ${n} = ${N}`,{big:true});
+    if(t===2) return mcq(`La <b>racine carrée</b> de ${N} est :`,'',n,[fmt(N/2),2*N,MINUS+n],`${R(N)} = ${n} car ${sq(n)} = ${N} (et la racine carrée est toujours positive).`,{big:true});
+    if(t===3) return mcq(`On cherche le nombre positif qui, multiplié par lui-même, donne ${N}. C’est…`,'',`la racine carrée de ${N}`,[`le carré de ${N}`,`la moitié de ${N}`,`le double de ${N}`],`${n} ${TIMES} ${n} = ${N}, donc ce nombre est ${R(N)} = ${n}.`);
+    if(t===4) return mcq(`${n} ${TIMES} ${n}, c’est…`,'',`le carré de ${n}`,[`la racine carrée de ${n}`,`le double de ${n}`,`la moitié de ${n}`],`${n} ${TIMES} ${n} = ${sq(n)} = ${N} : c’est le carré de ${n}.`);
+    if(t===5) return mcq(`${R(N)} = ${n} car :`,'',`${sq(n)} = ${N}`,[`${N} : 2 = ${fmt(N/2)}`,`${n} + ${n} = ${2*n}`,`${n} ${TIMES} 2 = ${2*n}`],`On vérifie une racine carrée en élevant au carré : ${sq(n)} = ${N}.`);
+    if(t===6) return mcq('Le carré d’un nombre est toujours :','','positif ou nul',['négatif','plus grand que le nombre','un nombre pair'],`Un nombre multiplié par lui-même donne toujours un résultat positif ou nul : ${sq(P(MINUS+3))} = 9.`);
+    return mcq('Calcule :',R(MINUS+N),'n’existe pas dans ℝ',[MINUS+n,n,MINUS+N],`Aucun nombre réel n’a un carré négatif, donc ${R(MINUS+N)} n’existe pas.`,{big:false});
+  }
+  if(L===2){
+    const a=pick([2,3,5,6,7,10,11]), t=ri(1,7);
+    if(t===1) return mcq(`Dans l’écriture ${R(a*3+1)}, le nombre ${a*3+1} s’appelle :`,'','le radicande',['le radical','l’exposant','la racine'],`Le nombre sous la racine s’appelle le <b>radicande</b> ; le symbole √ est le <b>radical</b>.`);
+    if(t===2) return mcq('Le symbole √ s’appelle :','','le radical',['le radicande','l’exposant','le carré'],'Le symbole √ est le <b>radical</b>.');
+    if(t===3) return mcq(`Dans ${sq(n)}, le petit 2 s’appelle :`,'','l’exposant',['le radicande','le radical','le diviseur'],'Dans une puissance, le petit nombre en haut est l’<b>exposant</b>.');
+    if(t===4) return mcq('Élever au carré et prendre la racine carrée (pour des nombres positifs) sont des opérations :','','réciproques',['identiques','opposées','sans lien'],`L’une « défait » l’autre : ${n} → ${N} → ${n}.`);
+    if(t===5) return mcq('Calcule :',sq(P(R(a))),a,[sq(a),R(a),2*a],`${sq(P(R(a)))} = ${R(a)} ${TIMES} ${R(a)} = ${a}`,{big:true});
+    if(t===6) return mcq(`${R(a)} est le nombre positif dont le carré vaut :`,'',a,[R(a),a*a,2*a],`Par définition, ${sq(P(R(a)))} = ${a}.`,{big:true});
+    const wr=shuffle([N+1,N-1,N+n,2*N].filter(x=>!isSq(x))).slice(0,3);
+    return mcq('Lequel est un carré parfait ?','',N,wr,`${N} = ${sq(n)} : c’est un carré parfait (le carré d’un entier).`,{big:true});
+  }
+  const tr=pick([[9,16,25],[36,64,100],[25,144,169],[64,36,100]]);
+  const t=ri(1,9), a=pick([2,3,5]), b=pick([6,7,10]);
+  if(t===1) return vf('Vrai ou faux ?',`${R(tr[0])} + ${R(tr[1])} = ${R(tr[2])}`,false,`${R(tr[0])} + ${R(tr[1])} = ${Math.sqrt(tr[0])} + ${Math.sqrt(tr[1])} = ${Math.sqrt(tr[0])+Math.sqrt(tr[1])} &nbsp; mais &nbsp; ${R(tr[2])} = ${Math.sqrt(tr[2])}`);
+  if(t===2) return vf('Vrai ou faux ?',`${R(tr[0]+' + '+tr[1])} = ${Math.sqrt(tr[0])} + ${Math.sqrt(tr[1])}`,false,`${R(tr[0]+' + '+tr[1])} = ${R(tr[2])} = ${Math.sqrt(tr[2])} &nbsp; et non ${Math.sqrt(tr[0])+Math.sqrt(tr[1])}.<br><small>La racine d’une somme n’est pas la somme des racines.</small>`);
+  if(t===3) return vf('Vrai ou faux ?',`${R(a)} ${TIMES} ${R(b)} = ${R(a*b)}`,true,`Oui : ${R('a')} ${TIMES} ${R('b')} = ${R('a'+TIMES+'b')} pour a, b ≥ 0.`);
+  if(t===4) return vf('Vrai ou faux ?',`${R(a)} + ${R(b)} = ${R(a+b)}`,false,`${R(a)} + ${R(b)} ≈ ${fmt(Math.sqrt(a)+Math.sqrt(b)).slice(0,4)} &nbsp; mais &nbsp; ${R(a+b)} ≈ ${fmt(Math.sqrt(a+b)).slice(0,4)}`);
+  if(t===5) return vf('Vrai ou faux ?',`${R(4*a)} = 2${R(a)}`,true,`${R(4*a)} = ${R('4 '+TIMES+' '+a)} = ${R(4)} ${TIMES} ${R(a)} = 2${R(a)}`);
+  if(t===6) return vf('Vrai ou faux ?',`${R(2*b)} = 2${R(b)}`,false,`${R(2*b)} = ${R(2)} ${TIMES} ${R(b)} &nbsp; et &nbsp; ${R(2)} ≠ 2. &nbsp; (2${R(b)} = ${R(4*b)})`);
+  if(t===7) return vf('Vrai ou faux ?',`${R(F(a,b))} = ${F(R(a),R(b))}`,true,`Oui : ${R(F('a','b'))} = ${F(R('a'),R('b'))} pour a ≥ 0 et b > 0.`);
+  if(t===8){const x=pick([[25,5],[64,8],[36,6],[16,4]]);return vf('Vrai ou faux ?',`${R('0,'+x[0])} &gt; 0,${x[0]}`,true,`${R('0,'+x[0])} = 0,${x[1]} &nbsp; et &nbsp; 0,${x[1]} &gt; 0,${x[0]}<br><small>Pour un nombre entre 0 et 1, la racine carrée est plus grande que le nombre.</small>`);}
+  return vf('Vrai ou faux ?',`${R(tr[2])} ${MINUS} ${R(tr[1])} = ${R(tr[2]-tr[1])}`,false,`${R(tr[2])} ${MINUS} ${R(tr[1])} = ${Math.sqrt(tr[2])} ${MINUS} ${Math.sqrt(tr[1])} = ${Math.sqrt(tr[2])-Math.sqrt(tr[1])} &nbsp; mais &nbsp; ${R(tr[2]-tr[1])} = ${R(tr[0])} = ${Math.sqrt(tr[0])}`);
+ }},
+
+{id:'encadrer',title:'Encadrer une racine',color:'#12a4d9',icon:()=>`<span style="font-size:26px">□${LT}${R(30)}${LT}□</span>`,
+ desc:'Trouver les deux entiers consécutifs qui entourent une racine carrée.',
+ levels:['Radicande jusqu’à 50','Radicande jusqu’à 150','Jusqu’à 400 et nombres comme 3√2'],
+ lesson:()=>`<p>On cherche les deux <b>carrés parfaits consécutifs</b> qui entourent le radicande.</p>
+ <div class="ex m">25${LT}30${LT}36 &nbsp; donc &nbsp; ${R(25)}${LT}${R(30)}${LT}${R(36)} &nbsp; soit &nbsp; 5${LT}${R(30)}${LT}6</div>
+ <p>Pour un nombre comme 3${R(2)}, on fait d’abord « rentrer » le 3 sous la racine :</p>
+ <div class="ex m">3${R(2)} = ${R('9 '+TIMES+' 2')} = ${R(18)} &nbsp; et &nbsp; 16${LT}18${LT}25 &nbsp; donc &nbsp; 4${LT}3${R(2)}${LT}5</div>`,
+ gen(L){
+  if(L===3&&Math.random()<.5){
+    const k=ri(2,5), m=pick([2,3,5,6,7]), v=k*k*m, a=Math.floor(Math.sqrt(v));
+    return enc(`${k}${R(m)}`,a,`${k}${R(m)} = ${R(k*k+' '+TIMES+' '+m)} = ${R(v)}<br>${sq(a)} = ${a*a}${LT}${v}${LT}${(a+1)**2} = ${sq(a+1)}<br>donc &nbsp; ${a}${LT}${k}${R(m)}${LT}${a+1}`);
+  }
+  const [lo,hi]=L===1?[2,50]:L===2?[51,150]:[150,400];
+  const n=nonSq(lo,hi), a=Math.floor(Math.sqrt(n));
+  return enc(R(n),a,`${sq(a)} = ${a*a}${LT}${n}${LT}${(a+1)**2} = ${sq(a+1)}<br>donc &nbsp; ${a}${LT}${R(n)}${LT}${a+1}`);
+ }},
+
+{id:'simplifier',title:'Simplifier une racine',color:'#f0a500',icon:()=>`${R(72)} = 6${R(2)}`,
+ desc:'Écrire sous la forme a√b en extrayant le plus grand carré.',
+ levels:['Petits radicandes','Radicandes plus grands','Avec un coefficient devant'],
+ lesson:()=>`<p>On cherche le <b>plus grand carré parfait</b> qui divise le radicande (4, 9, 16, 25, 36, 49, 64, 81, 100…), puis on utilise :</p>
+ <div class="ex m">${R('a<sup>2</sup> '+TIMES+' b')} = a${R('b')}</div>
+ <div class="ex m">${R(72)} = ${R('36 '+TIMES+' 2')} = ${R(36)} ${TIMES} ${R(2)} = 6${R(2)}</div>
+ <div class="warn">⚠️ ${R(72)} = ${R('4 '+TIMES+' 18')} = 2${R(18)} n’est pas fini : on peut encore simplifier ${R(18)}. Choisis le plus grand carré !</div>
+ <p>Sur le clavier, tape <b>6 √ 2</b> pour écrire 6${R(2)}.</p>`,
+ gen(L){
+  let a,b,k=1;
+  if(L===1){a=ri(2,5);b=pick([2,3,5]);}
+  else if(L===2){a=ri(2,10);b=pick([2,3,5,6,7,10,11]);if(a*a*b>700)a=ri(2,6);}
+  else {a=ri(2,6);b=pick([2,3,5,6,7,10]);k=ri(2,5);}
+  const n=a*a*b;
+  const st=`<small>Le plus grand carré qui divise ${n} est ${a*a} = ${sq(a)}.</small><br>`;
+  if(k===1) return kp('Simplifie :',R(n),mk(a,b),`${st}${R(n)} = ${R(a*a+' '+TIMES+' '+b)} = ${R(a*a)} ${TIMES} ${R(b)} = ${a}${R(b)}`);
+  return kp('Simplifie :',`${k}${R(n)}`,mk(k*a,b),`${st}${k}${R(n)} = ${k} ${TIMES} ${R(a*a+' '+TIMES+' '+b)} = ${k} ${TIMES} ${a}${R(b)} = ${k*a}${R(b)}`);
+ }},
+
+{id:'produit',title:'Multiplier des racines',color:'#e2508f',icon:()=>`${R('a')} ${TIMES} ${R('b')}`,
+ desc:'Utiliser √a × √b = √(ab), puis simplifier le résultat.',
+ levels:['Produits simples','Produits à simplifier','Avec coefficients et carrés'],
+ lesson:()=>`<p>Pour a, b ≥ 0 :</p><div class="ex m">${R('a')} ${TIMES} ${R('b')} = ${R('a '+TIMES+' b')} &nbsp;&nbsp;&nbsp; ${sq(P(R('a')))} = a</div>
+ <div class="ex m">${R(2)} ${TIMES} ${R(8)} = ${R(16)} = 4 &nbsp;&nbsp;&nbsp; ${R(6)} ${TIMES} ${R(10)} = ${R(60)} = ${R('4 '+TIMES+' 15')} = 2${R(15)}</div>
+ <p>Avec des coefficients, on multiplie les nombres entre eux et les racines entre elles :</p>
+ <div class="ex m">2${R(3)} ${TIMES} 5${R(6)} = 10${R(18)} = 10 ${TIMES} 3${R(2)} = 30${R(2)}</div>`,
+ gen(L){
+  const typeA=()=>{const s=pick([2,3,5,6,7]),m=ri(2,4);let x=s,y=s*m*m;if(Math.random()<.5)[x,y]=[y,x];
+    return kp('Calcule :',`${R(x)} ${TIMES} ${R(y)}`,mk(s*m),`${R(x)} ${TIMES} ${R(y)} = ${R(x+' '+TIMES+' '+y)} = ${R(x*y)} = ${s*m}`);};
+  if(L===1){
+    const t=pick(['A','B','B','C']);
+    if(t==='A') return typeA();
+    if(t==='B'){const prs=[2,3,5,7,11,13];let p,q;do{p=pick(prs);q=pick(prs);}while(p===q||p*q>100);
+      return kp('Calcule :',`${R(p)} ${TIMES} ${R(q)}`,mk(1,p*q),`${R(p)} ${TIMES} ${R(q)} = ${R(p+' '+TIMES+' '+q)} = ${R(p*q)}`);}
+    const n=nonSq(2,30);return kp('Calcule :',sq(P(R(n))),mk(n),`${sq(P(R(n)))} = ${R(n)} ${TIMES} ${R(n)} = ${n}`);
+  }
+  if(L===2){
+    if(Math.random()<.3) return typeA();
+    let a,b,pr,k,r;do{a=nonSq(2,24);b=nonSq(2,24);pr=a*b;[k,r]=sqf(pr);}while(a===b||k===1||r===1);
+    return kp('Calcule et simplifie :',`${R(a)} ${TIMES} ${R(b)}`,mk(k,r),`${R(a)} ${TIMES} ${R(b)} = ${R(a+' '+TIMES+' '+b)} = ${R(pr)} = ${R(k*k+' '+TIMES+' '+r)} = ${k}${R(r)}`);
+  }
+  if(Math.random()<.25){const m=ri(2,5),a=pick([2,3,5,6,7]);
+    return kp('Calcule :',sq(P(m+R(a))),mk(m*m*a),`${sq(P(m+R(a)))} = ${sq(m)} ${TIMES} ${sq(P(R(a)))} = ${m*m} ${TIMES} ${a} = ${m*m*a}`);}
+  const m=ri(2,5),n=ri(2,4);let a,b;do{a=nonSq(2,12);b=nonSq(2,12);}while(a===b);
+  const pr=a*b,[k,r]=sqf(pr),res=mk(m*n,pr);
+  let c=`${m}${R(a)} ${TIMES} ${n}${R(b)} = ${P(m+' '+TIMES+' '+n)} ${TIMES} ${R(a+' '+TIMES+' '+b)} = ${m*n}${R(pr)}`;
+  if(k>1) c+=r>1?` = ${m*n} ${TIMES} ${k}${R(r)} = ${rxHtml(res)}`:` = ${m*n} ${TIMES} ${k} = ${rxHtml(res)}`;
+  return kp('Calcule et simplifie :',`${m}${R(a)} ${TIMES} ${n}${R(b)}`,res,c);
+ }},
+
+{id:'quotient',title:'Diviser des racines',color:'#5c7cfa',icon:()=>`${F(R('a'),R('b'))} = ${R(F('a','b'))}`,
+ desc:'Utiliser √a / √b = √(a/b) et la racine d’une fraction.',
+ levels:['Quotients simples','Quotients à simplifier','Racine d’une fraction'],
+ lesson:()=>`<p>Pour a ≥ 0 et b &gt; 0 :</p><div class="ex m">${F(R('a'),R('b'))} = ${R(F('a','b'))}</div>
+ <div class="ex m">${F(R(50),R(2))} = ${R(F(50,2))} = ${R(25)} = 5 &nbsp;&nbsp;&nbsp; ${R(F(9,16))} = ${F(R(9),R(16))} = ${F(3,4)}</div>
+ <p>Sur le clavier, la touche <b>/</b> sert à écrire une fraction : <b>2 √ 2 / 3</b> donne ${F('2'+R(2),3)}.</p>`,
+ gen(L){
+  if(L===1){
+    if(Math.random()<.5){let p,q;do{q=ri(2,10);p=ri(1,q-1);}while(gcd(p,q)!==1);
+      return kp('Calcule :',R(F(p*p,q*q)),mk(p,1,q),`${R(F(p*p,q*q))} = ${F(R(p*p),R(q*q))} = ${F(p,q)}`);}
+    const b=pick([2,3,5,6,7]),k=ri(2,6);
+    return kp('Calcule :',F(R(b*k*k),R(b)),mk(k),`${F(R(b*k*k),R(b))} = ${R(F(b*k*k,b))} = ${R(k*k)} = ${k}`);
+  }
+  if(L===2){
+    if(Math.random()<.35){const s=pick([2,3,5]);let p,q;do{q=ri(2,5);p=ri(1,q-1);}while(gcd(p,q)!==1);
+      return kp('Calcule :',F(R(s*p*p),R(s*q*q)),mk(p,1,q),`${F(R(s*p*p),R(s*q*q))} = ${R(F(s*p*p,s*q*q))} = ${R(F(p*p,q*q))} = ${F(p,q)}`);}
+    const b=pick([2,3,5]),k=ri(2,4),r=pick([2,3,5,6,7]),c=k*k*r;
+    return kp('Calcule et simplifie :',F(R(b*c),R(b)),mk(k,r),`${F(R(b*c),R(b))} = ${R(F(b*c,b))} = ${R(c)} = ${R(k*k+' '+TIMES+' '+r)} = ${k}${R(r)}`);
+  }
+  if(Math.random()<.6){
+    let n,q;do{n=nonSq(2,50);q=ri(2,10);}while(gcd(n,q)!==1);
+    const [k,r]=sqf(n),res=mk(1,n,q);
+    let c=`${R(F(n,q*q))} = ${F(R(n),R(q*q))} = ${F(R(n),q)}`;
+    if(k>1) c+=` = ${F(k+R(r),q)}`;
+    if(rxHtml(res)!==F(k+R(r),q)&&k>1) c+=` = ${rxHtml(res)}`;
+    return kp('Calcule et simplifie :',R(F(n,q*q)),res,c);
+  }
+  const n=ri(2,4),m=n*ri(2,4),b=pick([2,3,5]),kk=ri(1,3),r=pick([2,3,5,7]),c=kk*kk*r,res=mk(m,c,n);
+  let co=`${F(m+R(b*c),n+R(b))} = ${F(m,n)} ${TIMES} ${R(F(b*c,b))} = ${m/n}${R(c)}`;
+  if(kk>1) co+=` = ${m/n} ${TIMES} ${kk}${R(r)} = ${rxHtml(res)}`;
+  return kp('Calcule et simplifie :',F(m+R(b*c),n+R(b)),res,co);
+ }},
+
+{id:'somme',title:'Additionner des racines',color:'#2fb344',icon:()=>`3${R(2)} + ${R(2)}`,
+ desc:'Regrouper des racines identiques, simplifier avant d’additionner.',
+ levels:['Deux racines identiques','Trois termes, racines différentes','Simplifier d’abord'],
+ lesson:()=>`<p>On ne peut additionner (ou soustraire) que des racines <b>identiques</b>, comme on regroupe des objets :</p>
+ <div class="ex m">3${R(2)} + 5${R(2)} = (3 + 5)${R(2)} = 8${R(2)} &nbsp;&nbsp;&nbsp; (comme 3x + 5x = 8x)</div>
+ <div class="warn">⚠️ ${R(2)} + ${R(3)} ne se simplifie pas, et ${R(2)} + ${R(3)} ≠ ${R(5)}.</div>
+ <p>Parfois il faut d’abord <b>simplifier</b> chaque racine :</p>
+ <div class="ex m">${R(8)} + ${R(18)} = 2${R(2)} + 3${R(2)} = 5${R(2)}</div>`,
+ gen(L){
+  if(L===1){
+    const n=pick([2,3,5,6,7,10]);let a,b,c;do{a=ri(1,9);b=ri(1,9)*(Math.random()<.5?-1:1);c=a+b;}while(c===0);
+    const ex=sumH([{c:a,h:R(n)},{c:b,h:R(n)}]);
+    return kp('Calcule :',ex,mk(c,n),`${ex} = ${P(coefList([a,b]))}${R(n)} = ${rxHtml(mk(c,n))}`);
+  }
+  if(L===2){
+    if(Math.random()<.3){let p,q;do{p=pick([2,3,5,7]);q=pick([2,3,5,7]);}while(p===q);const a=ri(1,4),b=ri(1,4);
+      const ex=sumH([{c:a,h:R(p)},{c:b,h:R(q)}]);
+      return mcq('Calcule :',ex+' =','ne se simplifie pas',[(a+b===2?'':a+b)+R(p+q),(a*b===1?'':a*b)+R(p*q),(a+b)+R(p*q)],`${R(p)} et ${R(q)} ne sont pas identiques : on ne peut pas les regrouper (comme 2x + 3y ne fait pas 5xy).`);}
+    const n=pick([2,3,5,6,7]);let cs,s;do{cs=[ri(1,9),ri(1,9)*(Math.random()<.5?-1:1),ri(1,9)*(Math.random()<.5?-1:1)];s=cs[0]+cs[1]+cs[2];}while(s===0);
+    const ex=sumH(cs.map(c=>({c,h:R(n)})));
+    return kp('Calcule :',ex,mk(s,n),`${ex} = ${P(coefList(cs))}${R(n)} = ${rxHtml(mk(s,n))}`);
+  }
+  const r=pick([2,3,5,6,7]);let ts,S;
+  do{const cnt=pick([2,3,3]);ts=[];for(let i=0;i<cnt;i++){const k=ri(1,5);const c=i===0?ri(1,3):ri(1,3)*(Math.random()<.5?-1:1);ts.push({c,k});}
+    S=ts.reduce((s,t)=>s+t.c*t.k,0);}while(S===0||ts.filter(t=>t.k>1).length<2||ts.some(t=>t.k*t.k*r>200)||new Set(ts.map(t=>t.k)).size<ts.length);
+  const ex=sumH(ts.map(t=>({c:t.c,h:R(t.k*t.k*r)})));
+  const det=ts.filter(t=>t.k>1).map(t=>`${R(t.k*t.k*r)} = ${R(t.k*t.k+' '+TIMES+' '+r)} = ${t.k}${R(r)}`).join('<br>');
+  const simp=sumH(ts.map(t=>({c:t.c*t.k,h:R(r)})));
+  return kp('Calcule et simplifie :',ex,mk(S,r),`${det}<br>${ex} = ${simp} = ${rxHtml(mk(S,r))}`);
+ }},
+
+{id:'absolue',title:'Racine d’un carré',color:'#a855f7',icon:()=>`${R('a<sup>2</sup>')} = |a|`,
+ desc:'√(a²) = |a| et (√a)² = a : attention aux nombres négatifs.',
+ levels:['√(n²) et (√n)²','Différences et négatifs','Avec la lettre x'],
+ lesson:()=>`<p>Pour tout réel a :</p><div class="ex m">${R('a<sup>2</sup>')} = |a| &nbsp;&nbsp;&nbsp; (une racine carrée est toujours positive)</div>
+ <div class="ex m">${R(sq(P(MINUS+5)))} = ${R(25)} = 5 &nbsp;&nbsp; et non ${MINUS}5</div>
+ <p>Pour a ≥ 0 :</p><div class="ex m">${sq(P(R('a')))} = a &nbsp;&nbsp;&nbsp; ${sq(P(R(7)))} = 7</div>
+ <div class="warn">⚠️ ${MINUS}${R(25)} = ${MINUS}5 : ici le signe ${MINUS} est <b>devant</b> la racine.</div>`,
+ gen(L){
+  const n=ri(2,15);
+  if(L===1){
+    const t=pick(['ns','r2','neg','pos']);
+    if(t==='ns') return kp('Calcule :',R(sq(P(MINUS+n))),mk(n),`${R(sq(P(MINUS+n)))} = ${R(n*n)} = ${n}`);
+    if(t==='r2'){const m=nonSq(2,40);return kp('Calcule :',sq(P(R(m))),mk(m),`${sq(P(R(m)))} = ${R(m)} ${TIMES} ${R(m)} = ${m}`);}
+    if(t==='neg') return kp('Calcule :',MINUS+R(sq(n)),mk(-n),`${MINUS}${R(sq(n))} = ${MINUS}${R(n*n)} = ${MINUS}${n}<br><small>Le signe ${MINUS} est devant la racine.</small>`);
+    return kp('Calcule :',R(sq(n)),mk(n),`${R(sq(n))} = ${R(n*n)} = ${n}`);
+  }
+  if(L===2){
+    const t=pick(['d','d','nr','ns']);
+    if(t==='d'){const a=ri(1,12),b=a+ri(2,9);return kp('Calcule :',R(sq(P(a+' '+MINUS+' '+b))),mk(b-a),`${R(sq(P(a+' '+MINUS+' '+b)))} = ${R(sq(P(MINUS+(b-a))))} = |${MINUS}${b-a}| = ${b-a}`);}
+    if(t==='nr'){const m=nonSq(2,30);return kp('Calcule :',sq(P(MINUS+R(m))),mk(m),`${sq(P(MINUS+R(m)))} = ${P(MINUS+R(m))} ${TIMES} ${P(MINUS+R(m))} = ${sq(P(R(m)))} = ${m}`);}
+    const k=ri(10,30);return kp('Calcule :',R(sq(P(MINUS+k))),mk(k),`${R(sq(P(MINUS+k)))} = ${R(k*k)} = ${k}`);
+  }
+  const t=pick(['x','x','m','v']);
+  if(t==='x'){const k=ri(2,20);return kp(`Si x = ${MINUS}${k}, alors :`,R('x<sup>2</sup>'),mk(k),`${R('x<sup>2</sup>')} = |x| = |${MINUS}${k}| = ${k}`);}
+  if(t==='m') return mcq('Si x &lt; 0, alors :',R('x<sup>2</sup>')+' =',MINUS+'x',['x','x<sup>2</sup>','n’existe pas'],`${R('x<sup>2</sup>')} = |x| et comme x &lt; 0, |x| = ${MINUS}x (qui est bien positif !).`,{big:true});
+  const st=pick([
+    [`Pour tout réel x : ${R('x<sup>2</sup>')} = x`,false,`Contre-exemple : x = ${MINUS}3 donne ${R(sq(P(MINUS+3)))} = 3 ≠ ${MINUS}3. La bonne formule est ${R('x<sup>2</sup>')} = |x|.`],
+    [`Pour tout réel x : ${R('x<sup>2</sup>')} = |x|`,true,'Oui, c’est la propriété du cours.'],
+    [`${R(sq(P(MINUS+7)))} = ${MINUS}7`,false,`${R(sq(P(MINUS+7)))} = ${R(49)} = 7. Une racine carrée est toujours positive.`],
+    [`Pour tout réel x ≥ 0 : ${sq(P(R('x')))} = x`,true,'Oui : la racine carrée et le carré sont réciproques pour x ≥ 0.']]);
+  return vf('Vrai ou faux ?',st[0],st[1],st[2]);
+ }},
+
+{id:'equation',title:'Équation x² = a',color:'#0e9f6e',icon:()=>`<i>x</i><sup>2</sup> = a`,
+ desc:'Combien de solutions ? Puis trouver les solutions quand il y en a.',
+ levels:['a carré parfait, négatif ou nul','a quelconque : solutions ±√a à simplifier','Fractions, décimaux, équations à transformer'],
+ lesson:()=>`<p>Pour résoudre <span class="m">${sq(X)} = a</span>, on regarde le <b>signe de a</b> :</p>
+ <div class="ex m">a &gt; 0 : &nbsp; deux solutions &nbsp; <i>x</i> = ${R('a')} &nbsp;ou&nbsp; <i>x</i> = ${MINUS}${R('a')}</div>
+ <div class="ex m">a = 0 : &nbsp; une solution &nbsp; <i>x</i> = 0</div>
+ <div class="ex m">a &lt; 0 : &nbsp; aucune solution (un carré n’est jamais négatif)</div>
+ <p>Exemples :</p>
+ <div class="ex m">${sq(X)} = 49 ⇔ <i>x</i> = 7 ou <i>x</i> = ${MINUS}7 &nbsp;&nbsp;&nbsp; ${sq(X)} = 12 ⇔ <i>x</i> = 2${R(3)} ou <i>x</i> = ${MINUS}2${R(3)}</div>
+ <div class="ex m">3${sq(X)} = 75 ⇔ ${sq(X)} = 25 ⇔ <i>x</i> = 5 ou <i>x</i> = ${MINUS}5</div>
+ <div class="warn">⚠️ N’oublie pas la solution négative ! &nbsp; <span class="m">${sq(P(MINUS+7))} = 49</span> aussi.</div>
+ <p>Sur le clavier, touche <b>⇄ Case</b> (ou directement la case) pour passer à la deuxième solution.</p>`,
+ gen(L){
+  const negA=()=>-ri(1,50);
+  if(L===1){
+    const r=Math.random();
+    if(r<.6){const n=ri(1,12);return eqQ(n*n);}
+    if(r<.9) return eqQ(negA());
+    return eqQ(0);
+  }
+  if(L===2){
+    const r=Math.random();
+    if(r<.5) return eqQ(nonSq(2,80));
+    if(r<.72){const n=ri(2,20);return eqQ(n*n);}
+    if(r<.92) return eqQ(negA());
+    return eqQ(0);
+  }
+  const t=pick(['k','k','c','c','fr','dec']);
+  const pickA=()=>{const r=Math.random();return r<.45?ri(1,10)**2:r<.75?nonSq(2,30):-ri(1,20);};
+  if(t==='k'){const k=ri(2,5),a=pickA();return eqQ(a,1,false,`${k}${sq(X)} = ${fmt(k*a)}`);}
+  if(t==='c'){
+    const a=Math.random()<.15?0:pickA(), c=ri(1,15);
+    if(Math.random()<.5){const d=a+c;return eqQ(a,1,false,`${sq(X)} + ${c} = ${fmt(d)}`);}
+    const d=a-c;return eqQ(a,1,false,d===0?`${sq(X)} ${MINUS} ${c} = 0`:`${sq(X)} ${MINUS} ${c} = ${fmt(d)}`);
+  }
+  if(t==='fr'){
+    let p,q;do{q=ri(2,10);p=Math.random()<.5?ri(1,q+3)**2:nonSq(2,20);}while(gcd(p,q*q)!==1);
+    return eqQ(Math.random()<.2?-p:p,q*q);
+  }
+  const k=pick([1,2,3,4,5,6,7,8,9,11,12,13]);
+  return eqQ(k*k,100,true);
+ }},
+{id:'rationaliser',title:'Dénominateur rationnel',color:'#ef6c00',icon:()=>`${F(1,R(2))} = ${F(R(2),2)}`,
+ desc:'Faire disparaître la racine du dénominateur.',
+ levels:['1/√a et a/√a','a/√b à simplifier','Coefficients et √a/√b'],
+ lesson:()=>`<p>On multiplie le numérateur <b>et</b> le dénominateur par la racine du dénominateur, car ${R('a')} ${TIMES} ${R('a')} = a :</p>
+ <div class="ex m">${F(1,R(2))} = ${F('1 '+TIMES+' '+R(2),R(2)+' '+TIMES+' '+R(2))} = ${F(R(2),2)}</div>
+ <div class="ex m">${F(6,R(3))} = ${F('6'+R(3),3)} = 2${R(3)}</div>
+ <p>Pourquoi ? Avec un dénominateur entier, on peut additionner facilement des fractions : ${F(1,R(2))} + ${F(R(2),2)} = ${F(R(2),2)} + ${F(R(2),2)} = ${R(2)}.</p>`,
+ gen(L){
+  const Q=(p,a,q,b)=>{
+    const num=a>1?(p>1?p:'')+R(a):String(p), den=(q>1?q:'')+R(b), ex=F(num,den), ans=mk(p,a*b,q*b);
+    const [k,r]=sqf(a*b);
+    let c=`${ex} = ${F(num+' '+TIMES+' '+R(b),den+' '+TIMES+' '+R(b))} = ${F((p>1?p:'')+R(a*b),q*b)}`;
+    let last=F((p>1?p:'')+R(a*b),q*b);
+    if(k>1){last=F((p*k)+(r>1?R(r):''),q*b);c+=` = ${last}`;}
+    if(rxHtml(ans)!==last) c+=` = ${rxHtml(ans)}`;
+    c+=`<br><small>On multiplie en haut et en bas par ${R(b)}, car ${R(b)} ${TIMES} ${R(b)} = ${b}.</small>`;
+    return kp('Écris sans racine au dénominateur :',ex,ans,c);
+  };
+  if(L===1){const b=pick([2,3,5,6,7,10,11]);return Math.random()<.6?Q(1,1,1,b):Q(b,1,1,b);}
+  if(L===2) return Q(ri(2,12),1,1,pick([2,3,5,6,7,10]));
+  if(Math.random()<.5) return Q(ri(1,12),1,ri(2,4),pick([2,3,5,6,7]));
+  let a,b;do{a=pick([2,3,5,6,7,10]);b=pick([2,3,5,6,7,10]);}while(a===b);
+  return Q(1,a,1,b);
+ }},
+];
+const MIX={id:'mix',title:'Grand mélange',color:'#334066',icon:()=>'🎲',desc:'Des questions de tous les thèmes, au hasard.',
+ levels:['Niveau 1 de tous les thèmes','Niveau 2 de tous les thèmes','Niveau 3 de tous les thèmes'],
+ lesson:()=>'<p>Toutes les règles du cours sont mélangées. Tu peux revoir le rappel de chaque thème depuis l’écran d’accueil.</p>',
+ gen(L){const t=pick(THEMES);const q=t.gen(L);q.th=t.id;return q;}};
+const ALL=[...THEMES,MIX];
+const TH=id=>ALL.find(t=>t.id===id);
+
+/* =================== Stockage (version Windows) =================== */
+const Store={
+  data:{classes:[],results:[],settings:{pin:'',nq:10,chrono:120,sound:true}},
+  async load(){
+    if(!PROF) return;
+    try{
+      const s=window.rcLoad?await window.rcLoad():localStorage.getItem('rc_data');
+      if(s){const d=JSON.parse(s);this.data.classes=d.classes||[];this.data.results=d.results||[];Object.assign(this.data.settings,d.settings||{});}
+    }catch(e){console.error(e);}
+  },
+  save(){
+    if(!PROF) return;
+    const s=JSON.stringify(this.data);
+    try{ if(window.rcSave) window.rcSave(s).catch(e=>toast('Erreur d’enregistrement : '+e)); else localStorage.setItem('rc_data',s);}catch(e){console.error(e);}
+  }
+};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const cls=id=>Store.data.classes.find(c=>c.id===id);
+
+/* =================== État & rendu =================== */
+const S={screen:'home',student:null,theme:null,level:1,mode:'serie',ptab:'classes',pcid:null,psid:null,pickClass:null,lessonOpen:false};
+let G=null;
+const app=document.getElementById('app');
+const ovroot=document.getElementById('ovroot');
+
+function topbar(){
+  let who='';
+  if(PROF){
+    who=S.student?`<button class="chip" data-act="changeStudent">👤 ${S.student.guest?'Invité':esc(S.student.name)+' · '+esc(S.student.cname)} <span style="opacity:.6">— changer</span></button>`:'';
+  }
+  return `<div class="top"><button class="brand" data-act="home"><span class="logo m">√</span> Racines carrées</button><div class="spacer"></div>${who}
+  <button class="ibtn" data-act="sound" title="Son">${Store.data.settings.sound?'🔊':'🔇'}</button>
+  ${PROF?'<button class="ibtn" data-act="prof" title="Espace enseignant">⚙️</button>':''}</div>`;
+}
+function render(){
+  if(G&&G.timer&&S.screen!=='game'){clearInterval(G.timer);G.timer=null;}
+  const f=SCREENS[S.screen]||SCREENS.home;
+  app.innerHTML=f();
+  window.scrollTo(0,0);
+}
+function pctClass(p){return p==null?'n':p>=80?'g':p>=50?'o':'r';}
+function bestFor(sid,th,lv){let b=null;for(const r of Store.data.results){if(r.sid===sid&&r.theme===th&&r.level===lv&&r.total>0){const p=Math.round(100*r.correct/r.total);if(b==null||p>b)b=p;}}return b;}
+
+const SCREENS={
+home(){
+  if(PROF&&!S.student) return SCREENS.who();
+  const tiles=ALL.map(t=>{
+    let lv='';
+    if(PROF&&S.student&&!S.student.guest){lv='<div class="lv">'+[1,2,3].map(l=>{const b=bestFor(S.student.sid,t.id,l);return `<span class="${b==null?'':pctClass(b)}">N${l}${b!=null?' · '+b+'%':''}</span>`;}).join('')+'</div>';}
+    return `<button class="tile" style="--c:${t.color}" data-act="theme" data-id="${t.id}"><div class="ticon m">${t.icon()}</div><div class="ttitle">${t.title}</div><div class="tdesc">${t.desc}</div>${lv}</button>`;
+  }).join('');
+  return topbar()+`<div class="wrap"><h1>Choisis un thème</h1><p class="sub">Programme S4 — carrés, racines carrées et radicaux.</p><div class="grid">${tiles}</div></div>`;
+},
+who(){
+  const cl=Store.data.classes;
+  if(S.pickClass&&cls(S.pickClass)){
+    const c=cls(S.pickClass);
+    const st=[...c.students].sort((a,b)=>a.name.localeCompare(b.name,'fr'));
+    return topbar()+`<div class="wrap"><div class="row"><button class="btn ghost small" data-act="pickClass" data-id="">← Classes</button><h1 style="margin:0">${esc(c.name)} — qui es-tu ?</h1></div><br>
+    ${st.length?`<div class="who">${st.map(s=>`<button class="tile" data-act="pickStudent" data-id="${s.id}">${esc(s.name)}</button>`).join('')}</div>`:'<div class="empty">Aucun élève dans cette classe. Ajoute-les dans l’espace enseignant (⚙️).</div>'}</div>`;
+  }
+  return topbar()+`<div class="wrap"><h1>Bonjour ! Choisis ta classe</h1><p class="sub">Tes résultats seront enregistrés pour ton professeur.</p>
+  ${cl.length?`<div class="who">${cl.map(c=>`<button class="tile" data-act="pickClass" data-id="${c.id}">${esc(c.name)}<div class="tdesc">${c.students.length} élève${c.students.length>1?'s':''}</div></button>`).join('')}</div>`:'<div class="empty card">Aucune classe pour l’instant. Le professeur peut en créer dans l’espace enseignant (⚙️ en haut à droite).</div>'}
+  <br><button class="btn ghost" data-act="guest">Jouer en invité (sans enregistrer)</button></div>`;
+},
+config(){
+  const t=TH(S.theme), set=Store.data.settings;
+  const lv=t.levels.map((d,i)=>`<button class="ch ${S.level===i+1?'on':''}" data-act="level" data-l="${i+1}"><b>${'★'.repeat(i+1)}${'☆'.repeat(2-i)} &nbsp;Niveau ${i+1}</b><span>${d}</span></button>`).join('');
+  const nq=set.nq||10, ch=set.chrono||120;
+  const modes=[['serie',`Série de ${nq} questions`,'Prends ton temps, chaque erreur est corrigée.'],['serie2',`Série de ${nq*2} questions`,'Pour s’entraîner plus longtemps.'],['chrono',`Défi chrono — ${Math.round(ch/60*10)/10} min`,'Le plus de bonnes réponses possible.']];
+  const md=modes.map(m=>`<button class="ch ${S.mode===m[0]?'on':''}" data-act="mode" data-m="${m[0]}"><b>${m[1]}</b><span>${m[2]}</span></button>`).join('');
+  return topbar()+`<div class="wrap"><div class="row"><button class="btn ghost small" data-act="home">← Thèmes</button><h1 style="margin:0;color:${t.color}">${t.title}</h1></div><br>
+  <div class="cfg"><div class="card lesson"><h2 style="margin-top:0">📖 Rappel du cours</h2>${t.lesson()}</div>
+  <div><h2 style="margin-top:0">Niveau</h2><div class="choice">${lv}</div><h2>Mode</h2><div class="choice">${md}</div><br>
+  <button class="btn green" style="width:100%;font-size:26px;min-height:76px" data-act="start">▶ C’est parti !</button></div></div></div>`;
+},
+game(){
+  const q=G.q, t=TH(G.theme);
+  const isChrono=G.mode==='chrono';
+  const prog=isChrono?'':`<div class="prog"><div style="width:${100*G.idx/G.total}%"></div></div>`;
+  const left=isChrono?`<div class="stat t" id="tm">⏱ ${fmtTime(G.remaining())}</div>`:`<div class="stat">${G.idx+1} / ${G.total}</div>${prog}<div class="stat t" id="tm">⏱ ${fmtTime(G.elapsed())}</div>`;
+  const thName=q.th?` · <span style="color:${TH(q.th).color}">${TH(q.th).title}</span>`:'';
+  let ansZone='', side='';
+  if(q.type==='kp'){
+    ansZone=q.expr?`<div class="qexpr m"><span>${q.expr}</span><span>=</span><span class="ansbox act" id="ans">${inputHtml(G.input,true)}</span></div>`:`<div class="qexpr m"><span class="ansbox act" id="ans">${inputHtml(G.input,true)}</span></div>`;
+    side=keypad(false);
+  }else if(q.type==='enc'){
+    ansZone=`<div class="qexpr m"><span class="ansbox ${G.encA===0?'act':''}" id="enc0" data-act="encbox" data-i="0">${G.enc[0]||'<span class="ph">?</span>'}</span><span>&lt;</span><span>${q.expr}</span><span>&lt;</span><span class="ansbox ${G.encA===1?'act':''}" id="enc1" data-act="encbox" data-i="1">${G.enc[1]||'<span class="ph">?</span>'}</span></div>`;
+    side=keypad(true);
+  }else if(q.type==='eq'&&G.step===2){
+    const box=i=>`<span class="ansbox ${G.encA===i?'act':''}" id="eq${i}" data-act="eqbox" data-i="${i}">${inputHtml(G.eqIn[i],G.encA===i)}</span>`;
+    ansZone=`<div class="qexpr m"><span>${q.expr}</span></div><div class="qexpr m" style="font-size:clamp(34px,4.6vw,60px)"><span>${X} =</span>${box(0)}${q.nsol===2?`<span style="font-family:'Segoe UI',sans-serif;font-size:.5em;color:var(--muted)">ou</span><span>${X} =</span>${box(1)}`:''}</div>`;
+    side=keypad(q.nsol===2?'eq':false);
+  }else{
+    ansZone=q.expr?`<div class="qexpr m"><span>${q.expr}</span></div>`:'';
+    side=`<div class="opts ${q.two?'two':''}">${q.opts.map((o,i)=>`<button class="opt m ${q.big?'big':''}" data-act="opt" data-i="${i}" id="opt${i}">${o}</button>`).join('')}</div>`;
+  }
+  return `<div class="gbar"><button class="btn ghost small" data-act="quit">✕ Arrêter</button><div class="tt" style="color:${t.color}">${t.title} · N${G.level}${thName}</div>${left}
+  <div class="stat">✔ ${G.score}</div>${G.streak>=3?`<div class="stat hot">🔥 ${G.streak}</div>`:''}<button class="btn ghost small" data-act="lesson">📖 Rappel</button></div>
+  <div class="game"><div class="qcol"><div class="qcard" id="qcard"><div class="qlabel ${q.expr?'':'big'}">${q.type==='eq'&&G.step===2?'✔ Exact, '+(q.nsol===2?'deux solutions ! Écris-les :':'une seule solution ! Écris-la :'):q.label}</div>${ansZone}</div><div class="fb" id="fb"></div></div><div>${side}</div></div>`;
+},
+results(){
+  const t=TH(G.theme), n=G.log.length, ok=G.score, p=n?Math.round(100*ok/n):0;
+  const stars=p>=90?3:p>=70?2:p>=50?1:0;
+  const msg=n===0?'Aucune réponse…':p===100?'Parfait ! 🎉':p>=90?'Excellent !':p>=70?'Très bien !':p>=50?'C’est en bonne voie, continue !':'Relis le rappel du cours et réessaie !';
+  const errs=G.log.filter(l=>!l.ok);
+  return topbar()+`<div class="wrap"><div class="cfg"><div class="card" style="text-align:center">
+  <div class="tdesc" style="font-size:20px">${t.title} · Niveau ${G.level} · ${G.mode==='chrono'?'Défi chrono':'Série'}</div>
+  <div class="stars">${'⭐'.repeat(stars)}${'<span style="opacity:.2">⭐</span>'.repeat(3-stars)}</div>
+  <div class="big-score">${ok} / ${n}</div><h2>${msg}</h2><p class="sub">${p} % de réussite · ${fmtTime(G.dur)}</p>
+  <div class="row" style="justify-content:center"><button class="btn green" data-act="start">↻ Recommencer</button><button class="btn ghost" data-act="toConfig">Changer de niveau</button><button class="btn ghost" data-act="home">Autre thème</button></div></div>
+  <div class="card"><h2 style="margin-top:0">${errs.length?'À revoir ('+errs.length+')':'Aucune erreur 👏'}</h2>
+  ${errs.map(e=>`<div class="err"><div class="q">${e.label} <span class="m" style="font-size:26px">${e.expr}</span></div><div class="a">Ta réponse : <span class="m" style="color:var(--ko)">${e.given}</span> &nbsp; Attendu : <span class="m" style="color:var(--ok)">${e.exp}</span></div><div class="corr m" style="font-size:21px">${e.corr}</div></div>`).join('')}</div></div></div>`;
+},
+prof(){
+  const tab=S.ptab;
+  const tabs=[['classes','👥 Classes et élèves'],['results','📊 Résultats'],['settings','🔧 Réglages et sauvegarde']].map(t=>`<button class="tab ${tab===t[0]?'on':''}" data-act="ptab" data-t="${t[0]}">${t[1]}</button>`).join('');
+  return topbar()+`<div class="wrap"><div class="row"><button class="btn ghost small" data-act="home">← Retour aux élèves</button><h1 style="margin:0">Espace enseignant</h1></div><br><div class="tabs">${tabs}</div>${PROFTABS[tab]()}</div>`;
+},
+};
+function classList(){
+  const cl=Store.data.classes;
+  if(!S.pcid&&cl.length) S.pcid=cl[0].id;
+  return `<div class="list">${cl.map(c=>`<button class="li ${S.pcid===c.id?'on':''}" data-act="pclass" data-id="${c.id}"><span class="n">${esc(c.name)}</span><span class="c">${c.students.length} élève${c.students.length>1?'s':''}</span></button>`).join('')||'<div class="empty">Aucune classe.</div>'}
+  <button class="btn small" data-act="addClass">+ Nouvelle classe</button></div>`;
+}
+const PROFTABS={
+classes(){
+  const c=cls(S.pcid);
+  let right='<div class="card empty">Crée une classe pour commencer.</div>';
+  if(c){
+    const st=[...c.students].sort((a,b)=>a.name.localeCompare(b.name,'fr'));
+    right=`<div class="card"><div class="row"><h2 style="margin:0;flex:1">${esc(c.name)}</h2><button class="btn ghost small" data-act="renClass">✏️ Renommer</button><button class="btn red small" data-act="delClass">🗑 Supprimer la classe</button></div>
+    <h2>Élèves (${st.length})</h2>${st.length?`<div class="stud">${st.map(s=>`<div class="li"><span class="n">${esc(s.name)}</span><button class="ibtn" style="width:44px;height:44px;font-size:18px" data-act="renStud" data-id="${s.id}">✏️</button><button class="ibtn" style="width:44px;height:44px;font-size:18px" data-act="delStud" data-id="${s.id}">🗑</button></div>`).join('')}</div>`:'<div class="empty">Pas encore d’élèves.</div>'}
+    <h2>Ajouter des élèves</h2><p class="note">Un nom par ligne (tu peux coller une liste depuis un tableur).</p><textarea id="newStud" placeholder="Prénom Nom&#10;Prénom Nom"></textarea><br><br><button class="btn" data-act="addStud">+ Ajouter</button></div>`;
+  }
+  return `<div class="two-col"><div>${classList()}</div><div>${right}</div></div>`;
+},
+results(){
+  const c=cls(S.pcid);
+  let right='<div class="card empty">Aucune classe.</div>';
+  if(c){
+    if(S.psid&&c.students.find(s=>s.id===S.psid)) right=studentHistory(c,c.students.find(s=>s.id===S.psid));
+    else{
+      const st=[...c.students].sort((a,b)=>a.name.localeCompare(b.name,'fr'));
+      const head=ALL.map(t=>`<th style="color:${t.color}">${t.title}</th>`).join('');
+      const rows=st.map(s=>{
+        const rs=Store.data.results.filter(r=>r.sid===s.id);
+        const cells=ALL.map(t=>{const lst=rs.filter(r=>r.theme===t.id&&r.total>0);if(!lst.length)return '<td><span class="pc n">—</span></td>';
+          const last=lst[lst.length-1];const p=Math.round(100*last.correct/last.total);return `<td><span class="pc ${pctClass(p)}" title="Dernière séance">${p}%</span><div class="note">N${last.level} · ${lst.length}×</div></td>`;}).join('');
+        return `<tr><td><button class="li" style="min-height:44px;padding:6px 12px;display:block;white-space:nowrap" data-act="psid" data-id="${s.id}"><div class="n">${esc(s.name)} ›</div><div class="c">${rs.length} séance${rs.length>1?'s':''}</div></button></td>${cells}</tr>`;
+      }).join('');
+      right=`<div class="card"><div class="row"><h2 style="margin:0;flex:1">${esc(c.name)} — dernière séance par thème</h2><button class="btn small" data-act="csv">⬇ Exporter (CSV / Excel)</button></div>
+      <p class="note">Pourcentage de la dernière séance, niveau joué et nombre de séances. Touche un élève pour voir le détail.</p>
+      ${st.length?`<div class="scroll"><table class="res"><thead><tr><th>Élève</th>${head}</tr></thead><tbody>${rows}</tbody></table></div>`:'<div class="empty">Pas d’élèves.</div>'}</div>`;
+    }
+  }
+  if(!S.pcid&&Store.data.classes.length) S.pcid=Store.data.classes[0].id;
+  const chips=Store.data.classes.map(x=>`<button class="tab ${S.pcid===x.id?'on':''}" data-act="pclass" data-id="${x.id}">${esc(x.name)}</button>`).join('');
+  return `<div class="tabs">${chips}</div>${right}`;
+},
+settings(){
+  const s=Store.data.settings;
+  return `<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(360px,1fr))">
+  <div class="card"><h2 style="margin-top:0">🔒 Code de l’espace enseignant</h2><p class="note">Empêche les élèves d’ouvrir cet espace. Laisse vide pour ne pas mettre de code.</p>
+  <input type="password" id="pin" inputmode="numeric" maxlength="8" value="${esc(s.pin||'')}" placeholder="Pas de code"><br><br><button class="btn small" data-act="savePin">Enregistrer le code</button></div>
+  <div class="card"><h2 style="margin-top:0">🎯 Séries</h2><p class="note">Nombre de questions d’une série courte (la série longue en a le double).</p>
+  <div class="row">${[5,10,15,20].map(n=>`<button class="tab ${s.nq===n?'on':''}" data-act="setNq" data-n="${n}">${n}</button>`).join('')}</div>
+  <p class="note">Durée du défi chrono :</p><div class="row">${[60,120,180,300].map(n=>`<button class="tab ${s.chrono===n?'on':''}" data-act="setCh" data-n="${n}">${n/60} min</button>`).join('')}</div></div>
+  <div class="card"><h2 style="margin-top:0">💾 Sauvegarde</h2><p class="note">Les données sont enregistrées automatiquement sur cet ordinateur. Tu peux aussi exporter une copie (pour changer d’ordinateur par exemple) et la réimporter.</p>
+  <div class="row"><button class="btn small" data-act="exportJson">⬇ Exporter une sauvegarde</button><label class="btn ghost small">⬆ Importer<input type="file" accept=".json,application/json" id="impFile" style="display:none"></label></div></div>
+  <div class="card"><h2 style="margin-top:0">🧹 Effacer les résultats</h2><p class="note">Supprime l’historique de tous les élèves (les classes et élèves sont conservés).</p><button class="btn red small" data-act="wipeResults">Effacer tous les résultats</button></div></div>`;
+}};
+function studentHistory(c,s){
+  const rs=Store.data.results.filter(r=>r.sid===s.id).slice().reverse();
+  const rows=rs.map(r=>{const p=r.total?Math.round(100*r.correct/r.total):0;const d=new Date(r.date);
+    return `<details class="err"><summary style="font-size:18px;cursor:pointer;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><span class="pc ${pctClass(p)}">${p}%</span><b>${TH(r.theme)?TH(r.theme).title:r.theme}</b> N${r.level} · ${r.mode==='chrono'?'chrono':'série'} · ${r.correct}/${r.total} · ${fmtTime(r.dur)} <span class="note">${d.toLocaleDateString('fr-FR')} ${d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</span></summary>
+    ${(r.errors||[]).map(e=>`<div style="padding:8px 0 8px 20px"><span>${e.label}</span> <span class="m" style="font-size:22px">${e.expr}</span> — donné : <span class="m" style="color:var(--ko)">${e.given}</span>, attendu : <span class="m" style="color:var(--ok)">${e.exp}</span></div>`).join('')||'<div class="note" style="padding:8px 20px">Aucune erreur.</div>'}</details>`;}).join('');
+  return `<div class="card"><div class="row"><button class="btn ghost small" data-act="psid" data-id="">← Classe</button><h2 style="margin:0;flex:1">${esc(s.name)} <span class="note">${esc(c.name)}</span></h2><button class="btn red small" data-act="wipeStud" data-id="${s.id}">Effacer son historique</button></div><br>
+  ${rs.length?rows:'<div class="empty">Aucune séance pour l’instant.</div>'}</div>`;
+}
+
+/* =================== Clavier =================== */
+function keypad(encMode){
+  const k=(v,lab,c='',span=1)=>`<button class="key ${c}" data-act="key" data-k="${v}"${span>1?` style="grid-column:span ${span}"`:''}>${lab}</button>`;
+  const tabMode=encMode==='eq'; if(tabMode) encMode=false;
+  const off=encMode?' off':'';
+  return `<div class="keypad">${k('7','7')}${k('8','8')}${k('9','9')}${k('del','⌫','del')}
+  ${k('4','4')}${k('5','5')}${k('6','6')}${k('√','√','sp m'+off)}
+  ${k('1','1')}${k('2','2')}${k('3','3')}${k('/','/','sp m'+off)}
+  ${k('-',MINUS,'sp m'+off)}${k('0','0')}${k(',',',','sp'+off)}${k('clr','C','del')}
+  ${encMode||tabMode?k('tab','⇄ Case','sp',2)+k('ok','✓ Valider','ok',2):k('ok','✓ Valider','ok',4)}</div>`;
+}
+function pressKey(v){
+  if(!G||G.locked) return;
+  const q=G.q;
+  if(v==='ok') return validate();
+  if(q.type==='enc'){
+    if(v==='tab'){G.encA=1-G.encA;updEnc();return;}
+    let s=G.enc[G.encA]||'';
+    if(v==='del') s=s.slice(0,-1);
+    else if(v==='clr') s='';
+    else if(/^\d$/.test(v)&&s.length<3) s=(s==='0'?'':s)+v;
+    else return bump();
+    G.enc[G.encA]=s; updEnc(); return;
+  }
+  const fb0=document.getElementById('fb');
+  if(q.type==='eq'){
+    if(G.step!==2) return;
+    if(v==='tab'){ if(q.nsol===2){G.encA=1-G.encA;updEq();} return; }
+    const ns=editStr(G.eqIn[G.encA],v); if(ns===null) return bump();
+    G.eqIn[G.encA]=ns; updEq(); if(fb0&&fb0.classList.contains('al'))fb0.className='fb'; return;
+  }
+  if(v==='tab') return;
+  const s=editStr(G.input,v); if(s===null) return bump();
+  G.input=s;
+  const el=document.getElementById('ans'); if(el){el.className='ansbox act';el.innerHTML=inputHtml(s,true);}
+  const fb=document.getElementById('fb'); if(fb&&fb.classList.contains('al')){fb.className='fb';}
+}
+function editStr(s,v){
+  if(v==='del') return s.slice(0,-1);
+  if(v==='clr') return '';
+  if(v==='-') return s.startsWith('-')?s.slice(1):'-'+s;
+  if(s.length>=14) return null;
+  if(v==='√') return (s.includes('√')||s.includes('/')||s.endsWith(','))?null:s+'√';
+  if(v==='/') return (s.includes('/')||!/\d$/.test(s))?null:s+'/';
+  if(v===',') return (s.includes(',')||s.includes('√')||s.includes('/')||!/\d$/.test(s))?null:s+',';
+  if(/^\d$/.test(v)) return s+v;
+  return null;
+}
+function updEq(){
+  for(const i of [0,1]){const el=document.getElementById('eq'+i);if(el){el.innerHTML=inputHtml(G.eqIn[i],G.encA===i);el.className='ansbox'+(G.encA===i?' act':'');}}
+}
+function updEnc(){
+  for(const i of [0,1]){const el=document.getElementById('enc'+i);if(el){el.innerHTML=G.enc[i]||'<span class="ph">?</span>';el.className='ansbox'+(G.encA===i?' act':'');}}
+}
+function bump(){const c=document.getElementById('qcard');if(c){c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake');}}
+
+/* =================== Jeu =================== */
+function fmtTime(s){s=Math.max(0,Math.round(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
+function newGame(){
+  const set=Store.data.settings;
+  G={theme:S.theme,level:S.level,mode:S.mode==='chrono'?'chrono':'serie',total:S.mode==='serie2'?(set.nq||10)*2:S.mode==='chrono'?9999:(set.nq||10),
+    idx:0,score:0,streak:0,log:[],seen:new Set(),t0:Date.now(),chrono:set.chrono||120,locked:false,timer:null};
+  G.elapsed=()=>(Date.now()-G.t0)/1000;
+  G.remaining=()=>G.chrono-G.elapsed();
+  G.timer=setInterval(tick,250);
+  nextQ(true);
+}
+function tick(){
+  if(!G||S.screen!=='game') return;
+  const el=document.getElementById('tm');
+  if(G.mode==='chrono'){ const r=G.remaining(); if(el) el.textContent='⏱ '+fmtTime(r); if(r<=0) finish(); }
+  else if(el) el.textContent='⏱ '+fmtTime(G.elapsed());
+}
+function genQ(){
+  const t=TH(G.theme);let q;
+  for(let i=0;i<30;i++){q=t.gen(G.level);const key=q.label+'|'+q.expr+'|'+(q.th||'');if(!G.seen.has(key)){G.seen.add(key);break;}}
+  return q;
+}
+function nextQ(first){
+  if(!first) G.idx++;
+  if(G.mode!=='chrono'&&G.idx>=G.total) return finish();
+  G.q=genQ(); G.input=''; G.enc=['','']; G.encA=0; G.locked=false; G.tries=0; G.step=1; G.eqIn=['',''];
+  S.screen='game'; render();
+}
+function validate(){
+  const q=G.q;
+  if(q.type==='kp'){
+    if(!G.input) return bump();
+    const r=checkKp(G.input,q.ans);
+    if(r.status==='invalid'){showFb('al','Écriture incomplète','Vérifie ce que tu as tapé (par exemple : 3√5 ou √2/2).');return bump();}
+    if(r.status==='almost'){
+      G.tries++;
+      if(G.tries<2){showFb('al','Presque ! La valeur est juste…','… mais l’écriture n’est pas la plus simple. '+r.why+' Corrige ta réponse.');const el=document.getElementById('ans');if(el)el.className='ansbox act';return;}
+      return answer(false,inputHtml(G.input,false),'Valeur juste, mais pas simplifiée. '+r.why);
+    }
+    return answer(r.status==='ok',inputHtml(G.input,false));
+  }
+  if(q.type==='eq'){
+    if(G.step!==2) return;
+    const n=q.nsol, ins=G.eqIn.slice(0,n);
+    const empty=ins.findIndex(x=>!x);
+    if(empty>=0){G.encA=empty;updEq();return bump();}
+    const sc=st=>st.reduce((a,x)=>a+(x==='ok'?2:x==='almost'?1:0),0);
+    let best=null;
+    for(const o of (n===2?[[0,1],[1,0]]:[[0]])){const st=ins.map((x,i)=>checkKp(x,q.sols[o[i]]));const ss=st.map(r=>r.status);if(!best||sc(ss)>sc(best.ss))best={st,ss};}
+    if(best.ss.includes('invalid')){showFb('al','Écriture incomplète','Vérifie ce que tu as tapé (par exemple : 3√5 ou −3√5).');return bump();}
+    const given=`${X} = ${inputHtml(ins[0],false)}`+(n===2?` &nbsp;ou&nbsp; ${X} = ${inputHtml(ins[1],false)}`:'');
+    const allOk=best.ss.every(x=>x==='ok');
+    const almost=!allOk&&best.ss.every(x=>x!=='ko');
+    if(almost&&G.tries<1){G.tries++;const w=best.st.find(r=>r.status==='almost').why;showFb('al','Presque ! Les valeurs sont justes…','… mais une écriture n’est pas la plus simple. '+w+' Corrige ta réponse.');return;}
+    best.ss.forEach((x,i)=>{const el=document.getElementById('eq'+i);if(el){el.className='ansbox '+(x==='ok'?'good':'bad');el.innerHTML=inputHtml(ins[i],false);}});
+    return answer(allOk,given,almost?'Valeurs justes, mais pas simplifiées.':(n===2&&best.ss.filter(x=>x==='ok').length===1?'Une seule des deux solutions est juste. As-tu pensé à la solution négative ?':''));
+  }
+  if(q.type==='enc'){
+    if(G.enc[0]===''||G.enc[1]===''){ if(G.enc[0]!==''&&G.enc[1]===''){G.encA=1;updEnc();} return bump();}
+    const ok=+G.enc[0]===q.ans[0]&&+G.enc[1]===q.ans[1];
+    return answer(ok,`${G.enc[0]}${LT}${q.expr}${LT}${G.enc[1]}`);
+  }
+}
+function chooseOpt(i){
+  if(G.locked) return;
+  const q=G.q, ok=i===q.correct;
+  if(q.type==='eq'&&ok&&q.nsol>0){
+    document.getElementById('opt'+i).classList.add('good');
+    document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+    G.locked=true; beep(true);
+    setTimeout(()=>{if(G&&G.q===q){G.step=2;G.encA=0;G.locked=false;render();}},650);
+    return;
+  }
+  document.getElementById('opt'+q.correct).classList.add('good');
+  if(!ok) document.getElementById('opt'+i).classList.add('bad');
+  document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+  answer(ok,q.opts[i]);
+}
+function answer(ok,givenHtml,extra){
+  G.locked=true;
+  if(ok){G.score++;G.streak++;}else G.streak=0;
+  G.log.push({ok,label:q2label(G.q),expr:G.q.expr,given:givenHtml,exp:G.q.ansHtml,corr:G.q.corr});
+  beep(ok);
+  const box=document.getElementById('ans');
+  if(box){box.className='ansbox '+(ok?'good':'bad');box.innerHTML=inputHtml(G.input,false);}
+  if(G.q.type==='enc'){for(const i of [0,1]){const el=document.getElementById('enc'+i);if(el)el.className='ansbox '+(+G.enc[i]===G.q.ans[i]?'good':'bad');}}
+  const last=G.mode!=='chrono'&&G.idx+1>=G.total;
+  const nextLbl=last?'Voir mes résultats →':'Question suivante →';
+  if(ok){
+    const praise=pick(['Bravo !','Exact !','Bien joué !','Parfait !','Super !','Oui !']);
+    showFb('ok','✔ '+praise+(G.streak>=3?' 🔥 '+G.streak+' d’affilée':''),`<div class="corr m">${G.q.corr}</div><div class="fbrow"><button class="btn green" data-act="next">${nextLbl}</button></div>`);
+    G.auto=setTimeout(()=>{if(G&&G.locked&&S.screen==='game')nextQ();},G.mode==='chrono'?900:2200);
+  }else{
+    showFb('ko','✘ Pas tout à fait.',`${extra?'<div>'+extra+'</div>':''}<div>Réponse attendue : <span class="m" style="font-size:28px;font-weight:700;color:var(--ok)">${G.q.ansHtml}</span></div><div class="corr m">${G.q.corr}</div><div class="fbrow"><button class="btn" data-act="next">${nextLbl}</button></div>`);
+  }
+  // mise à jour du score affiché
+  const stats=document.querySelectorAll('.gbar .stat');
+  stats.forEach(s=>{if(s.textContent.startsWith('✔'))s.textContent='✔ '+G.score;});
+}
+function q2label(q){return q.label;}
+function showFb(cls,h,body){const fb=document.getElementById('fb');if(!fb)return;fb.className='fb '+cls;fb.innerHTML=`<div class="h">${h}</div>${body}`;if(window.innerWidth<960||matchMedia('(orientation:portrait)').matches)fb.scrollIntoView({behavior:'smooth',block:'nearest'});}
+function finish(){
+  if(!G) return;
+  clearInterval(G.timer);G.timer=null;clearTimeout(G.auto);
+  G.dur=G.mode==='chrono'?Math.min(G.chrono,G.elapsed()):G.elapsed();
+  if(PROF&&S.student&&!S.student.guest&&G.log.length){
+    Store.data.results.push({id:uid(),sid:S.student.sid,cid:S.student.cid,date:new Date().toISOString(),theme:G.theme,level:G.level,mode:G.mode,total:G.log.length,correct:G.score,dur:Math.round(G.dur),
+      errors:G.log.filter(l=>!l.ok).slice(0,30).map(l=>({label:l.label,expr:l.expr,given:l.given,exp:l.exp}))});
+    Store.save();
+  }
+  S.screen='results';render();
+}
+
+/* =================== Son =================== */
+let actx=null;
+function beep(ok){
+  if(!Store.data.settings.sound) return;
+  try{
+    actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    const notes=ok?[660,880]:[300,220];
+    notes.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain();o.type=ok?'sine':'triangle';o.frequency.value=f;
+      const t=actx.currentTime+i*.11;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.18,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.16);
+      o.connect(g).connect(actx.destination);o.start(t);o.stop(t+.18);});
+  }catch(e){}
+}
+
+/* =================== Fenêtres modales =================== */
+function modal(html,buttons,wide){
+  return new Promise(res=>{
+    const ov=document.createElement('div');ov.className='ov';
+    ov.innerHTML=`<div class="mbox ${wide?'wide':''}">${html}<div class="mbtns">${buttons.map((b,i)=>`<button class="btn ${b.cls||''}" data-i="${i}">${b.label}</button>`).join('')}</div></div>`;
+    ov.addEventListener('click',e=>{const b=e.target.closest('.mbtns .btn');if(b){const i=+b.dataset.i;const inp=ov.querySelector('input');const v=inp?inp.value:null;ov.remove();res({v:buttons[i].v,input:v});}});
+    ovroot.appendChild(ov);
+    const inp=ov.querySelector('input');if(inp){inp.focus();inp.select();inp.addEventListener('keydown',e=>{if(e.key==='Enter'){const v=inp.value;ov.remove();res({v:buttons[buttons.length-1].v,input:v});}});}
+  });
+}
+const confirmBox=(msg,yes='Oui',cls='red')=>modal(`<h3>${msg}</h3>`,[{label:'Annuler',v:false,cls:'ghost'},{label:yes,v:true,cls}]).then(r=>r.v);
+const promptBox=(title,val='')=>modal(`<h3>${title}</h3><input type="text" value="${esc(val)}">`,[{label:'Annuler',v:false,cls:'ghost'},{label:'OK',v:true}]).then(r=>r.v?(r.input||'').trim():null);
+function pinBox(){
+  return new Promise(res=>{
+    let code='';
+    const ov=document.createElement('div');ov.className='ov';
+    const draw=()=>{ov.querySelector('.pindots').textContent=code.replace(/./g,'●')||' ';};
+    ov.innerHTML=`<div class="mbox" style="max-width:420px;text-align:center"><h3>Code enseignant</h3><div class="pindots"></div><div class="pinpad">${[1,2,3,4,5,6,7,8,9,'C',0,'✓'].map(k=>`<button class="key ${k==='✓'?'ok':k==='C'?'del':''}" data-k="${k}">${k}</button>`).join('')}</div><div class="mbtns"><button class="btn ghost" data-x="1">Annuler</button></div></div>`;
+    ov.addEventListener('click',e=>{const b=e.target.closest('[data-k]');if(e.target.closest('[data-x]')){ov.remove();res(null);return;}
+      if(!b)return;const k=b.dataset.k;if(k==='C')code='';else if(k==='✓'){ov.remove();res(code);return;}else if(code.length<8)code+=k;draw();});
+    ovroot.appendChild(ov);draw();
+  });
+}
+function toast(msg){const t=document.createElement('div');t.className='toast';t.innerHTML=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3500);}
+function lessonOverlay(){
+  const t=TH(G?G.q.th||G.theme:S.theme);
+  modal(`<h3 style="color:${t.color}">📖 ${t.title}</h3><div class="lesson">${t.lesson()}</div>`,[{label:'Fermer',v:true}],true);
+}
+
+/* =================== Fichiers =================== */
+async function saveFile(name,content,mime){
+  if(window.rcSaveFile){try{const p=await window.rcSaveFile(name,content);toast('Fichier enregistré :<br>'+esc(p));}catch(e){toast('Erreur : '+esc(e));}return;}
+  const blob=new Blob([content],{type:mime});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+}
+function exportCsv(){
+  const c=cls(S.pcid);if(!c)return;
+  const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+  const lines=[['Classe','Élève','Date','Heure','Thème','Niveau','Mode','Bonnes réponses','Questions','Réussite (%)','Durée (s)'].map(q).join(';')];
+  const st=[...c.students].sort((a,b)=>a.name.localeCompare(b.name,'fr'));
+  for(const s of st) for(const r of Store.data.results.filter(r=>r.sid===s.id)){const d=new Date(r.date);
+    lines.push([c.name,s.name,d.toLocaleDateString('fr-FR'),d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}),TH(r.theme)?TH(r.theme).title:r.theme,r.level,r.mode==='chrono'?'Chrono':'Série',r.correct,r.total,r.total?Math.round(100*r.correct/r.total):0,r.dur].map(q).join(';'));}
+  saveFile(`resultats_${c.name.replace(/[^\w\-]+/g,'_')}_${new Date().toISOString().slice(0,10)}.csv`,'﻿'+lines.join('\r\n'),'text/csv');
+}
+
+/* =================== Actions =================== */
+const ACT={
+  home(){ if(S.screen==='game') return ACT.quit(); G=null; S.screen='home'; S.pickClass=null; render(); },
+  theme(d){ S.theme=d.id; S.screen='config'; render(); },
+  level(d){ S.level=+d.l; render(); },
+  mode(d){ S.mode=d.m; render(); },
+  start(){ newGame(); },
+  toConfig(){ S.screen='config'; render(); },
+  key(d){ pressKey(d.k); },
+  eqbox(d){ if(G&&!G.locked&&G.step===2){G.encA=+d.i;updEq();} },
+  encbox(d){ if(G&&!G.locked){G.encA=+d.i;updEnc();} },
+  opt(d){ chooseOpt(+d.i); },
+  next(){ clearTimeout(G.auto); nextQ(); },
+  lesson(){ lessonOverlay(); },
+  async quit(){ if(G&&G.log.length){ const r=await modal('<h3>Arrêter la série ?</h3><p class="sub">Tes réponses déjà données seront comptées.</p>',[{label:'Continuer',v:0,cls:'ghost'},{label:'Abandonner',v:1,cls:'ghost'},{label:'Terminer et voir le score',v:2}]);
+      if(r.v===2) return finish(); if(r.v===1){clearInterval(G.timer);clearTimeout(G.auto);G=null;S.screen='home';render();} return; }
+    if(G){clearInterval(G.timer);clearTimeout(G.auto);} G=null; S.screen='home'; render(); },
+  sound(){ Store.data.settings.sound=!Store.data.settings.sound; Store.save(); if(S.screen==='game'){document.querySelector('[data-act=sound]').textContent=Store.data.settings.sound?'🔊':'🔇';} else render(); },
+  changeStudent(){ if(S.screen==='game') return; S.student=null; S.pickClass=null; S.screen='home'; render(); },
+  pickClass(d){ S.pickClass=d.id||null; render(); },
+  pickStudent(d){ const c=cls(S.pickClass); const s=c.students.find(x=>x.id===d.id); S.student={cid:c.id,sid:s.id,name:s.name,cname:c.name}; S.screen='home'; render(); },
+  guest(){ S.student={guest:true}; render(); },
+  async prof(){ if(S.screen==='game') return; const pin=Store.data.settings.pin; if(pin){ const p=await pinBox(); if(p===null) return; if(p!==pin){toast('Code incorrect');return;} } S.screen='prof'; render(); },
+  ptab(d){ S.ptab=d.t; S.psid=null; render(); },
+  pclass(d){ S.pcid=d.id; S.psid=null; render(); },
+  psid(d){ S.psid=d.id||null; render(); },
+  async addClass(){ const n=await promptBox('Nom de la nouvelle classe','S4 '); if(n){const c={id:uid(),name:n,students:[]};Store.data.classes.push(c);S.pcid=c.id;S.ptab='classes';Store.save();render();} },
+  async renClass(){ const c=cls(S.pcid); const n=await promptBox('Nouveau nom de la classe',c.name); if(n){c.name=n;Store.save();render();} },
+  async delClass(){ const c=cls(S.pcid); if(await confirmBox(`Supprimer la classe « ${esc(c.name)} », ses élèves et leurs résultats ?`,'Supprimer')){const ids=new Set(c.students.map(s=>s.id));Store.data.results=Store.data.results.filter(r=>!ids.has(r.sid));Store.data.classes=Store.data.classes.filter(x=>x!==c);S.pcid=null;Store.save();render();} },
+  addStud(){ const c=cls(S.pcid); const v=document.getElementById('newStud').value; const names=v.split(/\r?\n|;/).map(s=>s.replace(/\t/g,' ').trim()).filter(Boolean); if(!names.length) return toast('Écris au moins un nom.'); for(const n of names) c.students.push({id:uid(),name:n}); Store.save(); render(); toast(names.length+' élève(s) ajouté(s)'); },
+  async renStud(d){ const c=cls(S.pcid); const s=c.students.find(x=>x.id===d.id); const n=await promptBox('Nouveau nom',s.name); if(n){s.name=n;Store.save();render();} },
+  async delStud(d){ const c=cls(S.pcid); const s=c.students.find(x=>x.id===d.id); if(await confirmBox(`Supprimer ${esc(s.name)} et ses résultats ?`,'Supprimer')){c.students=c.students.filter(x=>x!==s);Store.data.results=Store.data.results.filter(r=>r.sid!==s.id);Store.save();render();} },
+  async wipeStud(d){ if(await confirmBox('Effacer tout l’historique de cet élève ?','Effacer')){Store.data.results=Store.data.results.filter(r=>r.sid!==d.id);Store.save();render();} },
+  async wipeResults(){ if(await confirmBox('Effacer les résultats de TOUS les élèves ?','Tout effacer')){Store.data.results=[];Store.save();render();toast('Résultats effacés');} },
+  csv(){ exportCsv(); },
+  savePin(){ Store.data.settings.pin=document.getElementById('pin').value.trim(); Store.save(); toast(Store.data.settings.pin?'Code enregistré':'Code supprimé'); },
+  setNq(d){ Store.data.settings.nq=+d.n; Store.save(); render(); },
+  setCh(d){ Store.data.settings.chrono=+d.n; Store.save(); render(); },
+  exportJson(){ saveFile(`sauvegarde_racines_${new Date().toISOString().slice(0,10)}.json`,JSON.stringify(Store.data,null,1),'application/json'); },
+};
+app.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el||!app.contains(el))return;const a=ACT[el.dataset.act];if(a)a(el.dataset,el);});
+app.addEventListener('change',async e=>{
+  if(e.target.id!=='impFile') return;
+  const f=e.target.files[0]; if(!f) return;
+  try{const d=JSON.parse(await f.text()); if(!Array.isArray(d.classes)) throw 0;
+    if(await confirmBox(`Remplacer les données actuelles par cette sauvegarde (${d.classes.length} classe(s), ${(d.results||[]).length} séance(s)) ?`,'Remplacer')){
+      Store.data.classes=d.classes;Store.data.results=d.results||[];Object.assign(Store.data.settings,d.settings||{});Store.save();S.pcid=null;render();toast('Sauvegarde importée');}
+  }catch(err){toast('Fichier de sauvegarde invalide');}
+});
+document.addEventListener('keydown',e=>{
+  if(ovroot.children.length||S.screen!=='game'||!G) return;
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+  const k=e.key;
+  if(G.locked){ if(k==='Enter'||k===' '){e.preventDefault();clearTimeout(G.auto);nextQ();} return; }
+  if(G.q.type==='mcq'||(G.q.type==='eq'&&G.step===1)){const n=parseInt(k,10);if(n>=1&&n<=G.q.opts.length)chooseOpt(n-1);return;}
+  const map={'Backspace':'del','Delete':'clr','Enter':'ok','r':'√','R':'√','v':'√','V':'√','/':'/','-':'-',',':',','.':',','Tab':'tab'};
+  if(/^\d$/.test(k)) pressKey(k); else if(map[k]){e.preventDefault();pressKey(map[k]);}
+});
+document.addEventListener('contextmenu',e=>{if(!/INPUT|TEXTAREA/.test(e.target.tagName))e.preventDefault();});
+document.addEventListener('wheel',e=>{if(e.ctrlKey)e.preventDefault();},{passive:false});
+document.addEventListener('gesturestart',e=>e.preventDefault());
+
+/* =================== Démarrage =================== */
+Store.load().then(render);
+</script>
+</body>
+</html>

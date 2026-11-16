@@ -141,7 +141,7 @@ function brut(s){
          .replace(/\\sqrt\{([^{}]*)\}/g, (m,a) => a.length === 1 ? "√" + a : `√(${a})`);
   }
   const grec = { alpha:"α", beta:"β", gamma:"γ", delta:"δ", Delta:"Δ", pi:"π", theta:"θ", lambda:"λ", infty:"∞", leq:"≤", geq:"≥", neq:"≠", in:"∈", cdots:"…", ldots:"…" };
-  return s.replace(/\\([a-zA-Z]+)/g, (m,w) => grec[w] || w).replace(/[{}]/g, "").replace(/\s+/g, " ").trim();
+  return s.replace(/\\mathbb\{?R\}?/g, "ℝ").replace(/\\mathbb\{?N\}?/g, "ℕ").replace(/\\mathbb\{?Z\}?/g, "ℤ").replace(/\\([a-zA-Z]+)/g, (m,w) => grec[w] || w).replace(/[{}]/g, "").replace(/\s+/g, " ").trim();
 }
 function maintenant(){ return Date.now() + decalage; }
 function heure(ts){ return new Date(ts).toLocaleTimeString("fr-FR", {hour:"2-digit", minute:"2-digit", second:"2-digit"}); }

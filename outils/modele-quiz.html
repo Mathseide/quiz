@@ -135,9 +135,11 @@ function brut(s){
     s = s.replace(/\^\{([^{}]*)\}/g, (m,a) => a.length === 1 ? "^" + a : `^(${a})`)
          .replace(/\\[dt]?frac\{([^{}]*)\}\{([^{}]*)\}/g, (m,a,b) => /^[\w.,^]+$/.test(a) && /^[\w.,^]+$/.test(b) ? `${a}/${b}` : `(${a})/(${b})`)
          .replace(/\\sqrt\[3\]\{([^{}]*)\}/g, (m,a) => a.length === 1 ? "∛" + a : `∛(${a})`)
+         .replace(/\\sqrt\[4\]\{([^{}]*)\}/g, (m,a) => a.length === 1 ? "∜" + a : `∜(${a})`)
          .replace(/\\sqrt\{([^{}]*)\}/g, (m,a) => a.length === 1 ? "√" + a : `√(${a})`);
   }
-  return s.replace(/[{}]/g, "").replace(/\s+/g, " ").trim();
+  const grec = { alpha:"α", beta:"β", gamma:"γ", delta:"δ", Delta:"Δ", pi:"π", theta:"θ", lambda:"λ", infty:"∞", leq:"≤", geq:"≥", neq:"≠", in:"∈", cdots:"…", ldots:"…" };
+  return s.replace(/\\([a-zA-Z]+)/g, (m,w) => grec[w] || w).replace(/[{}]/g, "").replace(/\s+/g, " ").trim();
 }
 function maintenant(){ return Date.now() + decalage; }
 function heure(ts){ return new Date(ts).toLocaleTimeString("fr-FR", {hour:"2-digit", minute:"2-digit", second:"2-digit"}); }

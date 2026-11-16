@@ -133,7 +133,9 @@ function brut(s){
   for (let i = 0, avant = ""; i < 10 && avant !== s; i++) {
     avant = s;
     s = s.replace(/\^\{([^{}]*)\}/g, (m,a) => a.length === 1 ? "^" + a : `^(${a})`)
-         .replace(/\\[dt]?frac\{([^{}]*)\}\{([^{}]*)\}/g, (m,a,b) => /^[\w.,^]+$/.test(a) && /^[\w.,^]+$/.test(b) ? `${a}/${b}` : `(${a})/(${b})`);
+         .replace(/\\[dt]?frac\{([^{}]*)\}\{([^{}]*)\}/g, (m,a,b) => /^[\w.,^]+$/.test(a) && /^[\w.,^]+$/.test(b) ? `${a}/${b}` : `(${a})/(${b})`)
+         .replace(/\\sqrt\[3\]\{([^{}]*)\}/g, (m,a) => a.length === 1 ? "∛" + a : `∛(${a})`)
+         .replace(/\\sqrt\{([^{}]*)\}/g, (m,a) => a.length === 1 ? "√" + a : `√(${a})`);
   }
   return s.replace(/[{}]/g, "").replace(/\s+/g, " ").trim();
 }

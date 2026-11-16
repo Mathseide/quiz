@@ -39,6 +39,8 @@
   .msg { padding:12px; border-radius:10px; margin-top:16px; }
   .msg.info { background:#e8f0f9; } .msg.err { background:#fdecea; } .msg.warn { background:#fff3e0; }
   .corr { border-left:6px solid; border-radius:8px; padding:12px 14px; margin:12px 0; line-height:1.6; }
+  .corr.partiel { border-color:#e65100; background:#fff3e0; }
+  .figure { margin:0 0 10px; }
   .corr.bon { border-color:var(--vert); background:#e8f5e9; } .corr.faux { border-color:var(--rouge); background:#fdecea; }
   .corr-t { font-weight:700; } .expl { margin-top:6px; color:#333; font-style:italic; }
   #chrono { position:sticky; top:0; z-index:5; display:none; text-align:center; font-size:1.4rem; font-weight:700;
@@ -262,7 +264,7 @@ function ecranQuestion(){
     zone = `<button class="choix ${r===true?"sel":""}" data-v="true">Vrai</button>
             <button class="choix ${r===false?"sel":""}" data-v="false">Faux</button>`;
   } else {
-    const symboles = q.type === "nombre" ? ["/", "−", ","] : ["/", "−", ",", "x", "^", "(", ")"];
+    const symboles = q.type === "nombre" ? ["/", "−", ","] : q.type === "expression" ? ["x", "^", "/", "(", ")", "−"] : ["/", "−", ",", "x", "^", "(", ")"];
     zone = `<input type="text" id="saisie" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Ta réponse" value="${r===null?"":esc(r)}">
             <div class="symboles">${symboles.map(c => `<button type="button" class="sym" data-c="${c}">${c}</button>`).join("")}</div>`;
   }
@@ -270,6 +272,7 @@ function ecranQuestion(){
   ecran.innerHTML = `
     <div class="progress"><div style="width:${(idx/questions.length)*100}%"></div></div>
     <div class="num">Question ${idx+1} / ${questions.length} <span class="pts">· ${virgule(pts)} pt${pts>1?"s":""}</span></div>
+    ${q.figure ? `<div class="figure">${q.figure}</div>` : ""}
     <p class="enonce">${esc(q.enonce)}</p>
     ${zone}
     <div class="nav">
@@ -323,11 +326,53 @@ function texteCorrection(q){
   if (q.type === "qcm") return q.choix[q.reponse];
   if (q.type === "vf") return q.reponse ? "Vrai" : "Faux";
   if (q.afficheReponse) return q.afficheReponse;
+  if (q.type === "expression") return q.attendu;
   if (q.type === "nombre") return virgule(q.reponse);
   return q.reponses[0];
 }
+/* ---------- expressions en x (comparées par leur valeur) ----------
+   Multiplication implicite prioritaire : 6/3x^7 se lit 6/(3x^7). */
+function lireExpression(txt){
+  const SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+  const s = String(txt).replace(/[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, m => "^(" + [...m].map(c => c === "⁻" ? "-" : SUP.indexOf(c)).join("") + ")")
+                       .replace(/−/g, "-").replace(/[×·]/g, "*").replace(/:/g, "/").replace(/,/g, ".")
+                       .replace(/[{}\s]/g, "").toLowerCase();
+  if (!s || !/^[0-9x+\-*/^().]+$/.test(s)) return null;
+  const t = s.match(/\d+(?:\.\d+)?|\.\d+|[x+\-*/^()]/g); let i = 0;
+  const vu = () => t[i], pris = c => (t[i] === c ? (i++, true) : false);
+  function somme(){ let a = produit(); for(;;){ if (pris("+")){ const b = produit(); const p=a; a = x => p(x) + b(x); }
+    else if (pris("-")){ const b = produit(); const p=a; a = x => p(x) - b(x); } else return a; } }
+  function produit(){ let a = implicite(); for(;;){ if (pris("*")){ const b = implicite(); const p=a; a = x => p(x) * b(x); }
+    else if (pris("/")){ const b = implicite(); const p=a; a = x => p(x) / b(x); } else return a; } }
+  function implicite(){ let a = unaire(); while (vu() !== undefined && /^[\d.x(]/.test(vu())){ const b = puissance(); const p=a; a = x => p(x) * b(x); } return a; }
+  function unaire(){ if (pris("-")){ const a = unaire(); return x => -a(x); } if (pris("+")) return unaire(); return puissance(); }
+  function puissance(){ const a = primaire(); if (pris("^")){ const b = unaire(); return x => Math.pow(a(x), b(x)); } return a; }
+  function primaire(){ const c = t[i++];
+    if (c === undefined) throw 0;
+    if (c === "x") return x => x;
+    if (c === "("){ const a = somme(); if (!pris(")")) throw 0; return a; }
+    if (/^[\d.]/.test(c)){ const v = parseFloat(c); return () => v; }
+    throw 0; }
+  try { const f = somme(); return i === t.length ? f : null; } catch(e) { return null; }
+}
+function memeExpression(r, attendu){
+  const a = lireExpression(r), b = lireExpression(attendu);
+  if (!a || !b) return false;
+  return [0.7, 1.3, 2.1, -1.4, 3.7].every(x => { const u = a(x), v = b(x);
+    return isFinite(u) && isFinite(v) && Math.abs(u - v) <= 1e-9 * Math.max(1, Math.abs(v)); });
+}
+/* fraction des points obtenue (0 à 1) et message éventuel */
+function noter(q, r){
+  if (q.type === "expression" && r !== null && memeExpression(r, q.attendu)) {
+    if (q.partiel && new RegExp(q.partiel.si).test(String(r)))
+      return { f: q.partiel.points / q.points, msg: q.partiel.message || "" };
+    return { f: 1 };
+  }
+  return { f: estJuste(q, r) ? 1 : 0 };
+}
 function estJuste(q, r){
   if (r === null) return false;
+  if (q.type === "expression") return false;
   if (q.type === "qcm" || q.type === "vf") return r === q.reponse;
   if (q.type === "nombre") { const n = lireNombre(r); return !isNaN(n) && Math.abs(n - q.reponse) <= (q.tolerance || 1e-9); }
   return q.reponses.some(a => normaliser(a) === normaliser(r));
@@ -336,12 +381,12 @@ function corriger(){
   const total = questions.reduce((s,q) => s + q.points, 0);
   let obtenu = 0;
   const details = questions.map((q,i) => {
-    const juste = estJuste(q, reponses[i]);
-    if (juste) obtenu += q.points;
+    const n = noter(q, reponses[i]), juste = n.f === 1, partiel = n.f > 0 && n.f < 1;
+    obtenu += q.points * n.f;
     return { num:i+1, enonce:brut(q.enonce), reponseEleve:brut(texteReponse(q, reponses[i])),
              correction:brut(texteCorrection(q)), explication:brut(q.explication || ""),
              tex:{ enonce:q.enonce, reponseEleve:texteReponse(q, reponses[i]), correction:texteCorrection(q), explication:q.explication || "" }, juste,
-             points:juste ? arrondi(q.points) : 0, bareme:arrondi(q.points) };
+             partiel, message:n.msg || "", points:arrondi(q.points * n.f), bareme:arrondi(q.points) };
   });
   const note = total ? arrondi(obtenu / total * CONFIG.noteSur) : 0;
   return { note, noteSur:CONFIG.noteSur, nbJustes:details.filter(d=>d.juste).length, details };
@@ -377,7 +422,7 @@ function texteMail(res, t){
   s += `NOTE : ${virgule(res.note)} / ${res.noteSur}  (${res.nbJustes} / ${res.details.length} réponses justes)\n\n`;
   res.details.forEach(d => {
     s += `Q${d.num}. ${d.enonce}\n   Réponse de l'élève : ${d.reponseEleve}\n   Correction : ${d.correction}\n`;
-    s += `   ${d.juste ? "✔ Juste" : "✘ Faux"} — ${virgule(d.points)} / ${virgule(d.bareme)}\n\n`;
+    s += `   ${d.juste ? "✔ Juste" : d.partiel ? "½ En partie juste" + (d.message ? " (" + d.message + ")" : "") : "✘ Faux"} — ${virgule(d.points)} / ${virgule(d.bareme)}\n\n`;
   });
   return s;
 }
@@ -408,10 +453,11 @@ function ecranFin(res, message){
              <p style="text-align:center">${res.nbJustes} réponse${res.nbJustes>1?"s":""} juste${res.nbJustes>1?"s":""} sur ${res.details.length}</p>`;
   if (CONFIG.afficherCorrigeEleve)
     bloc += `<h3>Corrigé</h3>` + res.details.map(d => `
-      <div class="corr ${d.juste?"bon":"faux"}">
-        <div class="corr-t">${d.juste?"✔":"✘"} Question ${d.num} <span class="pts">· ${virgule(d.points)} / ${virgule(d.bareme)}</span></div>
+      <div class="corr ${d.juste?"bon":d.partiel?"partiel":"faux"}">
+        <div class="corr-t">${d.juste?"✔":d.partiel?"½":"✘"} Question ${d.num} <span class="pts">· ${virgule(d.points)} / ${virgule(d.bareme)}</span></div>
         <div>${esc(d.tex.enonce)}</div>
         <div>Ta réponse : <b>${esc(d.tex.reponseEleve)}</b></div>
+        ${d.partiel && d.message ? `<div><b>${esc(d.message)}</b></div>` : ""}
         ${d.juste ? "" : `<div>Bonne réponse : <b>${esc(d.tex.correction)}</b></div>`}
         ${d.tex.explication ? `<div class="expl">${esc(d.tex.explication)}</div>` : ""}
       </div>`).join("");

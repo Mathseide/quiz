@@ -264,7 +264,7 @@ function ecranQuestion(){
     zone = `<button class="choix ${r===true?"sel":""}" data-v="true">Vrai</button>
             <button class="choix ${r===false?"sel":""}" data-v="false">Faux</button>`;
   } else {
-    const symboles = q.type === "nombre" ? ["/", "−", ","] : q.type === "expression" ? ["x", "^", "/", "(", ")", "−"] : ["/", "−", ",", "x", "^", "(", ")"];
+    const symboles = q.symboles || (q.type === "nombre" ? ["/", "−", ","] : q.type === "expression" ? ["x", "^", "/", "(", ")", "−"] : ["/", "−", ",", "x", "^", "(", ")"]);
     zone = `<input type="text" id="saisie" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Ta réponse" value="${r===null?"":esc(r)}">
             <div class="symboles">${symboles.map(c => `<button type="button" class="sym" data-c="${c}">${c}</button>`).join("")}</div>`;
   }
@@ -326,53 +326,91 @@ function texteCorrection(q){
   if (q.type === "qcm") return q.choix[q.reponse];
   if (q.type === "vf") return q.reponse ? "Vrai" : "Faux";
   if (q.afficheReponse) return q.afficheReponse;
-  if (q.type === "expression") return q.attendu;
+  if (q.type === "expression" || q.type === "formule") return [].concat(q.attendu)[0];
   if (q.type === "nombre") return virgule(q.reponse);
   return q.reponses[0];
 }
-/* ---------- expressions en x (comparées par leur valeur) ----------
-   Multiplication implicite prioritaire : 6/3x^7 se lit 6/(3x^7). */
-function lireExpression(txt){
+/* ---------- expressions et formules (comparées par leur valeur) ----------
+   Variables : x par défaut ; pour une formule, q.variables (ex. ["u","v","u'","v'"]
+   ou ["x","a","f(a)","f'(a)"]). Multiplication implicite prioritaire : 6/3x^7 = 6/(3x^7). */
+function normaliserSaisie(txt){
   const SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
-  const s = String(txt).replace(/[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, m => "^(" + [...m].map(c => c === "⁻" ? "-" : SUP.indexOf(c)).join("") + ")")
-                       .replace(/−/g, "-").replace(/[×·]/g, "*").replace(/:/g, "/").replace(/,/g, ".")
-                       .replace(/[{}\s]/g, "").toLowerCase();
-  if (!s || !/^[0-9x+\-*/^().]+$/.test(s)) return null;
-  const t = s.match(/\d+(?:\.\d+)?|\.\d+|[x+\-*/^()]/g); let i = 0;
+  return String(txt).replace(/[’‘´`′]/g, "'")
+    .replace(/[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, m => "^(" + [...m].map(c => c === "⁻" ? "-" : SUP.indexOf(c)).join("") + ")")
+    .replace(/−/g, "-").replace(/[×·]/g, "*").replace(/:/g, "/").replace(/,/g, ".")
+    .replace(/[{}\s]/g, "").toLowerCase();
+}
+function lireExpression(txt, variables){
+  const vars = (variables || ["x"]).map(v => v.toLowerCase()).sort((a, b) => b.length - a.length);
+  const s = normaliserSaisie(txt);
+  if (!s) return null;
+  const t = []; let k = 0;
+  while (k < s.length) {
+    const v = vars.find(v => s.startsWith(v, k));
+    if (v) { t.push({ v }); k += v.length; continue; }
+    const n = s.slice(k).match(/^\d+(?:\.\d+)?|^\.\d+/);
+    if (n) { t.push(n[0]); k += n[0].length; continue; }
+    if ("+-*/^()".includes(s[k])) { t.push(s[k]); k++; continue; }
+    return null;
+  }
+  let i = 0;
   const vu = () => t[i], pris = c => (t[i] === c ? (i++, true) : false);
-  function somme(){ let a = produit(); for(;;){ if (pris("+")){ const b = produit(); const p=a; a = x => p(x) + b(x); }
-    else if (pris("-")){ const b = produit(); const p=a; a = x => p(x) - b(x); } else return a; } }
-  function produit(){ let a = implicite(); for(;;){ if (pris("*")){ const b = implicite(); const p=a; a = x => p(x) * b(x); }
-    else if (pris("/")){ const b = implicite(); const p=a; a = x => p(x) / b(x); } else return a; } }
-  function implicite(){ let a = unaire(); while (vu() !== undefined && /^[\d.x(]/.test(vu())){ const b = puissance(); const p=a; a = x => p(x) * b(x); } return a; }
-  function unaire(){ if (pris("-")){ const a = unaire(); return x => -a(x); } if (pris("+")) return unaire(); return puissance(); }
-  function puissance(){ const a = primaire(); if (pris("^")){ const b = unaire(); return x => Math.pow(a(x), b(x)); } return a; }
+  const debutFacteur = c => c !== undefined && (typeof c === "object" || c === "(" || /^[\d.]/.test(c));
+  function somme(){ let a = produit(); for(;;){ if (pris("+")){ const b = produit(), p = a; a = e => p(e) + b(e); }
+    else if (pris("-")){ const b = produit(), p = a; a = e => p(e) - b(e); } else return a; } }
+  function produit(){ let a = implicite(); for(;;){ if (pris("*")){ const b = implicite(), p = a; a = e => p(e) * b(e); }
+    else if (pris("/")){ const b = implicite(), p = a; a = e => p(e) / b(e); } else return a; } }
+  function implicite(){ let a = unaire(); while (debutFacteur(vu())){ const b = puissance(), p = a; a = e => p(e) * b(e); } return a; }
+  function unaire(){ if (pris("-")){ const a = unaire(); return e => -a(e); } if (pris("+")) return unaire(); return puissance(); }
+  function puissance(){ const a = primaire(); if (pris("^")){ const b = unaire(); return e => Math.pow(a(e), b(e)); } return a; }
   function primaire(){ const c = t[i++];
     if (c === undefined) throw 0;
-    if (c === "x") return x => x;
+    if (typeof c === "object") return e => e[c.v];
     if (c === "("){ const a = somme(); if (!pris(")")) throw 0; return a; }
     if (/^[\d.]/.test(c)){ const v = parseFloat(c); return () => v; }
     throw 0; }
   try { const f = somme(); return i === t.length ? f : null; } catch(e) { return null; }
 }
-function memeExpression(r, attendu){
-  const a = lireExpression(r), b = lireExpression(attendu);
-  if (!a || !b) return false;
-  return [0.7, 1.3, 2.1, -1.4, 3.7].every(x => { const u = a(x), v = b(x);
-    return isFinite(u) && isFinite(v) && Math.abs(u - v) <= 1e-9 * Math.max(1, Math.abs(v)); });
+function memeExpression(r, attendus, variables){
+  const vars = (variables || ["x"]).map(v => v.toLowerCase());
+  const a = lireExpression(r, vars);
+  if (!a) return false;
+  const essais = [0.7, 1.3, 2.1, -1.4, 3.7].map((x, n) => Object.fromEntries(vars.map((v, j) => [v, x + 0.37 * j * (n + 1) + 0.11 * j * j])));
+  return [].concat(attendus).some(att => { const b = lireExpression(att, vars); if (!b) return false;
+    return essais.every(e => { const u = a(e), w = b(e);
+      return isFinite(u) && isFinite(w) && Math.abs(u - w) <= 1e-9 * Math.max(1, Math.abs(w)); }); });
+}
+/* fraction irréductible ou entier ? (pour les réponses « à simplifier ») */
+function estSimplifie(r){
+  const s = String(r).replace(/\s/g, "").replace("−", "-");
+  const m = s.match(/^-?(\d+)\/-?(\d+)$/);
+  if (!m) return true;
+  const pgcd = (a, b) => b ? pgcd(b, a % b) : a;
+  const a = +m[1], b = +m[2];
+  return b !== 1 && pgcd(a, b) === 1;
 }
 /* fraction des points obtenue (0 à 1) et message éventuel */
 function noter(q, r){
-  if (q.type === "expression" && r !== null && memeExpression(r, q.attendu)) {
+  if (r === null) return { f: 0 };
+  if (q.type === "expression" || q.type === "formule") {
+    let rep = normaliserSaisie(r), sansPrefixe = false;
+    if (q.prefixe) {
+      const p = normaliserSaisie(q.prefixe);
+      if (rep.startsWith(p)) rep = rep.slice(p.length); else sansPrefixe = true;
+    }
+    if (!memeExpression(rep, q.attendu, q.variables)) return { f: 0 };
+    if (sansPrefixe && q.sansPrefixe) return { f: q.sansPrefixe.points / q.points, msg: q.sansPrefixe.message || "" };
     if (q.partiel && new RegExp(q.partiel.si).test(String(r)))
       return { f: q.partiel.points / q.points, msg: q.partiel.message || "" };
     return { f: 1 };
   }
+  if (q.type === "nombre" && q.simplifier && estJuste(q, r) && !estSimplifie(r))
+    return { f: q.simplifier.points / q.points, msg: q.simplifier.message || "" };
   return { f: estJuste(q, r) ? 1 : 0 };
 }
 function estJuste(q, r){
   if (r === null) return false;
-  if (q.type === "expression") return false;
+  if (q.type === "expression" || q.type === "formule") return false;
   if (q.type === "qcm" || q.type === "vf") return r === q.reponse;
   if (q.type === "nombre") { const n = lireNombre(r); return !isNaN(n) && Math.abs(n - q.reponse) <= (q.tolerance || 1e-9); }
   return q.reponses.some(a => normaliser(a) === normaliser(r));

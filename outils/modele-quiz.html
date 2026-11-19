@@ -340,6 +340,7 @@ function texteCorrection(q){
   if (q.afficheReponse) return q.afficheReponse;
   if (q.type === "qcm") return lib(q.choix[q.reponse]);
   if (q.type === "vf") return q.reponse ? "Vrai" : "Faux";
+  if (q.type === "racine") return (q.reponse.a === 1 ? "" : q.reponse.a) + "√" + q.reponse.b;
   if (q.type === "ensemble" || q.type === "point") return q.reponse.map(virgule).join(q.type === "point" ? " ; " : " et ");
   if (q.type === "expression" || q.type === "formule") return [].concat(q.attendu)[0];
   if (q.type === "nombre") return virgule(q.reponse);
@@ -434,6 +435,8 @@ function noter(q, r){
     else if (Math.abs(v.a * Math.pow(10, v.n) - q.reponse) <= 1e-9 * Math.abs(q.reponse)) return { f: 0, msg: "Valeur juste, mais il faut 1 ≤ a < 10." }; }
   if (q.type === "pi" && !estJuste(q, r) && valeurPi(r) === null && !isNaN(lireNombre(r)) && Math.abs(lireNombre(r) - q.reponse * Math.PI) < 0.01)
     return { f: 0, msg: "Il fallait la valeur exacte avec π." };
+  if (q.type === "racine" && !estJuste(q, r)) { const v = lireRacine(r);
+    if (v && v.a * v.a * v.b === q.reponse.a * q.reponse.a * q.reponse.b) return { f: 0, msg: "Égalité juste, mais b n'est pas le plus petit possible." }; }
   if (q.type === "nombre" && q.simplifier && estJuste(q, r) && !estSimplifie(r))
     return { f: q.simplifier.points / q.points, msg: q.simplifier.message || "" };
   return { f: estJuste(q, r) ? 1 : 0 };
@@ -451,8 +454,15 @@ function valeurPi(r){
   const f = lireExpression(s, ["π"]);
   return f ? f({ "π": Math.PI }) : null;
 }
+/* a√b (« 2√7 », « 2*√(7) », « 2racine7 ») → { a, b } */
+function lireRacine(r){
+  const s = normaliserSaisie(r).replace(/racine|rac|sqrt/g, "√").replace(/\*/g, "");
+  const m = s.match(/^(\d*)√\(?(\d+)\)?$/);
+  return m ? { a: m[1] === "" ? 1 : parseInt(m[1], 10), b: parseInt(m[2], 10) } : null;
+}
 function estJuste(q, r){
   if (r === null) return false;
+  if (q.type === "racine") { const v = lireRacine(r); return !!v && v.a === q.reponse.a && v.b === q.reponse.b; }
   if (q.type === "scientifique") { const v = lireScientifique(r);
     return !!v && Math.abs(v.a) >= 1 && Math.abs(v.a) < 10 && Math.abs(v.a * Math.pow(10, v.n) - q.reponse) <= 1e-9 * Math.abs(q.reponse); }
   if (q.type === "pi") { const v = valeurPi(r); return v !== null && Math.abs(v - q.reponse * Math.PI) <= 1e-9; }

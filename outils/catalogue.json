@@ -24,12 +24,14 @@
     {
       "code": "S6ma5FRB-Quiz-261107",
       "titre": "Généralités sur les fonctions",
-      "fichier": "fonctions.html"
+      "fichier": "fonctions.html",
+      "libre": true
     },
     {
       "code": "S7ma3FRA-Quiz-261111",
       "titre": "Calculs de base et exponentielle",
-      "fichier": "appui-s7-exp.html"
+      "fichier": "appui-s7-exp.html",
+      "libre": true
     },
     {
       "code": "S3FR1-Aide-261115",
@@ -49,37 +51,44 @@
     {
       "code": "S5ma6FRA-Quiz-261116",
       "titre": "Calculs, puissances et trinôme",
-      "fichier": "docs/S5ma6FRA-Quiz-261116.html"
+      "fichier": "docs/S5ma6FRA-Quiz-261116.html",
+      "libre": true
     },
     {
       "code": "S6ma5FRB-Quiz-261116",
       "titre": "Images, racines, fractions et puissances",
-      "fichier": "docs/S6ma5FRB-Quiz-261116.html"
+      "fichier": "docs/S6ma5FRB-Quiz-261116.html",
+      "libre": true
     },
     {
       "code": "S6ma5FRB-Quiz-261117",
       "titre": "Lecture graphique et dérivées",
-      "fichier": "docs/S6ma5FRB-Quiz-261117.html"
+      "fichier": "docs/S6ma5FRB-Quiz-261117.html",
+      "libre": true
     },
     {
       "code": "S4ma4FRA-Quiz-261117",
       "titre": "Racines carrées",
-      "fichier": "docs/S4ma4FRA-Quiz-261117.html"
+      "fichier": "docs/S4ma4FRA-Quiz-261117.html",
+      "libre": true
     },
     {
       "code": "S6ma5FRB-Quiz-261118",
       "titre": "Calculs, lecture graphique et formules de dérivation",
-      "fichier": "docs/S6ma5FRB-Quiz-261118.html"
+      "fichier": "docs/S6ma5FRB-Quiz-261118.html",
+      "libre": true
     },
     {
       "code": "S5ma6FRA-Quiz-261119",
       "titre": "Trinôme, parabole et calculs",
-      "fichier": "docs/S5ma6FRA-Quiz-261119.html"
+      "fichier": "docs/S5ma6FRA-Quiz-261119.html",
+      "libre": true
     },
     {
       "code": "S7ma3FRA-Quiz-261119",
       "titre": "Calculs, exponentielle et logarithmes",
-      "fichier": "docs/S7ma3FRA-Quiz-261119.html"
+      "fichier": "docs/S7ma3FRA-Quiz-261119.html",
+      "libre": true
     },
     {
       "code": "S5ma6FRA-Quiz-261120",

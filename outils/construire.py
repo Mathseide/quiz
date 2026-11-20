@@ -96,7 +96,7 @@ def tableau(liste, prof, avec_date=True, vide="Rien pour le moment."):
     lignes = ""
     for d in sorted(liste, key=lambda d: d["tri"], reverse=True):
         url = ADR + d["fichier"]
-        cadenas = " 🔒" if d["type"] == "quiz" else ""
+        cadenas = (" — entraînement libre" if d.get("libre") else " 🔒") if d["type"] == "quiz" else ""
         lignes += f"""<tr>
   <td><a class="doc" href="{r}{e(d["fichier"])}">{e(d["titre"])}{cadenas}</a><div class="code">{e(d["code"])}</div></td>
   {f'<td class="date">{d["date"]}</td>' if avec_date else ""}

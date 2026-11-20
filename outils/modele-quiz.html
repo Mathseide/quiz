@@ -166,7 +166,7 @@ const dureeMs = (CONFIG.dureeMinutes || 0) * 60000;
 /* ---------- sauvegarde sur l'iPad (reprise après rechargement) ---------- */
 function cle(){ return "quiz|" + CONFIG.titre + "|" + eleve.candidat; }
 function lireEtat(){ try { return JSON.parse(localStorage.getItem(cle())); } catch(e) { return null; } }
-function sauver(){ if (!etat) return; etat.reponses = reponses; try { localStorage.setItem(cle(), JSON.stringify(etat)); } catch(e) {} }
+function sauver(){ if (!etat || CONFIG.entrainement) return; etat.reponses = reponses; try { localStorage.setItem(cle(), JSON.stringify(etat)); } catch(e) {} }
 
 /* ---------- heure du serveur ---------- */
 async function synchroniserHeure(){
@@ -211,7 +211,16 @@ function infoCreneau(){
   return { ouvert:true, html };
 }
 
+function ecranEntrainement(){
+  ecran.innerHTML = `
+    <div class="msg info"><b>Mode entraînement.</b> Pas de chronomètre, rien n'est envoyé au professeur.
+    À la fin, tu vois ta note et le corrigé. Tu peux recommencer autant de fois que tu veux.</div>
+    <p>${questions.length} questions.</p>
+    <button class="btn" id="go">Commencer</button>`;
+  $("#go").onclick = () => { eleve = { candidat:"entrainement", prenom:"" }; etat = { debutTs: maintenant(), reponses, termine:false }; idx = 0; ecranQuestion(); };
+}
 function ecranAccueil(){
+  if (CONFIG.entrainement) return ecranEntrainement();
   ecran.innerHTML = `
     <p>${questions.length} questions. Lis bien chaque énoncé avant de répondre.</p>
     <div class="brouillon">⚠️ Prévoyez un brouillon avant de mettre en route le Quiz.</div>
@@ -254,11 +263,15 @@ function ecranAccueil(){
 }
 
 /* ---------- chronomètre ---------- */
+/* temps majoré : CONFIG.tempsMajore = [numéros de candidat] (ligne retirée au déblocage) */
+function estMajore(){ return (CONFIG.tempsMajore || []).map(String).map(x => x.trim()).includes(String(eleve.candidat).trim()); }
+function dureeEleve(){ return dureeMs * (estMajore() ? 1.25 : 1); }
 function lancerChrono(){
+  if (CONFIG.entrainement) return;
   if (!dureeMs && !tsFin) return;
   const el = $("#chrono"); el.style.display = "block";
   const tic = () => {
-    const reste = Math.min(dureeMs ? etat.debutTs + dureeMs : Infinity, tsFin || Infinity) - maintenant();
+    const reste = Math.min(dureeMs ? etat.debutTs + dureeEleve() : Infinity, tsFin || Infinity) - maintenant();
     el.textContent = "⏱ " + mmss(reste);
     el.classList.toggle("urgent", reste < 60000);
     if (reste <= 0) { clearInterval(minuteur); terminer("temps écoulé"); }
@@ -496,6 +509,11 @@ function corriger(){
 /* ---------- fin et envoi ---------- */
 function terminer(finPar){
   if (fini) return;
+  if (CONFIG.entrainement) {
+    fini = true; clearInterval(minuteur);
+    return ecranFin(corriger(), `<div class="msg info">Mode entraînement : rien n'a été envoyé.</div>
+      <button class="btn" onclick="location.reload()">Recommencer</button>`);
+  }
   fini = true; clearInterval(minuteur);
   $("#chrono").style.display = "none";
   const finTs = maintenant();
@@ -507,12 +525,13 @@ function terminer(finPar){
     retard: !tsDebut ? "pas d'heure imposée" : retardMs >= 60000 ? `en retard de ${dureeTexte(retardMs)} (début officiel ${heure(tsDebut)})` : "à l'heure",
     finPar
   };
+  if (estMajore()) temps.retard += " · temps majoré (+25 %)";
   etat.termine = true; sauver();
   const res = corriger();
   const objet = `${CONFIG.titre} — ${eleve.candidat} ${eleve.prenom} — ${virgule(res.note)}/${res.noteSur}`
-              + (temps.retardMin >= 1 ? ` — RETARD ${temps.retardMin} min` : "");
+              + (temps.retardMin >= 1 ? ` — RETARD ${temps.retardMin} min` : "") + (estMajore() ? " — temps majoré +25 %" : "");
   const corps = texteMail(res, temps);
-  const donnees = { quiz:CONFIG.titre, candidat:eleve.candidat, prenom:eleve.prenom, objet, corps, ...temps, ...res,
+  const donnees = { quiz:CONFIG.titre, candidat:eleve.candidat, prenom:eleve.prenom + (estMajore() ? " (temps majoré +25 %)" : ""), objet, corps, ...temps, ...res,
                     details: res.details.map(({tex, ...d}) => d) };
   envoyer(res, donnees, finPar);
 }
@@ -549,10 +568,10 @@ async function envoyer(res, donnees, finPar){
 
 function ecranFin(res, message){
   let bloc = "";
-  if (CONFIG.afficherNoteEleve || CONFIG.afficherCorrigeEleve)
+  if (CONFIG.afficherNoteEleve || CONFIG.afficherCorrigeEleve || CONFIG.entrainement)
     bloc += `<div class="note">${virgule(res.note)} / ${res.noteSur}</div>
              <p style="text-align:center">${res.nbJustes} réponse${res.nbJustes>1?"s":""} juste${res.nbJustes>1?"s":""} sur ${res.details.length}</p>`;
-  if (CONFIG.afficherCorrigeEleve)
+  if (CONFIG.afficherCorrigeEleve || CONFIG.entrainement)
     bloc += `<h3>Corrigé</h3>` + res.details.map(d => `
       <div class="corr ${d.juste?"bon":d.partiel?"partiel":"faux"}">
         <div class="corr-t">${d.juste?"✔":d.partiel?"½":"✘"} Question ${d.num} <span class="pts">· ${virgule(d.points)} / ${virgule(d.bareme)}</span></div>
@@ -562,7 +581,7 @@ function ecranFin(res, message){
         ${d.juste ? "" : `<div>Bonne réponse : <b>${esc(d.tex.correction)}</b></div>`}
         ${d.tex.explication ? `<div class="expl">${esc(d.tex.explication)}</div>` : ""}
       </div>`).join("");
-  ecran.innerHTML = `<h2>Merci ${esc(eleve.prenom)} !</h2>${message}${bloc}`;
+  ecran.innerHTML = `<h2>${CONFIG.entrainement ? "Terminé !" : "Merci " + esc(eleve.prenom) + " !"}</h2>${message}${bloc}`;
   maths(ecran);
 }
 

@@ -55,6 +55,8 @@
   body.nb .corr.faux { border-left-style:double; border-left-width:8px; }
   body.nb .msg.info, body.nb .msg.err, body.nb .msg.warn, body.nb .brouillon { background:#fff; border:2px solid #111; }
   body.nb .sous, body.nb .num, body.nb .pts { color:#222; }
+  #alerteSortie { position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; z-index:50; padding:16px; }
+  .alerte-carte { background:#fff; border:4px solid #111; border-radius:14px; padding:22px; max-width:440px; text-align:center; font-size:1.2rem; color:#111; }
 </style>
 </head>
 <body>
@@ -253,13 +255,49 @@ function ecranAccueil(){
     }
     if (ancien && ancien.reponses && ancien.reponses.length === questions.length) {
       etat = ancien; reponses = ancien.reponses;          // reprise après rechargement
+      if (etat.vu) noterSortie(etat.vu, maintenant(), "page rechargée");
     } else {
       etat = { debutTs: maintenant(), reponses, termine:false };
     }
     sauver();
     lancerChrono();
+    surveiller();
     idx = 0; ecranQuestion();
   };
+}
+
+/* ---------- sorties du quiz (autre app, autre onglet, verrouillage) ---------- */
+let sortieDepuis = null;
+function noterSortie(de, a, nature){
+  if (!etat) return;
+  etat.sorties = etat.sorties || [];
+  etat.sorties.push({ heure: heure(de), duree: Math.max(1, Math.round((a - de) / 1000)), nature: nature || "" });
+  sauver();
+}
+function avertirSortie(){
+  if (document.getElementById("alerteSortie")) return;
+  const d = document.createElement("div");
+  d.id = "alerteSortie";
+  d.innerHTML = `<div class="alerte-carte"><p>⚠️ <b>Tu as quitté le quiz.</b></p><p>Ton professeur en sera informé.</p>
+    <button class="btn" id="alerteOk">J'ai compris, je continue</button></div>`;
+  document.body.appendChild(d);
+  document.getElementById("alerteOk").onclick = () => d.remove();
+}
+function surveiller(){
+  if (CONFIG.entrainement || surveiller.fait) return;
+  surveiller.fait = true;
+  document.addEventListener("visibilitychange", () => {
+    if (fini || !etat) return;
+    if (document.visibilityState === "hidden") { sortieDepuis = maintenant(); }
+    else if (sortieDepuis !== null) { noterSortie(sortieDepuis, maintenant()); sortieDepuis = null; avertirSortie(); }
+  });
+  setInterval(() => { if (etat && !fini && document.visibilityState === "visible") { etat.vu = maintenant(); sauver(); } }, 2000);
+}
+function bilanSorties(){
+  const l = (etat && etat.sorties) || [];
+  const total = l.reduce((t, x) => t + x.duree, 0);
+  return { n: l.length, total, court: l.length ? `${l.length} sortie${l.length > 1 ? "s" : ""} (${dureeTexte(total * 1000)})` : "aucune sortie",
+    detail: l.map(x => `${x.heure} pendant ${dureeTexte(x.duree * 1000)}${x.nature ? " (" + x.nature + ")" : ""}`).join(" ; ") };
 }
 
 /* ---------- chronomètre ---------- */
@@ -526,10 +564,16 @@ function terminer(finPar){
     finPar
   };
   if (estMajore()) temps.retard += " · temps majoré (+25 %)";
+  const sorties = bilanSorties();
+  if (sorties.n) {
+    temps.retard += ` · A QUITTÉ LE QUIZ ${sorties.n} FOIS (${dureeTexte(sorties.total * 1000)}) : ${sorties.detail}`;
+    temps.finPar += ` · ${sorties.court}`;
+  }
   etat.termine = true; sauver();
   const res = corriger();
   const objet = `${CONFIG.titre} — ${eleve.candidat} ${eleve.prenom} — ${virgule(res.note)}/${res.noteSur}`
-              + (temps.retardMin >= 1 ? ` — RETARD ${temps.retardMin} min` : "") + (estMajore() ? " — temps majoré +25 %" : "");
+              + (temps.retardMin >= 1 ? ` — RETARD ${temps.retardMin} min` : "") + (estMajore() ? " — temps majoré +25 %" : "")
+              + (sorties.n ? ` — SORTIES ${sorties.n}` : "");
   const corps = texteMail(res, temps);
   const donnees = { quiz:CONFIG.titre, candidat:eleve.candidat, prenom:eleve.prenom + (estMajore() ? " (temps majoré +25 %)" : ""), objet, corps, ...temps, ...res,
                     details: res.details.map(({tex, ...d}) => d) };

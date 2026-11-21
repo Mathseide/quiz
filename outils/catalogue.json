@@ -93,17 +93,20 @@
     {
       "code": "S5ma6FRA-Quiz-261120",
       "titre": "Calculs, radians et puissances",
-      "fichier": "docs/S5ma6FRA-Quiz-261120.html"
+      "fichier": "docs/S5ma6FRA-Quiz-261120.html",
+      "libre": true
     },
     {
       "code": "S7ma3FRA-Quiz-261120",
       "titre": "Fractions, puissances et logarithmes",
-      "fichier": "docs/S7ma3FRA-Quiz-261120.html"
+      "fichier": "docs/S7ma3FRA-Quiz-261120.html",
+      "libre": true
     },
     {
       "code": "S4ma4FRA-Quiz-261120",
       "titre": "Fractions, carrés et racines carrées",
-      "fichier": "docs/S4ma4FRA-Quiz-261120.html"
+      "fichier": "docs/S4ma4FRA-Quiz-261120.html",
+      "libre": true
     }
   ]
 }

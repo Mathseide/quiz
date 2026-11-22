@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Fonctions usuelles et fonctions associées</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" onload="window.KATEX_OK=true;if(window.rendreMaths)rendreMaths(document.body)"></script>
+<style>
+:root{--bg:#f2f4fa;--ink:#1c2242;--muted:#6a7096;--card:#fff;--pri:#3d5afe;--pri2:#2a3fd1;--ok:#1fa463;--ko:#e5484d;--warn:#e9a100;--line:#e3e6f1;--orange:#f57c00}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+button{font-family:inherit;color:inherit;cursor:pointer}
+.top{display:flex;align-items:center;gap:12px;padding:10px 18px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.brand{font-weight:800;font-size:21px;display:flex;align-items:center;gap:12px;background:none;border:0;padding:4px;text-align:left}
+.logo{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,#3d5afe,#7c5cff);color:#fff;display:grid;place-items:center;font-size:24px;font-style:italic;font-family:Cambria,"Times New Roman",serif;flex:none}
+.spacer{flex:1}
+.chip{display:inline-flex;align-items:center;gap:8px;background:#eef1ff;color:var(--pri2);border-radius:999px;padding:10px 16px;font-weight:700;font-size:17px;border:0;min-height:46px;white-space:nowrap}
+.wrap{max-width:1320px;margin:0 auto;padding:22px;width:100%}
+h1{font-size:30px;margin:6px 0 4px}
+h2{font-size:23px;margin:22px 0 10px}
+.sub{color:var(--muted);font-size:18px;margin:0 0 18px;line-height:1.4}
+.btn{border:0;border-radius:16px;padding:14px 24px;font-size:20px;font-weight:700;background:var(--pri);color:#fff;min-height:58px;display:inline-flex;align-items:center;justify-content:center;gap:10px}
+.btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line)}
+.btn.small{min-height:44px;padding:8px 16px;font-size:17px;border-radius:12px}
+.btn:active,.tile:active,.key:active,.chip:active{transform:scale(.97)}
+.btn[disabled]{opacity:.4}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.card{background:#fff;border-radius:22px;padding:20px;box-shadow:0 2px 0 var(--line),0 10px 26px rgba(30,40,90,.06)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.tile{background:#fff;border:0;border-radius:22px;padding:18px;text-align:left;box-shadow:0 2px 0 var(--line),0 10px 24px rgba(30,40,90,.06);border-top:8px solid var(--c);min-height:170px;display:flex;flex-direction:column;gap:8px}
+.ticon{font-size:24px;color:var(--c);min-height:44px;display:flex;align-items:center;font-weight:600}
+.ttitle{font-size:21px;font-weight:800}
+.tdesc{font-size:15px;color:var(--muted);line-height:1.35}
+.best{margin-top:auto;font-size:14px;font-weight:800;color:#9aa0bd}
+.best.g{color:#138a50}.best.o{color:#a86e00}.best.r{color:#b42f33}
+/* exercice */
+.jeu{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:900px){.jeu{grid-template-columns:1fr}}
+.graphe svg{width:100%;height:auto;display:block}
+.leg{display:flex;gap:18px;flex-wrap:wrap;font-size:15px;color:var(--muted);margin-top:8px}
+.leg i{display:inline-block;width:26px;height:0;border-top:4px solid var(--pri2);vertical-align:middle;margin-right:6px}
+.leg i.u{border-top:4px dashed var(--orange)}.leg i.b{border-top:3px dashed #9aa0bd}
+.question{font-size:21px;font-weight:700;margin:0 0 12px}
+.saisie{min-height:84px;border:3px solid var(--line);border-radius:18px;background:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;font-size:28px;margin-bottom:6px}
+.saisie.actif{border-color:var(--pri)}
+.saisie .fx{color:var(--muted);white-space:nowrap}
+.apercu{flex:1;min-width:0;overflow-x:auto}
+.brut{font-size:15px;color:var(--muted);min-height:20px;margin:0 4px 12px;font-family:Consolas,monospace}
+.ph{color:#b7bdd8;font-size:20px}
+.keypad{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.key{height:62px;font-size:26px;border-radius:14px;border:0;background:#fff;box-shadow:0 4px 0 #d6dbeb;font-weight:700;color:var(--ink)}
+.key.m{font-family:Cambria,"Times New Roman",serif;font-style:italic}
+.key:active{box-shadow:0 1px 0 #d6dbeb}
+.key.sp{background:#eef1ff;color:var(--pri2)}
+.key.del{background:#ffecec;color:#c33}
+.key.ok{background:var(--ok);color:#fff;box-shadow:0 4px 0 #13804b;font-size:22px}
+.key.wide{grid-column:span 2}
+.key.off{opacity:.3;pointer-events:none}
+.fb{border-radius:20px;padding:16px 20px;font-size:18px;display:none;line-height:1.55;margin-top:14px}
+.fb.ok{display:block;background:#e7f8ef;border:2px solid #b5e6c9}
+.fb.ko{display:block;background:#fff1f1;border:2px solid #f3c4c4}
+.fb.al{display:block;background:#fff7e2;border:2px solid #f0d995}
+.fb .h{font-size:22px;font-weight:800;margin-bottom:4px}
+.fb ol{margin:6px 0 0;padding-left:22px}
+.fbrow{display:flex;justify-content:flex-end;margin-top:10px;gap:10px;flex-wrap:wrap}
+.progress{height:10px;background:#dde3f0;border-radius:6px;overflow:hidden;margin:0 0 16px}
+.progress div{height:100%;background:var(--pri);transition:width .3s}
+.indice{font-size:16px;color:var(--muted);margin:8px 2px 0}
+/* bilan */
+.score{font-size:56px;font-weight:800;color:var(--pri2);text-align:center;margin:6px 0}
+.liste{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-top:12px}
+.mini{background:#fff;border-radius:16px;padding:10px;border:3px solid var(--line);font-size:16px}
+.mini.ok{border-color:#b5e6c9}.mini.ko{border-color:#f3c4c4}
+.mini .t{font-weight:800;margin-bottom:4px}
+/* rappels */
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.rcard h3{margin:4px 0 6px;font-size:19px}
+.rcard p{margin:6px 0 0;color:#333;font-size:16px;line-height:1.45}
+.piege{background:#fff7e2;border:2px solid #f0d995;border-radius:16px;padding:12px 16px;margin-top:14px;font-size:17px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="top">
+  <button class="brand" onclick="accueil()"><span class="logo">f</span><span>Fonctions associées</span></button>
+  <div class="spacer"></div>
+  <span id="chips"></span>
+</div>
+<div class="wrap" id="app"></div>
+
+<script>
+"use strict";
+/* =========================================================================
+   Outils
+   ========================================================================= */
+const $ = s => document.querySelector(s);
+const alea = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const choisir = t => t[Math.floor(Math.random() * t.length)];
+const melanger = t => { t = t.slice(); for (let i = t.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [t[i], t[j]] = [t[j], t[i]]; } return t; };
+const MOINS = "−";
+function tex(s, bloc){ // rendu KaTeX (repli : texte brut)
+  if (window.katex) { try { return katex.renderToString(s, { throwOnError:false, displayMode:!!bloc }); } catch(e) {} }
+  return s.replace(/\\[a-z]+/g, "").replace(/[{}]/g, "");
+}
+function rendreMaths(el){ el.querySelectorAll("[data-tex]").forEach(n => n.innerHTML = tex(n.dataset.tex, n.dataset.bloc)); }
+window.rendreMaths = rendreMaths;
+const T = (s, bloc) => `<span data-tex="${s.replace(/"/g, "&quot;")}"${bloc ? ' data-bloc="1"' : ""}>${tex(s, bloc)}</span>`;
+const Stock = { lire(k, d){ try { const v = localStorage.getItem("fa_" + k); return v === null ? d : JSON.parse(v); } catch(e) { return d; } },
+                ecrire(k, v){ try { localStorage.setItem("fa_" + k, JSON.stringify(v)); } catch(e) {} } };
+
+/* =========================================================================
+   Lecture des expressions de l'élève : x, nombres, + − × / ^, √, |…|, ( )
+   → arbre, que l'on sait évaluer et afficher en LaTeX
+   ========================================================================= */
+function normaliser(s){
+  const SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+  return String(s).replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, m => "^" + [...m].map(c => SUP.indexOf(c)).join(""))
+    .replace(/[−–]/g, "-").replace(/[×·*]/g, "*").replace(/:/g, "/").replace(/,/g, ".")
+    .replace(/racine|sqrt|rac/gi, "√").replace(/\s/g, "").toLowerCase()
+    .replace(/^(f\(x\)|y)=/, "");
+}
+function analyser(txt){
+  const s = normaliser(txt);
+  if (!s) return null;
+  const t = []; let k = 0;
+  while (k < s.length) {
+    const c = s[k];
+    if (c === "x") { t.push({ v:1 }); k++; continue; }
+    const n = s.slice(k).match(/^\d+(?:\.\d+)?|^\.\d+/);
+    if (n) { t.push(n[0]); k += n[0].length; continue; }
+    if ("+-*/^()√|".includes(c)) { t.push(c); k++; continue; }
+    return null;
+  }
+  let i = 0, absOuverts = 0;
+  const vu = () => t[i], pris = c => (t[i] === c ? (i++, true) : false);
+  const debutFacteur = c => c !== undefined && (typeof c === "object" || c === "(" || c === "√" || (c === "|" && !absOuverts) || /^[\d.]/.test(c));
+  function somme(){ let a = produit(); for(;;){ if (pris("+")) a = { o:"+", a, b:produit() }; else if (pris("-")) a = { o:"-", a, b:produit() }; else return a; } }
+  function produit(){ let a = implicite(); for(;;){ if (pris("*")) a = { o:"*", a, b:implicite() }; else if (pris("/")) a = { o:"/", a, b:implicite() }; else return a; } }
+  function implicite(){ let a = unaire(); while (debutFacteur(vu())) a = { o:"*", a, b:puissance(), imp:true }; return a; }
+  function unaire(){ if (pris("-")) return { o:"neg", a:unaire() }; if (pris("+")) return unaire(); return puissance(); }
+  function puissance(){ const a = primaire(); if (pris("^")) return { o:"^", a, b:unaire() }; return a; }
+  function primaire(){ const c = t[i++];
+    if (c === undefined) throw 0;
+    if (typeof c === "object") return { o:"x" };
+    if (c === "("){ const a = somme(); if (!pris(")")) throw 0; return { o:"()", a }; }
+    if (c === "√"){ if (pris("(")) { const a = somme(); if (!pris(")")) throw 0; return { o:"√", a }; } return { o:"√", a:puissance() }; }
+    if (c === "|"){ absOuverts++; const a = somme(); if (!pris("|")) throw 0; absOuverts--; return { o:"abs", a }; }
+    if (/^[\d.]/.test(c)) return { o:"n", v:parseFloat(c), s:c.replace(".", "{,}") };
+    throw 0; }
+  try { const a = somme(); return i === t.length ? a : null; } catch(e) { return null; }
+}
+function evaluer(n, x){
+  switch (n.o) {
+    case "x": return x; case "n": return n.v; case "()": return evaluer(n.a, x);
+    case "neg": return -evaluer(n.a, x);
+    case "+": return evaluer(n.a, x) + evaluer(n.b, x); case "-": return evaluer(n.a, x) - evaluer(n.b, x);
+    case "*": return evaluer(n.a, x) * evaluer(n.b, x); case "/": return evaluer(n.a, x) / evaluer(n.b, x);
+    case "^": return Math.pow(evaluer(n.a, x), evaluer(n.b, x));
+    case "√": return Math.sqrt(evaluer(n.a, x)); case "abs": return Math.abs(evaluer(n.a, x));
+  }
+}
+function enTex(n){
+  const sansPar = m => m.o === "()" ? m.a : m;
+  switch (n.o) {
+    case "x": return "x"; case "n": return n.s;
+    case "()": return "\\left(" + enTex(n.a) + "\\right)";
+    case "neg": return "-" + enTex(n.a);
+    case "+": return enTex(n.a) + "+" + enTex(n.b);
+    case "-": return enTex(n.a) + "-" + enTex(n.b);
+    case "*": return enTex(n.a) + (n.imp && n.b.o !== "n" ? "" : " \\times ") + enTex(n.b);
+    case "/": return "\\dfrac{" + enTex(sansPar(n.a)) + "}{" + enTex(sansPar(n.b)) + "}";
+    case "^": return "{" + enTex(n.a) + "}^{" + enTex(sansPar(n.b)) + "}";
+    case "√": return "\\sqrt{" + enTex(sansPar(n.a)) + "}";
+    case "abs": return "\\left|" + enTex(n.a) + "\\right|";
+  }
+}
+/* points de comparaison : non entiers, répartis sur la fenêtre */
+const ESSAIS = Array.from({ length:40 }, (_, k) => -6.9 + k * 0.3517);
+function memeFonction(arbre, F){
+  let comparees = 0;
+  for (const x of ESSAIS) {
+    const w = F(x), u = evaluer(arbre, x);
+    if (!isFinite(w)) { if (isFinite(u)) return false; continue; }
+    if (!isFinite(u) || Math.abs(u - w) > 1e-7 * Math.max(1, Math.abs(w))) return false;
+    comparees++;
+  }
+  return comparees >= 5;
+}
+
+/* =========================================================================
+   Fonctions de référence et transformations
+   f(x) = s · g(x − a) + b, puis éventuellement |…|
+   ========================================================================= */
+const REF = {
+  carre:   { nom:"carré",          g:u => u * u,               tex:X => `${X.p}^{2}`,              txt:X => `${X.t}^2`, ref:"x^{2}" },
+  cube:    { nom:"cube",           g:u => u * u * u,           tex:X => `${X.p}^{3}`,              txt:X => `${X.t}^3`, ref:"x^{3}" },
+  racine:  { nom:"racine carrée",  g:u => u >= 0 ? Math.sqrt(u) : NaN, tex:X => `\\sqrt{${X.s}}`, txt:X => `√(${X.s0})`, ref:"\\sqrt{x}" },
+  inverse: { nom:"inverse",        g:u => u === 0 ? NaN : 1 / u, tex:X => `\\dfrac{1}{${X.s}}`,    txt:X => `1/${X.t}`, ref:"\\dfrac{1}{x}" },
+  valabs:  { nom:"valeur absolue", g:u => Math.abs(u),         tex:X => `\\left|${X.s}\\right|`,   txt:X => `|${X.s0}|`, ref:"\\left|x\\right|" }
+};
+const CLES = Object.keys(REF);
+function variable(a){ // x − a sous ses différentes écritures
+  if (a === 0) return { p:"x", s:"x", t:"x", s0:"x" };
+  const s = a > 0 ? `x - ${a}` : `x + ${-a}`, s0 = a > 0 ? `x-${a}` : `x+${-a}`;
+  return { p:`(${s})`, s, t:`(${s0})`, s0 };
+}
+function fabriquer(cle, a, b, sg, abs){
+  const R = REF[cle], X = variable(a);
+  const inner = u => sg * R.g(u - a) + b;
+  const F = abs ? (x => Math.abs(inner(x))) : inner;
+  let te = (sg < 0 ? "-" : "") + R.tex(X), tx = (sg < 0 ? "-" : "") + R.txt(X);
+  if (b) { te += b > 0 ? ` + ${b}` : ` - ${-b}`; tx += b > 0 ? `+${b}` : `-${-b}`; }
+  if (abs) { te = `\\left|${te}\\right|`; tx = `|${tx}|`; }
+  /* étapes de construction */
+  const et = [`On part de la fonction ${R.nom} : ${T("y = " + R.ref)}.`];
+  if (a) et.push(`${T(`x \\mapsto ${R.tex(X)}`)} : translation horizontale de ${Math.abs(a)} vers la ${a > 0 ? "droite" : "gauche"} ${a > 0 ? `(on remplace ${T("x")} par ${T("x - " + a)})` : `(on remplace ${T("x")} par ${T("x + " + (-a))})`}.`);
+  if (sg < 0) et.push(`On multiplie par ${T("-1")} : symétrie par rapport à l'axe des abscisses.`);
+  if (b) et.push(`On ajoute ${T(String(b))} : translation verticale de ${Math.abs(b)} vers le ${b > 0 ? "haut" : "bas"}.`);
+  if (abs) et.push(`Valeur absolue : les parties de la courbe situées sous l'axe des abscisses sont retournées vers le haut (symétrie par rapport à l'axe des abscisses).`);
+  /* asymptotes */
+  const asym = [];
+  if (cle === "inverse") { asym.push({ x:a }); asym.push({ y:abs ? Math.abs(b) : b }); }
+  return { cle, a, b, sg, abs, F, tex:"f(x) = " + te, texCourt:te, txt:tx, etapes:et, asym, ref:R.ref, nomRef:R.nom, id:[cle, a, b, sg, abs].join() };
+}
+function changeDeSigne(F){ let neg = false, pos = false;
+  for (let x = -6; x <= 6; x += 0.05) { const v = F(x); if (!isFinite(v)) continue; if (v < -0.4) neg = true; if (v > 0.4) pos = true; }
+  return neg && pos; }
+function nz(){ return choisir([-3, -2, -1, 1, 2, 3]); }
+const THEMES = {
+  tout:  { titre:"Tout mélangé",                 icone:"f(x)",          c:"#3d5afe", desc:"20 graphes : un peu de chaque transformation." },
+  horiz: { titre:"Translation horizontale",      icone:"f(x − a)",       c:"#00a3a3", desc:"La courbe glisse vers la droite ou vers la gauche." },
+  vert:  { titre:"Translation verticale",        icone:"f(x) + b",       c:"#7c5cff", desc:"La courbe monte ou descend." },
+  neg:   { titre:"Symétrie : −f",                icone:"−f(x)",          c:"#e5484d", desc:"Symétrie par rapport à l'axe des abscisses (parfois avec une translation)." },
+  abs:   { titre:"Valeur absolue : |f|",         icone:"|f(x)|",         c:"#e9a100", desc:"Ce qui est sous l'axe des abscisses remonte." },
+  mix:   { titre:"Mélange de transformations",   icone:"−f(x − a) + b",  c:"#1fa463", desc:"Plusieurs transformations à la fois." }
+};
+function generer(theme){
+  for (let essai = 0; essai < 200; essai++) {
+    const th = theme === "tout" ? choisir(["horiz", "vert", "neg", "abs", "mix", "mix"]) : theme;
+    let cle = choisir(CLES), a = 0, b = 0, sg = 1, abs = false;
+    if (th === "horiz") a = nz();
+    else if (th === "vert") b = nz();
+    else if (th === "neg") { sg = -1; const r = Math.random(); if (r < .35) a = nz(); else if (r < .7) b = nz(); }
+    else if (th === "abs") {
+      abs = true; cle = choisir(["carre", "cube", "racine", "inverse", "carre", "valabs"]);
+      sg = Math.random() < .3 ? -1 : 1; a = Math.random() < .5 ? nz() : 0; b = nz();
+      if (cle === "cube" && Math.random() < .5) b = 0;
+    } else if (th === "mix") {
+      const r = Math.random();
+      if (r < .45) { a = nz(); b = nz(); }
+      else if (r < .75) { sg = -1; a = nz(); b = nz(); }
+      else { a = nz(); b = nz(); abs = true; sg = Math.random() < .3 ? -1 : 1; }
+    }
+    const e = fabriquer(cle, a, b, sg, abs);
+    if (abs) { const inner = x => sg * REF[cle].g(x - a) + b; if (!changeDeSigne(inner)) continue; }
+    if (!pointsRemarquables(e).length && cle !== "inverse") continue;
+    return e;
+  }
+  return fabriquer("carre", 1, 0, 1, false);
+}
+
+/* =========================================================================
+   Dessin
+   ========================================================================= */
+const FEN = 6;
+function pointsRemarquables(e){
+  const p = [];
+  for (let x = -FEN; x <= FEN; x++) { const y = e.F(x);
+    if (isFinite(y) && Math.abs(y - Math.round(y)) < 1e-9 && Math.abs(y) <= FEN - 0.2 && Math.abs(x) <= FEN - 0.2) p.push([x, Math.round(y)]); }
+  return p.length > 9 ? p.filter(([x]) => Math.abs(x - e.a) <= 3) : p;
+}
+let idClip = 0;
+function dessiner(courbes, opt = {}){
+  const u = opt.u || 34, m = 24, n = FEN, L = 2 * n * u + 2 * m, id = "c" + (++idClip);
+  const X = x => m + (x + n) * u, Y = y => m + (n - y) * u;
+  const o = [`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${L} ${L}" style="font-family:Arial,sans-serif">`,
+    `<defs><clipPath id="${id}"><rect x="${m}" y="${m}" width="${L - 2 * m}" height="${L - 2 * m}"/></clipPath></defs>`,
+    `<rect x="${m}" y="${m}" width="${L - 2 * m}" height="${L - 2 * m}" fill="#fff"/>`];
+  for (let k = -n; k <= n; k++) {
+    o.push(`<line x1="${X(k)}" y1="${m}" x2="${X(k)}" y2="${L - m}" stroke="#e1e5ef"/>`, `<line x1="${m}" y1="${Y(k)}" x2="${L - m}" y2="${Y(k)}" stroke="#e1e5ef"/>`);
+  }
+  o.push(`<line x1="${m}" y1="${Y(0)}" x2="${L - m + 8}" y2="${Y(0)}" stroke="#222" stroke-width="1.6"/><polygon points="${L - m + 13},${Y(0)} ${L - m + 4},${Y(0) - 4} ${L - m + 4},${Y(0) + 4}" fill="#222"/>`);
+  o.push(`<line x1="${X(0)}" y1="${L - m}" x2="${X(0)}" y2="${m - 8}" stroke="#222" stroke-width="1.6"/><polygon points="${X(0)},${m - 13} ${X(0) - 4},${m - 4} ${X(0) + 4},${m - 4}" fill="#222"/>`);
+  const fs = opt.petit ? 15 : 12;
+  for (let k = -n; k <= n; k++) if (k && (!opt.petit || k % 2 === 0)) {
+    o.push(`<text x="${X(k)}" y="${Y(0) + 15}" font-size="${fs}" text-anchor="middle" fill="#555">${String(k).replace("-", MOINS)}</text>`);
+    o.push(`<text x="${X(0) - 5}" y="${Y(k) + 4}" font-size="${fs}" text-anchor="end" fill="#555">${String(k).replace("-", MOINS)}</text>`);
+  }
+  o.push(`<text x="${X(0) - 5}" y="${Y(0) + 15}" font-size="${fs}" text-anchor="end" fill="#555">0</text>`);
+  for (const c of courbes) {
+    for (const as of (c.asym || [])) {
+      if ("x" in as) o.push(`<line clip-path="url(#${id})" x1="${X(as.x)}" y1="${m}" x2="${X(as.x)}" y2="${L - m}" stroke="#8a90ad" stroke-width="1.8" stroke-dasharray="7 6"/>`);
+      else o.push(`<line clip-path="url(#${id})" x1="${m}" y1="${Y(as.y)}" x2="${L - m}" y2="${Y(as.y)}" stroke="#8a90ad" stroke-width="1.8" stroke-dasharray="7 6"/>`);
+    }
+    let seg = [], segs = [seg], prec = null;
+    const N = 1500;
+    for (let k = 0; k <= N; k++) {
+      const x = -n - 0.5 + (2 * n + 1) * k / N, y = c.F(x);
+      if (!isFinite(y) || Math.abs(y) > 40 || (prec !== null && Math.abs(y - prec) > 8)) { if (seg.length) { seg = []; segs.push(seg); } prec = isFinite(y) && Math.abs(y) <= 40 ? y : null; if (prec !== null) seg.push([x, y]); continue; }
+      seg.push([x, y]); prec = y;
+    }
+    /* point de départ d'une racine : on complète jusqu'au bord exact */
+    for (const s of segs) if (s.length > 1)
+      o.push(`<polyline clip-path="url(#${id})" points="${s.map(([x, y]) => X(x).toFixed(1) + "," + Y(y).toFixed(1)).join(" ")}" fill="none" stroke="${c.couleur}" stroke-width="${c.ep || 3.5}" ${c.tirets ? `stroke-dasharray="${c.tirets}"` : ""} stroke-linejoin="round" stroke-linecap="round"/>`);
+    for (const [x, y] of (c.points || [])) o.push(`<circle cx="${X(x)}" cy="${Y(y)}" r="5" fill="${c.couleur}" stroke="#fff" stroke-width="1.8"/>`);
+  }
+  if (opt.nom) o.push(`<text x="${m + 8}" y="${m + 22}" font-size="20" font-style="italic" font-weight="bold" fill="#2a3fd1" font-family="Cambria,serif">${opt.nom}</text>`);
+  o.push("</svg>");
+  return o.join("");
+}
+
+/* =========================================================================
+   Écrans
+   ========================================================================= */
+let S = null;   // session en cours
+const NB = 20;
+
+function puce(t){ $("#chips").innerHTML = t || ""; }
+function accueil(){
+  S = null; puce("");
+  const best = Stock.lire("meilleurs", {});
+  const cl = p => p == null ? "" : p >= 16 ? "g" : p >= 10 ? "o" : "r";
+  $("#app").innerHTML = `
+    <h1>Fonctions usuelles et fonctions associées</h1>
+    <p class="sub">Observe la courbe, reconnais la fonction de référence et les transformations, puis écris l'expression de ${T("f(x)")}. Chaque série contient ${NB} graphes tirés au hasard.</p>
+    <div class="grid">
+      ${Object.entries(THEMES).map(([k, t]) => `
+        <button class="tile" style="--c:${t.c}" onclick="lancer('${k}')">
+          <div class="ticon">${T(t.icone.replace(/−/g, "-"))}</div>
+          <div class="ttitle">${t.titre}</div>
+          <div class="tdesc">${t.desc}</div>
+          <div class="best ${cl(best[k])}">${best[k] == null ? "Pas encore fait" : "Meilleur score : " + best[k] + " / " + NB}</div>
+        </button>`).join("")}
+      <button class="tile" style="--c:#6a7096" onclick="rappels()">
+        <div class="ticon">📖</div>
+        <div class="ttitle">Rappels de cours</div>
+        <div class="tdesc">Les cinq fonctions de référence et l'effet de chaque transformation sur la courbe.</div>
+      </button>
+    </div>`;
+}
+
+function rappels(){
+  puce(`<button class="chip" onclick="accueil()">← Accueil</button>`);
+  const C = "#2a3fd1", G = "#9aa0bd";
+  const ref = CLES.map(k => { const e = fabriquer(k, 0, 0, 1, false);
+    const dom = { carre:"\\mathbb{R}", cube:"\\mathbb{R}", racine:"[0\\,;+\\infty[", inverse:"\\mathbb{R}^{*}", valabs:"\\mathbb{R}" }[k];
+    return `<div class="card rcard"><h3>Fonction ${REF[k].nom}</h3>${dessiner([{ F:e.F, couleur:C, asym:e.asym, points:pointsRemarquables(e) }], { petit:true })}
+      <p>${T("f(x) = " + REF[k].ref)}, définie sur ${T(dom)}.</p></div>`; }).join("");
+  const base = fabriquer("carre", 0, 0, 1, false);
+  const ex = [
+    ["Translation horizontale", fabriquer("carre", 2, 0, 1, false), "f(x - a)", `La courbe se déplace de ${T("a")} unités <b>horizontalement</b> : vers la droite si ${T("a > 0")}, vers la gauche si ${T("a < 0")}. Exemple : ${T("(x - 2)^{2}")} est décalée de 2 vers la <b>droite</b>.`],
+    ["Translation verticale", fabriquer("carre", 0, -3, 1, false), "f(x) + b", `La courbe monte de ${T("b")} unités si ${T("b > 0")}, descend si ${T("b < 0")}. Exemple : ${T("x^{2} - 3")} est descendue de 3.`],
+    ["Symétrie", fabriquer("carre", 0, 0, -1, false), "-f(x)", `Chaque point ${T("(x\\,;y)")} devient ${T("(x\\,;-y)")} : symétrie par rapport à l'<b>axe des abscisses</b>. Exemple : ${T("-x^{2}")}.`],
+    ["Valeur absolue", fabriquer("carre", 0, -4, 1, true), "\\left|f(x)\\right|", `Les parties au-dessus de l'axe des abscisses ne bougent pas ; celles en dessous sont <b>retournées vers le haut</b>. Exemple : ${T("\\left|x^{2} - 4\\right|")} (en pointillés : ${T("x^{2} - 4")}).`]
+  ].map(([t, e, f, p], i) => {
+    const pointilles = i === 3 ? fabriquer("carre", 0, -4, 1, false) : base;
+    return `<div class="card rcard"><h3>${t} : ${T(f)}</h3>${dessiner([{ F:pointilles.F, couleur:G, tirets:"8 6", ep:2.5 }, { F:e.F, couleur:C }], { petit:true })}
+      <p>${p}</p></div>`; }).join("");
+  $("#app").innerHTML = `
+    <h1>Rappels de cours</h1>
+    <h2>Les fonctions de référence</h2><div class="rgrid">${ref}</div>
+    <h2>Les fonctions associées</h2><p class="sub">En pointillés gris : la courbe de départ ; en bleu : la courbe transformée.</p><div class="rgrid">${ex}</div>
+    <div class="piege"><b>Attention au piège :</b> dans ${T("f(x - 2)")}, il y a un signe « moins » mais la courbe va vers la <b>droite</b>. Dans ${T("f(x + 3)")}, elle va vers la <b>gauche</b>.<br>
+    <b>Ordre :</b> pour ${T("-f(x - a) + b")}, on fait la translation horizontale, puis la symétrie, puis la translation verticale.<br>
+    <b>Pour écrire ta réponse :</b> utilise les touches √ et | | du clavier ; mets des parenthèses : ${T("\\dfrac{1}{x - 1}")} s'écrit 1/(x−1), ${T("\\sqrt{x + 2}")} s'écrit √(x+2).</div>
+    <div class="row" style="margin-top:20px"><button class="btn" onclick="lancer('tout')">S'entraîner maintenant</button></div>`;
+}
+
+function lancer(theme){
+  const vus = new Set(), liste = [];
+  while (liste.length < NB) { const e = generer(theme); if (vus.has(e.id) && vus.size < 150) continue; vus.add(e.id); liste.push(e); }
+  S = { theme, liste, i:0, score:0, saisie:"", fini:false, resultats:[] };
+  question();
+}
+function chipsJeu(){
+  puce(`<span class="chip">${THEMES[S.theme].titre}</span> <span class="chip">✔ ${S.score}</span> <button class="chip" onclick="if(confirm('Quitter la série ?'))accueil()">✕</button>`);
+}
+function question(){
+  chipsJeu();
+  const e = S.liste[S.i]; S.saisie = ""; S.repondu = false; S.indice = false;
+  $("#app").innerHTML = `
+    <div class="progress"><div style="width:${100 * S.i / NB}%"></div></div>
+    <div class="jeu">
+      <div class="card graphe"><div id="svg">${dessiner([{ F:e.F, couleur:"#2a3fd1", asym:e.asym, points:pointsRemarquables(e) }], { nom:"C<tspan font-size='13' dy='5'>f</tspan>" })}</div>
+        <div class="leg" id="leg">${e.asym.length ? `<span><i class="b"></i>asymptotes</span>` : ""}</div></div>
+      <div>
+        <p class="question">Graphe ${S.i + 1} / ${NB} — Donne l'expression de ${T("f(x)")}.</p>
+        <div class="saisie actif" id="zone"><span class="fx">${T("f(x) =")}</span><div class="apercu" id="apercu"></div></div>
+        <div class="brut" id="brut"></div>
+        <div class="keypad" id="clavier">
+          ${["7","8","9","x","x²","x³","4","5","6","(",")","^","1","2","3","√","|","/","0","+","−",",","⌫","C"].map(k => {
+            const cls = k === "x" || k === "x²" || k === "x³" ? "key m" : "⌫C".includes(k) ? "key del" : "√|^/()+−,".includes(k) ? "key sp" : "key";
+            return `<button class="${cls}" data-k="${k}">${k === "C" ? "Effacer" : k === "|" ? "| |" : k}</button>`; }).join("")}
+          <button class="key sp wide" id="bIndice">💡 Indice</button>
+          <button class="key ok" style="grid-column:span 4" id="bValider">Valider ✔</button>
+        </div>
+        <div class="indice" id="indice"></div>
+        <div class="fb" id="fb"></div>
+      </div>
+    </div>`;
+  $("#clavier").querySelectorAll("[data-k]").forEach(b => b.onclick = () => touche(b.dataset.k));
+  $("#bValider").onclick = valider;
+  $("#bIndice").onclick = () => { S.indice = true; $("#indice").innerHTML = `Fonction de référence : <b>${e.nomRef}</b> (${T("y = " + e.ref)}).`; };
+  majSaisie();
+}
+function touche(k){
+  if (S.repondu) return;
+  const ajouts = { "x²":"x^2", "x³":"x^3", "−":"-", "|":"|" };
+  if (k === "⌫") S.saisie = S.saisie.slice(0, -1);
+  else if (k === "C") S.saisie = "";
+  else if (k === "√") S.saisie += "√(";
+  else S.saisie += ajouts[k] || k;
+  majSaisie();
+}
+function majSaisie(){
+  const a = analyser(S.saisie);
+  $("#apercu").innerHTML = !S.saisie ? `<span class="ph">touche le clavier…</span>` : a ? tex(enTex(a)) : `<span class="ph">expression incomplète…</span>`;
+  $("#brut").textContent = S.saisie.replace(/-/g, MOINS);
+}
+function valider(){
+  if (S.repondu) return passer();
+  const e = S.liste[S.i], a = analyser(S.saisie);
+  if (!S.saisie.trim()) return;
+  if (!a) { const fb = $("#fb"); fb.className = "fb al"; fb.innerHTML = `<div class="h">Expression incomplète</div>Vérifie les parenthèses et les barres de valeur absolue (il en faut deux).`; return; }
+  S.repondu = true;
+  const juste = memeFonction(a, e.F);
+  if (juste) S.score++;
+  S.resultats.push({ e, juste, rep:enTex(a), indice:S.indice });
+  /* on superpose la courbe de l'élève */
+  const Fe = x => evaluer(a, x);
+  if (!juste) {
+    $("#svg").innerHTML = dessiner([{ F:e.F, couleur:"#2a3fd1", asym:e.asym, points:pointsRemarquables(e) }, { F:Fe, couleur:"#f57c00", tirets:"10 7", ep:3 }], { nom:"C<tspan font-size='13' dy='5'>f</tspan>" });
+    $("#leg").innerHTML = `<span><i></i>courbe de ${T("f")}</span><span><i class="u"></i>ta proposition</span>` + (e.asym.length ? `<span><i class="b"></i>asymptotes</span>` : "");
+  }
+  const fb = $("#fb");
+  fb.className = "fb " + (juste ? "ok" : "ko");
+  fb.innerHTML = `<div class="h">${juste ? "Bravo ! ✔" : "Pas tout à fait…"}</div>
+    ${juste ? "" : `Ta réponse : ${T("f(x) = " + enTex(a))}<br>`}
+    Réponse : ${T(e.tex)}
+    <ol>${e.etapes.map(t => `<li>${t}</li>`).join("")}</ol>
+    <div class="fbrow"><button class="btn" id="bSuivant">${S.i === NB - 1 ? "Voir le bilan" : "Graphe suivant →"}</button></div>`;
+  $("#bSuivant").onclick = passer;
+  $("#bValider").textContent = S.i === NB - 1 ? "Bilan →" : "Suivant →";
+  $("#clavier").querySelectorAll("[data-k],#bIndice").forEach(b => b.classList.add("off"));
+  chipsJeu();
+  if (window.innerWidth < 900 || matchMedia("(orientation:portrait)").matches) fb.scrollIntoView({ behavior:"smooth", block:"nearest" });
+}
+function passer(){ S.i++; if (S.i >= NB) bilan(); else { question(); window.scrollTo(0, 0); } }
+function bilan(){
+  const best = Stock.lire("meilleurs", {});
+  if (best[S.theme] == null || S.score > best[S.theme]) { best[S.theme] = S.score; Stock.ecrire("meilleurs", best); }
+  puce(`<button class="chip" onclick="accueil()">← Accueil</button>`);
+  const msg = S.score >= 18 ? "Excellent ! Tu maîtrises les fonctions associées." : S.score >= 14 ? "Très bien ! Regarde les quelques erreurs ci-dessous." : S.score >= 10 ? "C'est un bon début. Revois les rappels puis recommence." : "Commence par relire les rappels de cours, puis recommence une série.";
+  $("#app").innerHTML = `
+    <div class="card"><h1 style="text-align:center">Bilan — ${THEMES[S.theme].titre}</h1>
+      <div class="score">${S.score} / ${NB}</div><p class="sub" style="text-align:center">${msg}</p>
+      <div class="row" style="justify-content:center"><button class="btn" onclick="lancer('${S.theme}')">Nouvelle série</button><button class="btn ghost" onclick="rappels()">Rappels de cours</button><button class="btn ghost" onclick="accueil()">Accueil</button></div></div>
+    <h2>Détail des ${NB} graphes</h2>
+    <div class="liste">${S.resultats.map((r, k) => `
+      <div class="mini ${r.juste ? "ok" : "ko"}"><div class="t">${r.juste ? "✔" : "✘"} Graphe ${k + 1}${r.indice ? " (avec indice)" : ""}</div>
+        ${dessiner([{ F:r.e.F, couleur:"#2a3fd1", asym:r.e.asym }], { u:16, petit:true })}
+        <div>${T(r.e.tex)}</div>${r.juste ? "" : `<div style="color:#b42f33">Ta réponse : ${T(r.rep)}</div>`}</div>`).join("")}</div>`;
+  window.scrollTo(0, 0);
+}
+/* clavier physique (ordinateur) */
+document.addEventListener("keydown", ev => {
+  if (!S || S.fini || !$("#clavier")) return;
+  if (ev.key === "Enter") { ev.preventDefault(); return valider(); }
+  if (S.repondu) return;
+  if (ev.key === "Backspace") { ev.preventDefault(); return touche("⌫"); }
+  if (/^[0-9x()+\-*/^|,.]$/.test(ev.key)) { S.saisie += ev.key; majSaisie(); ev.preventDefault(); }
+  else if (ev.key === "r" || ev.key === "R") touche("√");
+});
+accueil();
+</script>
+</body>
+</html>

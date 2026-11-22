@@ -409,10 +409,11 @@ function normaliserSaisie(txt){
 }
 function lireExpression(txt, variables){
   const vars = (variables || ["x"]).map(v => v.toLowerCase()).sort((a, b) => b.length - a.length);
-  const s = normaliserSaisie(txt);
+  const s = normaliserSaisie(txt).replace(/racine|sqrt|rac/g, "√");
   if (!s) return null;
   const t = []; let k = 0;
   while (k < s.length) {
+    if (s[k] === "√" || s[k] === "|") { t.push(s[k]); k++; continue; }
     const v = vars.find(v => s.startsWith(v, k));
     if (v) { t.push({ v }); k += v.length; continue; }
     const n = s.slice(k).match(/^\d+(?:\.\d+)?|^\.\d+/);
@@ -420,9 +421,9 @@ function lireExpression(txt, variables){
     if ("+-*/^()".includes(s[k])) { t.push(s[k]); k++; continue; }
     return null;
   }
-  let i = 0;
+  let i = 0, absOuverts = 0;
   const vu = () => t[i], pris = c => (t[i] === c ? (i++, true) : false);
-  const debutFacteur = c => c !== undefined && (typeof c === "object" || c === "(" || /^[\d.]/.test(c));
+  const debutFacteur = c => c !== undefined && (typeof c === "object" || c === "(" || c === "√" || (c === "|" && !absOuverts) || /^[\d.]/.test(c));
   function somme(){ let a = produit(); for(;;){ if (pris("+")){ const b = produit(), p = a; a = e => p(e) + b(e); }
     else if (pris("-")){ const b = produit(), p = a; a = e => p(e) - b(e); } else return a; } }
   function produit(){ let a = implicite(); for(;;){ if (pris("*")){ const b = implicite(), p = a; a = e => p(e) * b(e); }
@@ -434,6 +435,8 @@ function lireExpression(txt, variables){
     if (c === undefined) throw 0;
     if (typeof c === "object") return e => e[c.v];
     if (c === "("){ const a = somme(); if (!pris(")")) throw 0; return a; }
+    if (c === "√"){ const a = pris("(") ? (() => { const b = somme(); if (!pris(")")) throw 0; return b; })() : puissance(); return e => Math.sqrt(a(e)); }
+    if (c === "|"){ absOuverts++; const a = somme(); if (!pris("|")) throw 0; absOuverts--; return e => Math.abs(a(e)); }
     if (/^[\d.]/.test(c)){ const v = parseFloat(c); return () => v; }
     throw 0; }
   try { const f = somme(); return i === t.length ? f : null; } catch(e) { return null; }
@@ -442,10 +445,14 @@ function memeExpression(r, attendus, variables){
   const vars = (variables || ["x"]).map(v => v.toLowerCase());
   const a = lireExpression(r, vars);
   if (!a) return false;
-  const essais = [0.7, 1.3, 2.1, -1.4, 3.7].map((x, n) => Object.fromEntries(vars.map((v, j) => [v, x + 0.37 * j * (n + 1) + 0.11 * j * j])));
+  const essais = [0.7, 1.3, 2.1, -1.4, 3.7, -2.6, 5.3].map((x, n) => Object.fromEntries(vars.map((v, j) => [v, x + 0.37 * j * (n + 1) + 0.11 * j * j])));
   return [].concat(attendus).some(att => { const b = lireExpression(att, vars); if (!b) return false;
-    return essais.every(e => { const u = a(e), w = b(e);
-      return isFinite(u) && isFinite(w) && Math.abs(u - w) <= 1e-9 * Math.max(1, Math.abs(w)); }); });
+    let comparees = 0;   /* hors de l'ensemble de définition (√ d'un négatif…) : les deux doivent être non définies */
+    const ok = essais.every(e => { const u = a(e), w = b(e);
+      if (!isFinite(w)) return !isFinite(u);
+      comparees++;
+      return isFinite(u) && Math.abs(u - w) <= 1e-9 * Math.max(1, Math.abs(w)); });
+    return ok && comparees >= 3; });
 }
 /* nombres contenus dans une réponse (« -1 et 3 », « x1 = -1 ; x2 = 3 », « (-1 ; -3) ») */
 function nombresDe(r){

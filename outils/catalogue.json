@@ -107,6 +107,36 @@
       "titre": "Fractions, carrés et racines carrées",
       "fichier": "docs/S4ma4FRA-Quiz-261120.html",
       "libre": true
+    },
+    {
+      "code": "S4ma4FRA-Aide-261122",
+      "titre": "Calcul mental – Tables, opérations et décimaux",
+      "fichier": "calcul-mental.html"
+    },
+    {
+      "code": "S5ma6FRA-Aide-261122",
+      "titre": "Calcul mental – Tables, opérations et décimaux",
+      "fichier": "calcul-mental.html"
+    },
+    {
+      "code": "S6ma5FRB-Aide-261122",
+      "titre": "Calcul mental – Tables, opérations et décimaux",
+      "fichier": "calcul-mental.html"
+    },
+    {
+      "code": "S7ma3FRA-Aide-261122",
+      "titre": "Calcul mental – Tables, opérations et décimaux",
+      "fichier": "calcul-mental.html"
+    },
+    {
+      "code": "S5ma6FRA-Aide-261122",
+      "titre": "Racines carrées – Entraînement par thèmes",
+      "fichier": "racines-carrees.html"
+    },
+    {
+      "code": "S6ma5FRB-Aide-261122",
+      "titre": "Racines carrées – Entraînement par thèmes",
+      "fichier": "racines-carrees.html"
     }
   ]
 }

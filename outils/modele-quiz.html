@@ -523,7 +523,9 @@ function estJuste(q, r){
   if (q.type === "racine") { const v = lireRacine(r); return !!v && v.a === q.reponse.a && v.b === q.reponse.b; }
   if (q.type === "scientifique") { const v = lireScientifique(r);
     return !!v && Math.abs(v.a) >= 1 && Math.abs(v.a) < 10 && Math.abs(v.a * Math.pow(10, v.n) - q.reponse) <= 1e-9 * Math.abs(q.reponse); }
-  if (q.type === "pi") { const v = valeurPi(r); return v !== null && Math.abs(v - q.reponse * Math.PI) <= 1e-9; }
+  if (q.type === "pi") { const v = valeurPi(r); if (v === null) return false;
+    const d = v - q.reponse * Math.PI;   /* q.modulo2pi : toute mesure de l'angle est acceptée (à 2kπ près) */
+    return q.modulo2pi ? Math.abs(d / (2 * Math.PI) - Math.round(d / (2 * Math.PI))) <= 1e-9 : Math.abs(d) <= 1e-9; }
   if (q.type === "expression" || q.type === "formule") return false;
   if (q.type === "qcm" || q.type === "vf") return r === q.reponse;
   if (q.type === "nombre") { const n = lireNombre(r); return !isNaN(n) && Math.abs(n - q.reponse) <= (q.tolerance || 1e-9); }

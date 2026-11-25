@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Calcul littéral — S1 à S3</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="maths(document.body)"></script>
+<style>
+  :root { --bleu:#1f4e79; --vert:#2e7d32; --rouge:#c62828; --orange:#e65100; --gris:#f2f4f7; --bord:#d5dbe5; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; font-family:-apple-system, "Segoe UI", Helvetica, Arial, sans-serif; background:var(--gris); color:#1a1a1a; }
+  header { background:var(--bleu); color:#fff; }
+  header .in { max-width:900px; margin:0 auto; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  header h1 { margin:0; font-size:1.3rem; }
+  header button { background:rgba(255,255,255,.15); color:#fff; border:1px solid rgba(255,255,255,.4); border-radius:8px; padding:8px 12px; font-size:1rem; cursor:pointer; }
+  main { max-width:900px; margin:0 auto; padding:18px; }
+  .intro { color:#555; margin:0 0 16px; }
+  .annee { margin:22px 0 10px; font-size:1.25rem; color:var(--bleu); }
+  .grille { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:12px; }
+  .theme { text-align:left; background:#fff; border:none; border-left:6px solid var(--bleu); border-radius:12px; padding:14px 16px; box-shadow:0 1px 3px rgba(0,0,0,.08); cursor:pointer; font-size:1rem; color:#1a1a1a; }
+  .theme:hover { box-shadow:0 4px 12px rgba(0,0,0,.12); }
+  .theme .t { font-weight:700; font-size:1.05rem; margin-bottom:4px; }
+  .theme .d { color:#555; font-size:.92rem; }
+  .theme .s { margin-top:8px; font-size:.85rem; color:var(--vert); font-weight:600; }
+  .carte { background:#fff; border-radius:14px; padding:22px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+  .haut { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; color:#555; font-size:.95rem; }
+  .progress { height:8px; background:#dde3ea; border-radius:4px; margin-bottom:16px; overflow:hidden; }
+  .progress div { height:100%; background:var(--bleu); transition:width .3s; }
+  .consigne { font-size:1.05rem; color:#333; margin:0 0 6px; }
+  .enonce { font-size:1.45rem; margin:6px 0 18px; line-height:1.6; }
+  input[type=text] { width:100%; font-size:1.3rem; padding:14px; border:2px solid #ccd3dc; border-radius:10px; }
+  input[type=text]:focus { outline:none; border-color:var(--bleu); }
+  .symboles { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .sym { min-width:52px; font-size:1.3rem; padding:10px 14px; border:2px solid #ccd3dc; border-radius:10px; background:#fff; color:#1a1a1a; cursor:pointer; }
+  .choix { display:block; width:100%; text-align:left; font-size:1.15rem; padding:14px 16px; margin:8px 0; border:2px solid #ccd3dc; border-radius:10px; background:#fff; cursor:pointer; color:#1a1a1a; }
+  .choix.sel { border-color:var(--bleu); background:#e8f0f9; font-weight:600; }
+  .btns { display:flex; flex-wrap:wrap; gap:10px; margin-top:18px; }
+  .btn { font-size:1.1rem; padding:13px 22px; border:none; border-radius:10px; background:var(--bleu); color:#fff; cursor:pointer; }
+  .btn.sec { background:#fff; color:var(--bleu); border:2px solid var(--bleu); }
+  .btn:disabled { opacity:.4; }
+  .retour { padding:14px; border-radius:10px; margin-top:16px; line-height:1.6; font-size:1.05rem; }
+  .retour.ok { background:#e8f5e9; border-left:6px solid var(--vert); }
+  .retour.ko { background:#fdecea; border-left:6px solid var(--rouge); }
+  .retour.info { background:#fff3e0; border-left:6px solid var(--orange); }
+  .correction { margin-top:12px; padding:14px; background:#f7f9fc; border:1px dashed #aab6c6; border-radius:10px; line-height:1.9; font-size:1.08rem; }
+  .bilan { text-align:center; }
+  .bilan .note { font-size:2.6rem; font-weight:700; color:var(--bleu); margin:8px 0; }
+  .aide { color:#555; font-size:.9rem; margin-top:8px; }
+  @media (max-width:520px) { .enonce { font-size:1.25rem; } .btn { padding:12px 16px; font-size:1rem; } }
+</style>
+</head>
+<body>
+<header><div class="in"><h1>∑ Calcul littéral — S1 à S3</h1><button id="accueil" hidden>☰ Thèmes</button></div></header>
+<main id="ecran"></main>
+
+<script>
+/* =====================================================================
+   Calcul littéral S1–S3 (programme des Écoles européennes, partie Algèbre)
+   Chaque thème propose une série de 10 exercices tirés au hasard.
+   Correction par la VALEUR de l'expression (toutes les écritures équivalentes
+   sont acceptées) + contrôle de la FORME demandée (réduite, développée, factorisée).
+   ===================================================================== */
+const NB = 10;
+const $ = s => document.querySelector(s);
+const ecran = $("#ecran");
+
+/* ---------- outils ---------- */
+const alea = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const aleaNZ = (a, b) => { let v; do v = alea(a, b); while (v === 0); return v; };
+const choisir = t => t[Math.floor(Math.random() * t.length)];
+const melanger = t => { const c = [...t]; for (let i = c.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [c[i], c[j]] = [c[j], c[i]]; } return c; };
+const pgcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) [a, b] = [b, a % b]; return a; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+function maths(el){ if (window.renderMathInElement && el) renderMathInElement(el, { delimiters:[{ left:"\\(", right:"\\)", display:false }], throwOnError:false }); }
+const T = s => `\\(${s}\\)`;
+
+/* fractions affichées */
+function frac(n, d){ if (d < 0) { n = -n; d = -d; } const g = pgcd(n, d) || 1; n /= g; d /= g;
+  if (d === 1) return String(n); return (n < 0 ? "-" : "") + `\\dfrac{${Math.abs(n)}}{${d}}`; }
+function fracTxt(n, d){ if (d < 0) { n = -n; d = -d; } const g = pgcd(n, d) || 1; n /= g; d /= g; return d === 1 ? String(n) : `${n}/${d}`; }
+
+/* polynôme { degré: coefficient } → LaTeX ; v = nom de la variable */
+function poly(c, v = "x"){
+  const degs = Object.keys(c).map(Number).filter(k => c[k] !== 0).sort((a, b) => b - a);
+  if (!degs.length) return "0";
+  return degs.map((k, i) => {
+    const a = c[k], abs = Math.abs(a);
+    const signe = a < 0 ? (i ? " - " : "-") : (i ? " + " : "");
+    const coef = (abs === 1 && k > 0) ? "" : String(abs);
+    const lettre = k === 0 ? "" : k === 1 ? v : `${v}^{${k}}`;
+    return signe + coef + lettre;
+  }).join("");
+}
+const lin = (a, b, v = "x") => poly({ 1:a, 0:b }, v);
+const cx = (k, v = "x") => (k === 1 ? "" : k === -1 ? "-" : k) + v;   // 1x → x, -1x → -x
+const par = s => /^[-]/.test(s) ? `(${s})` : s;        // parenthèses autour d'un négatif
+
+/* ---------- lecture des réponses ---------- */
+function normaliser(txt){
+  const SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+  return String(txt).replace(/[’‘´`′]/g, "'")
+    .replace(/[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, m => { const e = [...m].map(c => c === "⁻" ? "-" : SUP.indexOf(c)).join(""); return /^\d$/.test(e) ? "^" + e : "^(" + e + ")"; })
+    .replace(/[−–]/g, "-").replace(/[×·]/g, "*").replace(/:/g, "/").replace(/,/g, ".")
+    .replace(/[{}\s]/g, "").toLowerCase();
+}
+/* expression → fonction(env) ; multiplication implicite prioritaire : 6/3x = 6/(3x) */
+function lire(txt, vars){
+  const s = normaliser(txt); if (!s) return null;
+  const t = []; let k = 0;
+  while (k < s.length) {
+    const v = vars.find(v => s.startsWith(v, k));
+    if (v) { t.push({ v }); k += v.length; continue; }
+    const n = s.slice(k).match(/^\d+(?:\.\d+)?|^\.\d+/);
+    if (n) { t.push(n[0]); k += n[0].length; continue; }
+    if ("+-*/^()".includes(s[k])) { t.push(s[k]); k++; continue; }
+    return null;
+  }
+  let i = 0;
+  const vu = () => t[i], pris = c => (t[i] === c ? (i++, true) : false);
+  const debut = c => c !== undefined && (typeof c === "object" || c === "(" || /^[\d.]/.test(c));
+  function somme(){ let a = produit(); for(;;){ if (pris("+")){ const b = produit(), p = a; a = e => p(e) + b(e); } else if (pris("-")){ const b = produit(), p = a; a = e => p(e) - b(e); } else return a; } }
+  function produit(){ let a = implicite(); for(;;){ if (pris("*")){ const b = implicite(), p = a; a = e => p(e) * b(e); } else if (pris("/")){ const b = implicite(), p = a; a = e => p(e) / b(e); } else return a; } }
+  function implicite(){ let a = unaire(); while (debut(vu())){ const b = puissance(), p = a; a = e => p(e) * b(e); } return a; }
+  function unaire(){ if (pris("-")){ const a = unaire(); return e => -a(e); } if (pris("+")) return unaire(); return puissance(); }
+  function puissance(){ const a = primaire(); if (pris("^")){ const b = unaire(); return e => Math.pow(a(e), b(e)); } return a; }
+  function primaire(){ const c = t[i++]; if (c === undefined) throw 0;
+    if (typeof c === "object") return e => e[c.v];
+    if (c === "("){ const a = somme(); if (!pris(")")) throw 0; return a; }
+    if (/^[\d.]/.test(c)){ const v = parseFloat(c); return () => v; } throw 0; }
+  try { const f = somme(); return i === t.length ? f : null; } catch(e) { return null; }
+}
+const ESSAIS = [0.7, 1.3, 2.1, -1.4, 3.7, -2.6];
+function egales(r, attendu, vars){
+  const a = lire(r, vars), b = lire(attendu, vars); if (!a || !b) return null;
+  return ESSAIS.every((x, n) => { const e = Object.fromEntries(vars.map((v, j) => [v, x + 0.53 * j * (n + 1)]));
+    const u = a(e), w = b(e); return isFinite(u) && isFinite(w) && Math.abs(u - w) <= 1e-9 * Math.max(1, Math.abs(w)); });
+}
+/* termes de premier niveau (hors parenthèses) */
+function termes(r){
+  const s = normaliser(r); let p = 0, n = 1;
+  for (let k = 0; k < s.length; k++) { const c = s[k];
+    if (c === "(") p++; else if (c === ")") p--;
+    else if ((c === "+" || c === "-") && p === 0 && k > 0 && !"^*/(".includes(s[k - 1])) n++; }
+  return n;
+}
+/* contenus des parenthèses de premier niveau */
+function groupes(r){
+  const s = normaliser(r), g = []; let p = 0, d = 0;
+  for (let k = 0; k < s.length; k++) { if (s[k] === "(") { if (!p) d = k + 1; p++; } else if (s[k] === ")") { p--; if (!p) g.push(s.slice(d, k)); } }
+  return g;
+}
+/* coefficients (entiers) d'un groupe de degré ≤ 2 en v */
+function coefsGroupe(g, v){
+  const f = lire(g, [v]); if (!f) return null;
+  const y = x => f({ [v]: x }); const c = y(0), b1 = y(1) - c, b2 = y(2) - c;
+  const a = (b2 - 2 * b1) / 2, b = b1 - a;
+  return { a, b, c };
+}
+function nombre(r){
+  const s = String(r).trim().replace(/\s/g, "").replace(/[−–]/g, "-").replace(",", ".");
+  const m = s.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/);
+  if (m) return +m[2] ? +m[1] / +m[2] : NaN;
+  return s === "" ? NaN : Number(s);
+}
+
+/* vérification d'une réponse : { ok, msg } */
+function verifier(ex, r){
+  if (ex.type === "qcm") return { ok: r === ex.bon };
+  if (!String(r).trim()) return { ok:false, msg:"Écris une réponse." };
+  if (ex.type === "nombre") {
+    const v = nombre(r);
+    if (isNaN(v)) return { ok:false, msg:"Réponse attendue : un nombre (entier, décimal ou fraction comme 7/3)." };
+    return { ok: Math.abs(v - ex.valeur) < 1e-9 };
+  }
+  // expression
+  const vars = ex.vars || ["x"];
+  if (/=/.test(r)) r = r.split("=").pop();
+  const eg = egales(r, ex.attendu, vars);
+  if (eg === null) return { ok:false, msg:"Je ne comprends pas cette écriture. Utilise les boutons (², ^, parenthèses…)." };
+  if (!eg) return { ok:false };
+  const n = termes(r), avecPar = /\(/.test(r);
+  if (ex.forme === "reduite" || ex.forme === "developpee") {
+    if (avecPar) return { ok:false, msg:"C'est égal, mais il reste des parenthèses : développe." };
+    if (n > ex.nbTermes) return { ok:false, msg:"C'est égal, mais ce n'est pas réduit : regroupe les termes semblables." };
+  }
+  if (ex.forme === "factorisee" || ex.forme === "commun") {
+    if (!avecPar || n > 1) return { ok:false, msg:"C'est égal, mais ce n'est pas factorisé : il faut un produit." };
+    for (const g of groupes(r)) { const c = coefsGroupe(g, vars[0]); if (!c) continue;
+      if (Math.abs(c.a) > 1e-9) return { ok:false, msg:"C'est égal, mais la factorisation n'est pas terminée." };
+      if (ex.forme === "commun") {
+        const ent = [c.b, c.c].every(v => Math.abs(v - Math.round(v)) < 1e-9);
+        if (ent && pgcd(Math.round(c.b), Math.round(c.c)) > 1) return { ok:false, msg:"C'est égal, mais il reste un facteur commun dans la parenthèse." };
+        if (ex.lettreEnFacteur && Math.abs(c.c) < 1e-9) return { ok:false, msg:"C'est égal, mais tu peux encore mettre la lettre en facteur." };
+      } }
+  }
+  return { ok:true };
+}
+
+/* =====================================================================
+   THÈMES ET GÉNÉRATEURS D'EXERCICES
+   Un exercice : { consigne, enonce (LaTeX), type: "expr"|"nombre"|"qcm",
+   attendu / valeur / choix+bon, vars, forme, nbTermes, symboles, indice, correction }
+   ===================================================================== */
+const SYM_X = ["x", "²", "^", "(", ")", "−", "/"];
+const THEMES = [
+/* ----------------------------- S1 ----------------------------- */
+{ id:"s1-suites", annee:"S1", titre:"Suites et motifs", desc:"Trouver le terme général d'une suite arithmétique et calculer un terme.",
+  gen(){
+    const r = alea(2, 7), u1 = alea(1, 9), b = u1 - r, l = [0, 1, 2, 3].map(k => u1 + k * r);
+    if (Math.random() < 0.5) return { consigne:"Voici les premiers termes d'une suite (n = 1, 2, 3, 4). Donne le terme général en fonction de n.",
+      enonce: T(l.join(" ;\\ ") + " ;\\ \\dots"), type:"expr", vars:["n"], attendu:`${r}n+(${b})`, symboles:["n", "+", "−", "(", ")"],
+      indice:`On ajoute ${r} à chaque fois : le terme général commence par ${T(r + "n")}.`,
+      correction:`On ajoute ${r} à chaque fois, donc le terme général est ${T(r + "n + b")}. Pour ${T("n = 1")} : ${T(r + " + b = " + u1)}, donc ${T("b = " + b)}.<br>Terme général : ${T(lin(r, b, "n"))}.` };
+    const n = choisir([10, 20, 50, 100]);
+    return { consigne:`Le terme général d'une suite est ${T(lin(r, b, "n"))}. Calcule le terme numéro ${n}.`,
+      enonce: T(`n = ${n}`), type:"nombre", valeur: r * n + b,
+      indice:`Remplace ${T("n")} par ${n}.`,
+      correction:`${T(`${r} \\times ${n} ${b < 0 ? "-" : "+"} ${Math.abs(b)} = ${r * n + b}`)}.` };
+  } },
+{ id:"s1-reduire", annee:"S1", titre:"Réduire une expression", desc:"Regrouper les termes semblables : 3a + 5a − 2a = 6a.",
+  gen(){
+    const k = alea(1, 3);
+    if (k === 1) { const c = [aleaNZ(1, 9), aleaNZ(-6, 9), aleaNZ(-5, 9)], v = choisir(["a", "x", "y"]), s = c.reduce((p, q) => p + q, 0);
+      if (!s) return this.gen();
+      return { consigne:"Réduis l'expression.", enonce: T(c.map((a, i) => (i && a > 0 ? "+" : "") + (a === 1 ? "" : a === -1 ? "-" : a) + v).join(" ")),
+        type:"expr", vars:[v], attendu:`${s}${v}`, forme:"reduite", nbTermes:1, symboles:[v, "−"],
+        indice:"Additionne les nombres devant la lettre.", correction:`${T(`(${c.join(" + ").replace(/\+ -/g, "- ")})${v} = ${s === 1 ? "" : s === -1 ? "-" : s}${v}`)}` }; }
+    if (k === 2) { const a = aleaNZ(1, 7), b = aleaNZ(-9, 9), c = aleaNZ(-6, 7), d = aleaNZ(-9, 9);
+      if (!(a + c) || !(b + d)) return this.gen();
+      return { consigne:"Réduis l'expression.", enonce: T(`${lin(a, b)} ${c < 0 ? "-" : "+"} ${cx(Math.abs(c))} ${d < 0 ? "-" : "+"} ${Math.abs(d)}`),
+        type:"expr", vars:["x"], attendu:`${a + c}x+(${b + d})`, forme:"reduite", nbTermes:2, symboles:["x", "−"],
+        indice:"Regroupe les termes en x, puis les nombres.", correction:`Termes en ${T("x")} : ${T(`${a} ${c < 0 ? "-" : "+"} ${Math.abs(c)} = ${a + c}`)} ; nombres : ${T(`${b} ${d < 0 ? "-" : "+"} ${Math.abs(d)} = ${b + d}`)}.<br>Résultat : ${T(lin(a + c, b + d))}.` }; }
+    const a = aleaNZ(1, 6), b = aleaNZ(1, 6), c = aleaNZ(-4, 5), d = aleaNZ(-5, 5);
+    if (!(a + c) || !(b + d)) return this.gen();
+    const sa = x => (x === 1 ? "" : x === -1 ? "-" : x);
+    return { consigne:"Réduis l'expression.", enonce: T(`${sa(a)}a + ${sa(b)}b ${c < 0 ? "-" : "+"} ${sa(Math.abs(c))}a ${d < 0 ? "-" : "+"} ${sa(Math.abs(d))}b`),
+      type:"expr", vars:["a", "b"], attendu:`${a + c}a+(${b + d})b`, forme:"reduite", nbTermes:2, symboles:["a", "b", "−"],
+      indice:"Les « a » ensemble, les « b » ensemble.", correction:`${T(`${sa(a + c)}a ${b + d < 0 ? "-" : "+"} ${sa(Math.abs(b + d))}b`)}` };
+  } },
+{ id:"s1-substitution", annee:"S1", titre:"Calculer la valeur d'une expression", desc:"Remplacer la lettre par un nombre.",
+  gen(){
+    const k = alea(1, 3), x = aleaNZ(-5, 6);
+    if (k === 1) { const a = aleaNZ(-6, 7), b = aleaNZ(-9, 9);
+      return { consigne:`Calcule la valeur de l'expression pour ${T("x = " + x)}.`, enonce: T(lin(a, b)), type:"nombre", valeur: a * x + b,
+        indice:`Remplace ${T("x")} par ${T(par(String(x)))} ; la multiplication d'abord.`, correction: T(`${a} \\times ${par(String(x))} ${b < 0 ? "-" : "+"} ${Math.abs(b)} = ${a * x} ${b < 0 ? "-" : "+"} ${Math.abs(b)} = ${a * x + b}`) }; }
+    if (k === 2) { const a = aleaNZ(-3, 5), y = aleaNZ(-4, 5), b = aleaNZ(-4, 6);
+      return { consigne:`Calcule la valeur pour ${T("a = " + x)} et ${T("b = " + y)}.`, enonce: T(`${a === 1 ? "" : a === -1 ? "-" : a}a ${b < 0 ? "-" : "+"} ${Math.abs(b) === 1 ? "" : Math.abs(b)}b`), type:"nombre", valeur: a * x + b * y,
+        indice:"Remplace chaque lettre par sa valeur (avec des parenthèses si elle est négative).", correction: T(`${a} \\times ${par(String(x))} ${b < 0 ? "-" : "+"} ${Math.abs(b)} \\times ${par(String(y))} = ${a * x + b * y}`) }; }
+    const c = aleaNZ(-6, 6);
+    return { consigne:`Calcule la valeur de l'expression pour ${T("x = " + x)}.`, enonce: T(`x^{2} ${c < 0 ? "-" : "+"} ${Math.abs(c)}`), type:"nombre", valeur: x * x + c,
+      indice:`${T("x^{2} = x \\times x")} ; attention, ${T("(-3)^{2} = 9")}.`, correction: T(`${par(String(x))}^{2} ${c < 0 ? "-" : "+"} ${Math.abs(c)} = ${x * x} ${c < 0 ? "-" : "+"} ${Math.abs(c)} = ${x * x + c}`) };
+  } },
+{ id:"s1-puissances", annee:"S1", titre:"Puissances d'une lettre", desc:"a³ × a⁴, a⁷ ÷ a³, (a²)³ …",
+  gen(){
+    const m = alea(2, 6), n = alea(2, 5), k = alea(1, 4), v = choisir(["a", "x"]);
+    const cas = [
+      [`${v}^{${m}} \\times ${v}^{${n}}`, m + n, `on additionne les exposants : ${m} + ${n} = ${m + n}`],
+      [`${v}^{${m + n}} \\div ${v}^{${n}}`, m, `on soustrait les exposants : ${m + n} - ${n} = ${m}`],
+      [`\\left(${v}^{${m}}\\right)^{${n}}`, m * n, `on multiplie les exposants : ${m} \\times ${n} = ${m * n}`],
+      [`${v} \\times ${v}^{${n}} \\times ${v}^{${m}}`, 1 + n + m, `${v} = ${v}^{1}, donc 1 + ${n} + ${m} = ${1 + n + m}`]][k - 1];
+    return { consigne:"Écris sous la forme d'une seule puissance (utilise ^ pour l'exposant).", enonce: T(cas[0]), type:"expr", vars:[v], attendu:`${v}^${cas[1]}`, forme:"reduite", nbTermes:1,
+      symboles:[v, "^"], indice:"Règles : ajouter, soustraire ou multiplier les exposants.", correction:`${T(cas[0] + " = " + v + "^{" + cas[1] + "}")} : ${T("\\text{" + cas[2].replace(/\\times/g, "×") + "}")}` };
+  } },
+{ id:"s1-equations", annee:"S1", titre:"Équations ax + b = cx + d", desc:"Résoudre des équations du premier degré (nombres entiers).",
+  gen(){
+    const x = aleaNZ(-6, 8), a = aleaNZ(-5, 9); let c = aleaNZ(-5, 6); if (c === a) c = a - 1 || 2;
+    const b = aleaNZ(-12, 12), d = (a - c) * x + b;
+    const g = c === 0 ? lin(a, b) + " = " + d : `${lin(a, b)} = ${lin(c, d)}`;
+    return { consigne:"Résous l'équation. Donne la valeur de x.", enonce: T(g), type:"nombre", valeur:x,
+      indice:"Rassemble les x d'un côté, les nombres de l'autre.",
+      correction:`${T(`${cx(a)} ${c < 0 ? "+" : "-"} ${cx(Math.abs(c))} = ${d} ${b < 0 ? "+" : "-"} ${Math.abs(b)}`)} donc ${T(`${cx(a - c)} = ${d - b}`)}, d'où ${T("x = " + frac(d - b, a - c))}.` };
+  } },
+/* ----------------------------- S2 ----------------------------- */
+{ id:"s2-developper", annee:"S2", titre:"Développer k(ax + b)", desc:"Simple distributivité.",
+  gen(){
+    const k = aleaNZ(-6, 7), a = aleaNZ(-5, 6), b = aleaNZ(-9, 9), v = choisir(["x", "x", "a", "y"]);
+    const kx = k === 1 ? "" : k === -1 ? "-" : String(k);
+    return { consigne:"Développe et réduis.", enonce: T(`${kx}(${lin(a, b, v)})`), type:"expr", vars:[v], attendu:`${k * a}${v}+(${k * b})`, forme:"developpee", nbTermes:2,
+      symboles:[v, "−"], indice:`Multiplie ${T(String(k))} par chaque terme de la parenthèse.`,
+      correction: T(`${kx}(${lin(a, b, v)}) = ${k} \\times ${par(a + v)} + ${k} \\times ${par(String(b))} = ${lin(k * a, k * b, v)}`) };
+  } },
+{ id:"s2-dev-reduire", annee:"S2", titre:"Développer puis réduire", desc:"a(bx + c) + d(ex + f).",
+  gen(){
+    const a = aleaNZ(1, 6), b = aleaNZ(-4, 5), c = aleaNZ(-7, 7), d = aleaNZ(-5, 5), e = aleaNZ(-4, 5), f = aleaNZ(-7, 7);
+    const X = a * b + d * e, C = a * c + d * f; if (!X || !C) return this.gen();
+    const dx = d === 1 ? "+" : d === -1 ? "-" : d < 0 ? String(d) : "+" + d;
+    return { consigne:"Développe puis réduis.", enonce: T(`${a === 1 ? "" : a}(${lin(b, c)}) ${dx}(${lin(e, f)})`), type:"expr", vars:["x"], attendu:`${X}x+(${C})`, forme:"developpee", nbTermes:2,
+      symboles:["x", "−"], indice:"Développe chaque produit, puis regroupe les x et les nombres. Attention au signe devant la 2e parenthèse.",
+      correction: T(`= ${lin(a * b, a * c)} ${d * e < 0 ? "-" : "+"} ${cx(Math.abs(d * e))} ${d * f < 0 ? "-" : "+"} ${Math.abs(d * f)} = ${lin(X, C)}`) };
+  } },
+{ id:"s2-equations", annee:"S2", titre:"Équations à coefficients rationnels", desc:"Solutions décimales ou fractionnaires.",
+  gen(){
+    const k = alea(1, 2);
+    if (k === 1) { const q = choisir([2, 3, 4, 5]), x = aleaNZ(-6, 8) * q, b = aleaNZ(-6, 6), c = x / q + b;
+      return { consigne:"Résous l'équation. Donne x (entier, décimal ou fraction).", enonce: T(`\\dfrac{x}{${q}} ${b < 0 ? "-" : "+"} ${Math.abs(b)} = ${c}`), type:"nombre", valeur:x,
+        indice:`Isole ${T("\\dfrac{x}{" + q + "}")}, puis multiplie par ${q}.`, correction: T(`\\dfrac{x}{${q}} = ${c - b}`) + `, donc ${T(`x = ${c - b} \\times ${q} = ${x}`)}.` }; }
+    const a = aleaNZ(2, 9), c = aleaNZ(-4, 4), b = aleaNZ(-9, 9), d = aleaNZ(-9, 9);
+    if (a === c) return this.gen();
+    return { consigne:"Résous l'équation. Donne x (fraction ou décimal).", enonce: T(c ? `${lin(a, b)} = ${lin(c, d)}` : `${lin(a, b)} = ${d}`), type:"nombre", valeur:(d - b) / (a - c),
+      indice:"Regroupe les x à gauche et les nombres à droite, puis divise.", correction:`${T(`${cx(a - c)} = ${d - b}`)}, donc ${T("x = " + frac(d - b, a - c))}.` };
+  } },
+{ id:"s2-modeliser", annee:"S2", titre:"Traduire une situation en formule", desc:"Coût fixe + coût par unité, proportionnalité…",
+  gen(){
+    const f = alea(2, 9), u = choisir([1.5, 2, 2.5, 3, 4, 0.5]);
+    const sit = choisir([
+      { t:`Un taxi coûte ${f} € de prise en charge, plus ${String(u).replace(".", ",")} € par kilomètre. Prix P pour k kilomètres ?`, l:"k", n:"P" },
+      { t:`Un abonnement coûte ${f} € par mois, plus ${String(u).replace(".", ",")} € par film loué. Prix P pour f films ?`, l:"f", n:"P" },
+      { t:`Une bougie mesure ${f + 20} cm et raccourcit de ${String(u).replace(".", ",")} cm par heure. Hauteur H après t heures ?`, l:"t", n:"H", moins:true }]);
+    const U = String(u).replace(".", "{,}"), base = sit.moins ? f + 20 : f;
+    const bon = sit.moins ? `${sit.n} = ${base} - ${U}${sit.l}` : `${sit.n} = ${base} + ${U}${sit.l}`;
+    const faux = sit.moins ? [`${sit.n} = ${base} + ${U}${sit.l}`, `${sit.n} = ${U} - ${base}${sit.l}`, `${sit.n} = (${base} - ${U})${sit.l}`]
+                           : [`${sit.n} = ${U} + ${base}${sit.l}`, `${sit.n} = (${base} + ${U})${sit.l}`, `${sit.n} = ${base}${sit.l} \\times ${U}`];
+    const choix = melanger([bon, ...faux]);
+    return { consigne:sit.t, enonce:"", type:"qcm", choix:choix.map(T), bon:choix.indexOf(bon),
+      indice:"Le montant fixe ne dépend pas de la lettre ; le montant par unité est multiplié par la lettre.", correction: T(bon) };
+  } },
+/* ----------------------------- S3 ----------------------------- */
+{ id:"s3-nature", annee:"S3", titre:"Expression, équation ou formule ?", desc:"Reconnaître la nature d'une écriture.",
+  gen(){
+    const item = choisir([
+      [`3x + 5`, 0], [`2(a - 4) + a`, 0], [`x^{2} - 9`, 0], [`4x - 1`, 0],
+      [`3x + 5 = 11`, 1], [`2x - 7 = x + 3`, 1], [`x^{2} = 49`, 1], [`5(x + 1) = 20`, 1],
+      [`A = \\pi r^{2}`, 2], [`P = 2(L + l)`, 2], [`v = \\dfrac{d}{t}`, 2], [`V = a^{3}`, 2]]);
+    const choix = ["Une expression", "Une équation", "Une formule"];
+    return { consigne:"De quoi s'agit-il ?", enonce: T(item[0]), type:"qcm", choix, bon:item[1],
+      indice:"Une équation a une inconnue à trouver ; une formule relie des grandeurs ; une expression n'a pas de signe « = ».",
+      correction: ["Pas de signe « = » : c'est une expression.", "Une égalité avec une inconnue à trouver : c'est une équation.", "Une égalité qui relie des grandeurs : c'est une formule."][item[1]] };
+  } },
+{ id:"s3-formules", annee:"S3", titre:"Transformer une formule", desc:"Isoler une lettre : a = bc ⇒ b = a/c …",
+  gen(){
+    const f = choisir([
+      { d:"A = b h", q:"h", bon:"h = \\dfrac{A}{b}", f:["h = A - b", "h = A b", "h = \\dfrac{b}{A}"] },
+      { d:"v = \\dfrac{d}{t}", q:"d", bon:"d = v t", f:["d = \\dfrac{v}{t}", "d = \\dfrac{t}{v}", "d = v + t"] },
+      { d:"v = \\dfrac{d}{t}", q:"t", bon:"t = \\dfrac{d}{v}", f:["t = v d", "t = \\dfrac{v}{d}", "t = d - v"] },
+      { d:"P = a + b + c", q:"c", bon:"c = P - a - b", f:["c = P + a + b", "c = a + b - P", "c = \\dfrac{P}{a b}"] },
+      { d:"\\rho = \\dfrac{m}{V}", q:"m", bon:"m = \\rho V", f:["m = \\dfrac{\\rho}{V}", "m = \\dfrac{V}{\\rho}", "m = \\rho + V"] },
+      { d:"A = c^{2}", q:"c (avec c > 0)", bon:"c = \\sqrt{A}", f:["c = \\dfrac{A}{2}", "c = A^{2}", "c = 2A"] },
+      { d:"P = 2L + 2l", q:"L", bon:"L = \\dfrac{P - 2l}{2}", f:["L = P - 2l", "L = \\dfrac{P}{2} - 2l", "L = 2P - l"] },
+      { d:"V = \\pi r^{2} h", q:"h", bon:"h = \\dfrac{V}{\\pi r^{2}}", f:["h = V - \\pi r^{2}", "h = V \\pi r^{2}", "h = \\dfrac{\\pi r^{2}}{V}"] }]);
+    const choix = melanger([f.bon, ...f.f]);
+    return { consigne:`Exprime ${T(f.q.split(" ")[0])}${f.q.includes(" ") ? " " + f.q.slice(f.q.indexOf(" ")) : ""} en fonction des autres lettres.`, enonce: T(f.d), type:"qcm", choix:choix.map(T), bon:choix.indexOf(f.bon),
+      indice:"Fais la même opération des deux côtés de l'égalité pour isoler la lettre.", correction: T(f.bon) };
+  } },
+{ id:"s3-double", annee:"S3", titre:"Double distributivité", desc:"Développer (ax + b)(cx + d).",
+  gen(){
+    const a = aleaNZ(1, 4), b = aleaNZ(-7, 7), c = aleaNZ(1, 4), d = aleaNZ(-7, 7);
+    const A = a * c, B = a * d + b * c, C = b * d;
+    return { consigne:"Développe et réduis.", enonce: T(`(${lin(a, b)})(${lin(c, d)})`), type:"expr", vars:["x"], attendu:`(${a}x+(${b}))*(${c}x+(${d}))`, forme:"developpee", nbTermes:B ? 3 : 2,
+      symboles:SYM_X, indice:"Chaque terme de la 1re parenthèse multiplie chaque terme de la 2e (4 produits).",
+      correction: T(`= ${poly({ 2:A })} ${a * d < 0 ? "-" : "+"} ${Math.abs(a * d)}x ${b * c < 0 ? "-" : "+"} ${Math.abs(b * c)}x ${C < 0 ? "-" : "+"} ${Math.abs(C)} = ${poly({ 2:A, 1:B, 0:C })}`) };
+  } },
+{ id:"s3-identites", annee:"S3", titre:"Identités remarquables : développer", desc:"(a + b)², (a − b)², (a + b)(a − b).",
+  gen(){
+    const k = alea(1, 3), a = choisir([1, 1, 2, 3]), b = alea(1, 9);
+    const ax = a === 1 ? "x" : a + "x";
+    const e = [[`(${ax} + ${b})^{2}`, { 2:a * a, 1:2 * a * b, 0:b * b }, "(a + b)^{2} = a^{2} + 2ab + b^{2}", 3],
+               [`(${ax} - ${b})^{2}`, { 2:a * a, 1:-2 * a * b, 0:b * b }, "(a - b)^{2} = a^{2} - 2ab + b^{2}", 3],
+               [`(${ax} + ${b})(${ax} - ${b})`, { 2:a * a, 0:-b * b }, "(a + b)(a - b) = a^{2} - b^{2}", 2]][k - 1];
+    return { consigne:"Développe à l'aide d'une identité remarquable.", enonce: T(e[0]), type:"expr", vars:["x"], attendu:e[0].replace(/\^\{2\}/g, "^2"), forme:"developpee", nbTermes:e[3],
+      symboles:SYM_X, indice:T(e[2]), correction:`${T(e[2])}, avec ${T("a = " + ax)} et ${T("b = " + b)} :<br>${T(e[0] + " = " + poly(e[1]))}` };
+  } },
+{ id:"s3-fact-commun", annee:"S3", titre:"Factoriser : facteur commun", desc:"ab + ac = a(b + c).",
+  gen(){
+    const k = alea(1, 3);
+    if (k <= 2) { let f = alea(2, 7), a = aleaNZ(-5, 6), b = aleaNZ(-7, 7); if (pgcd(a, b) !== 1) return this.gen();
+      if (a < 0) { f = -f; a = -a; b = -b; }
+      if (k === 1) return { consigne:"Factorise le plus possible.", enonce: T(lin(f * a, f * b)), type:"expr", vars:["x"], attendu:`${f}(${a}x+(${b}))`, forme:"commun",
+        symboles:SYM_X, indice:`${T(String(f))} divise les deux termes.`, correction: T(`${lin(f * a, f * b)} = ${f} \\times ${par(a + "x")} + ${f} \\times ${par(String(b))} = ${f}(${lin(a, b)})`) };
+      return { consigne:"Factorise le plus possible.", enonce: T(poly({ 2:f * a, 1:f * b })), type:"expr", vars:["x"], attendu:`${f}x(${a}x+(${b}))`, forme:"commun", lettreEnFacteur:true,
+        symboles:SYM_X, indice:`Le facteur commun est ${T(f + "x")}.`, correction: T(`${poly({ 2:f * a, 1:f * b })} = ${f}x(${lin(a, b)})`) }; }
+    const a = aleaNZ(-6, 7); return { consigne:"Factorise le plus possible.", enonce: T(poly({ 2:1, 1:a })), type:"expr", vars:["x"], attendu:`x(x+(${a}))`, forme:"commun", lettreEnFacteur:true,
+      symboles:SYM_X, indice:`Le facteur commun est ${T("x")}.`, correction: T(`${poly({ 2:1, 1:a })} = x(${lin(1, a)})`) };
+  } },
+{ id:"s3-fact-identites", annee:"S3", titre:"Factoriser avec les identités", desc:"x² + 6x + 9, x² − 25, 4x² − 12x + 9 …",
+  gen(){
+    const k = alea(1, 3), a = choisir([1, 1, 2, 3]), b = alea(1, 9), ax = a === 1 ? "x" : a + "x";
+    const e = [[{ 2:a * a, 1:2 * a * b, 0:b * b }, `(${ax}+${b})^2`, `(${ax} + ${b})^{2}`, "a^{2} + 2ab + b^{2} = (a + b)^{2}"],
+               [{ 2:a * a, 1:-2 * a * b, 0:b * b }, `(${ax}-${b})^2`, `(${ax} - ${b})^{2}`, "a^{2} - 2ab + b^{2} = (a - b)^{2}"],
+               [{ 2:a * a, 0:-b * b }, `(${ax}+${b})(${ax}-${b})`, `(${ax} + ${b})(${ax} - ${b})`, "a^{2} - b^{2} = (a + b)(a - b)"]][k - 1];
+    return { consigne:"Factorise à l'aide d'une identité remarquable.", enonce: T(poly(e[0])), type:"expr", vars:["x"], attendu:e[1], forme:"factorisee",
+      symboles:SYM_X, indice:T(e[3]), correction:`${T(e[3])}, avec ${T("a = " + ax)} et ${T("b = " + b)} :<br>${T(poly(e[0]) + " = " + e[2])}` };
+  } },
+{ id:"s3-calcul-identites", annee:"S3", titre:"Calcul mental avec les identités", desc:"103², 99², 51 × 49 …",
+  gen(){
+    const k = alea(1, 3), n = choisir([20, 30, 40, 50, 60, 70, 100]), d = alea(1, 3);
+    const e = [[`${n + d}^{2}`, (n + d) ** 2, `(${n} + ${d})^{2} = ${n * n} + 2 \\times ${n} \\times ${d} + ${d * d} = ${(n + d) ** 2}`],
+               [`${n - d}^{2}`, (n - d) ** 2, `(${n} - ${d})^{2} = ${n * n} - 2 \\times ${n} \\times ${d} + ${d * d} = ${(n - d) ** 2}`],
+               [`${n + d} \\times ${n - d}`, n * n - d * d, `(${n} + ${d})(${n} - ${d}) = ${n * n} - ${d * d} = ${n * n - d * d}`]][k - 1];
+    return { consigne:"Calcule de tête, à l'aide d'une identité remarquable.", enonce: T(e[0]), type:"nombre", valeur:e[1],
+      indice:`Pense à ${T(n + " \\pm " + d)}.`, correction: T(e[2]) };
+  } },
+{ id:"s3-equations", annee:"S3", titre:"Équations avec parenthèses", desc:"a(bx ± c) = d(ex ± f).",
+  gen(){
+    const a = aleaNZ(1, 5), b = aleaNZ(1, 4), c = aleaNZ(-6, 6), d = aleaNZ(1, 4), e = aleaNZ(1, 4), f = aleaNZ(-6, 6);
+    const A = a * b - d * e, B = d * f - a * c; if (!A) return this.gen();
+    const ga = (k, s) => k === 1 ? s : `${k}(${s})`;
+    return { consigne:"Résous l'équation. Donne x (entier ou fraction).", enonce: T(`${ga(a, lin(b, c))} = ${ga(d, lin(e, f))}`), type:"nombre", valeur:B / A,
+      indice:"Développe les deux membres, puis résous comme d'habitude.",
+      correction:`${T(`${lin(a * b, a * c)} = ${lin(d * e, d * f)}`)}, donc ${A === 1 ? T("x = " + B) : `${T(`${cx(A)} = ${B}`)} et ${T("x = " + frac(B, A))}`}.` };
+  } }
+];
+
+/* =====================================================================
+   INTERFACE
+   ===================================================================== */
+let serie = null;
+function lireScores(){ try { return JSON.parse(localStorage.getItem("calcul-litteral-scores") || "{}"); } catch(e) { return {}; } }
+function sauverScore(id, note){ try { const s = lireScores(); s[id] = Math.max(s[id] || 0, note); localStorage.setItem("calcul-litteral-scores", JSON.stringify(s)); } catch(e) {} }
+
+function menu(){
+  $("#accueil").hidden = true;
+  const sc = lireScores();
+  let h = `<p class="intro">Choisis un thème. Chaque série contient ${NB} exercices tirés au hasard : tu peux la refaire autant de fois que tu veux.</p>`;
+  for (const an of ["S1", "S2", "S3"]) {
+    h += `<h2 class="annee">${an}</h2><div class="grille">`;
+    for (const t of THEMES.filter(t => t.annee === an))
+      h += `<button class="theme" data-id="${t.id}"><div class="t">${esc(t.titre)}</div><div class="d">${esc(t.desc)}</div>${sc[t.id] !== undefined ? `<div class="s">Meilleur score : ${String(sc[t.id]).replace(".", ",")} / ${NB}</div>` : ""}</button>`;
+    h += `</div>`;
+  }
+  ecran.innerHTML = h;
+  ecran.querySelectorAll(".theme").forEach(b => b.onclick = () => demarrer(b.dataset.id));
+  window.scrollTo(0, 0);
+}
+
+function nettoyer(t){ return String(t || "").replace(/\+ -/g, "- ").replace(/- -/g, "+ ").replace(/\+-/g, "-"); }
+function generer(th){ const ex = th.gen(); ex.enonce = nettoyer(ex.enonce); ex.correction = nettoyer(ex.correction); return ex; }
+function demarrer(id){
+  const th = THEMES.find(t => t.id === id);
+  serie = { th, n:0, points:0, ex:null, essais:0, fini:false, choix:null };
+  $("#accueil").hidden = false;
+  suivant();
+}
+function suivant(){
+  if (serie.n >= NB) return bilan();
+  serie.ex = generer(serie.th); serie.essais = 0; serie.fini = false; serie.choix = null;
+  afficher();
+}
+function afficher(){
+  const ex = serie.ex, th = serie.th;
+  let zone;
+  if (ex.type === "qcm") zone = ex.choix.map((c, i) => `<button class="choix" data-i="${i}">${c}</button>`).join("");
+  else {
+    const sy = ex.symboles || (ex.type === "nombre" ? ["−", "/", ","] : SYM_X);
+    zone = `<input type="text" id="rep" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Ta réponse">
+            <div class="symboles">${sy.map(c => `<button type="button" class="sym" data-c="${esc(c)}">${esc(c)}</button>`).join("")}</div>
+            <div class="aide">${ex.type === "nombre" ? "Un nombre : entier, décimal (2,5) ou fraction (7/3)." : "Exemples d'écriture : 3x^2 − 5x + 1, (x+2)(x−3), 4x(2x+1)."}</div>`;
+  }
+  ecran.innerHTML = `<div class="carte">
+    <div class="haut"><span>${th.annee} · ${esc(th.titre)}</span><span>Exercice ${serie.n + 1} / ${NB} · Score : ${String(serie.points).replace(".", ",")}</span></div>
+    <div class="progress"><div style="width:${serie.n / NB * 100}%"></div></div>
+    <p class="consigne">${ex.consigne}</p>
+    ${ex.enonce ? `<div class="enonce">${ex.enonce}</div>` : ""}
+    ${zone}
+    <div class="btns">
+      <button class="btn" id="valider">Valider</button>
+      <button class="btn sec" id="indice">💡 Indice</button>
+      <button class="btn sec" id="voir">Voir la correction</button>
+    </div>
+    <div id="retour"></div>
+  </div>`;
+  const rep = $("#rep");
+  ecran.querySelectorAll(".choix").forEach(b => b.onclick = () => { if (serie.fini) return; serie.choix = +b.dataset.i;
+    ecran.querySelectorAll(".choix").forEach(x => x.classList.remove("sel")); b.classList.add("sel"); });
+  ecran.querySelectorAll(".sym").forEach(bt => { bt.onmousedown = e => e.preventDefault(); bt.onclick = () => {
+    let c = bt.dataset.c; c = c === "−" ? "-" : c === "²" ? "^2" : c;
+    const d = rep.selectionStart ?? rep.value.length, f = rep.selectionEnd ?? d;
+    rep.value = rep.value.slice(0, d) + c + rep.value.slice(f); rep.setSelectionRange(d + c.length, d + c.length); rep.focus(); }; });
+  if (rep) { rep.addEventListener("keydown", e => { if (e.key === "Enter") $("#valider").click(); }); setTimeout(() => rep.focus(), 50); }
+  $("#valider").onclick = valider;
+  $("#indice").onclick = () => { $("#retour").innerHTML = `<div class="retour info">💡 ${ex.indice}</div>`; maths($("#retour")); };
+  $("#voir").onclick = () => conclure(false, true);
+  maths(ecran);
+}
+function valider(){
+  const ex = serie.ex;
+  if (serie.fini) return suivant();
+  const r = ex.type === "qcm" ? serie.choix : $("#rep").value;
+  if (ex.type === "qcm" && r === null) { $("#retour").innerHTML = `<div class="retour info">Choisis une réponse.</div>`; return; }
+  const v = verifier(ex, r);
+  if (v.ok) return conclure(true);
+  serie.essais++;
+  if (serie.essais >= 2) return conclure(false, false, v.msg);
+  $("#retour").innerHTML = `<div class="retour ko">✘ ${v.msg ? esc(v.msg) : "Ce n'est pas ça."} Essaie encore (encore 1 essai).</div>`;
+}
+function conclure(ok, abandon, msg){
+  const ex = serie.ex; serie.fini = true;
+  const gain = ok ? (serie.essais === 0 ? 1 : 0.5) : 0; serie.points += gain;
+  const tete = ok ? `<div class="retour ok">✔ Bravo ! ${gain === 1 ? "+1 point" : "+0,5 point (2e essai)"}</div>`
+             : `<div class="retour ko">✘ ${abandon ? "Voici la correction." : (msg ? esc(msg) + " " : "") + "Ce n'était pas ça."}</div>`;
+  $("#retour").innerHTML = tete + `<div class="correction"><b>Correction :</b> ${ex.correction}</div>`;
+  $("#valider").textContent = serie.n + 1 >= NB ? "Voir mon score" : "Exercice suivant →";
+  $("#indice").disabled = true; $("#voir").disabled = true;
+  serie.n++;
+  $("#valider").onclick = suivant;
+  maths($("#retour"));
+  $("#valider").focus();
+}
+function bilan(){
+  sauverScore(serie.th.id, serie.points);
+  const p = serie.points, msg = p >= 9 ? "Excellent !" : p >= 7 ? "Très bien !" : p >= 5 ? "C'est en bonne voie, continue." : "Refais une série : ça va venir !";
+  ecran.innerHTML = `<div class="carte bilan"><p>${serie.th.annee} · ${esc(serie.th.titre)}</p>
+    <div class="note">${String(p).replace(".", ",")} / ${NB}</div><p>${msg}</p>
+    <div class="btns" style="justify-content:center"><button class="btn" id="encore">Nouvelle série</button><button class="btn sec" id="themes">Autres thèmes</button></div></div>`;
+  $("#encore").onclick = () => demarrer(serie.th.id);
+  $("#themes").onclick = menu;
+}
+$("#accueil").onclick = menu;
+menu();
+</script>
+</body>
+</html>

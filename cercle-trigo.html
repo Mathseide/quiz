@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Cercle trigonométrique — S5</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="maths(document.body)"></script>
+<style>
+  /* Appli entièrement en NOIR ET BLANC (S5ma6FRA) */
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; font-family:-apple-system, "Segoe UI", Helvetica, Arial, sans-serif; background:#fff; color:#000; }
+  header { background:#000; color:#fff; }
+  header .in { max-width:900px; margin:0 auto; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  header h1 { margin:0; font-size:1.3rem; }
+  header button { background:#000; color:#fff; border:2px solid #fff; border-radius:8px; padding:8px 12px; font-size:1rem; cursor:pointer; }
+  main { max-width:900px; margin:0 auto; padding:18px; }
+  .intro { margin:0 0 16px; }
+  .annee { margin:22px 0 10px; font-size:1.25rem; border-bottom:2px solid #000; padding-bottom:4px; }
+  .grille { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:12px; }
+  .theme { text-align:left; background:#fff; border:2px solid #000; border-left-width:8px; border-radius:12px; padding:14px 16px; cursor:pointer; font-size:1rem; color:#000; }
+  .theme .t { font-weight:700; font-size:1.05rem; margin-bottom:4px; }
+  .theme .d { font-size:.92rem; }
+  .theme .s { margin-top:8px; font-size:.9rem; font-weight:700; }
+  .theme.bientot { border-style:dashed; cursor:default; }
+  .carte { background:#fff; border:2px solid #000; border-radius:14px; padding:20px; }
+  .haut { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; font-size:.95rem; flex-wrap:wrap; }
+  .progress { height:10px; border:1.5px solid #000; border-radius:5px; margin-bottom:14px; overflow:hidden; }
+  .progress div { height:100%; background:#000; transition:width .3s; }
+  .consigne { font-size:1.1rem; margin:0 0 6px; }
+  .figure { text-align:center; margin:6px 0 12px; }
+  .figure svg { width:100%; max-width:420px; height:auto; }
+  input[type=text] { width:100%; font-size:1.3rem; padding:14px; border:2px solid #000; border-radius:10px; }
+  input[type=text]:focus { outline:3px solid #000; outline-offset:1px; }
+  .symboles { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .sym { min-width:56px; font-size:1.35rem; padding:10px 14px; border:2px solid #000; border-radius:10px; background:#fff; color:#000; cursor:pointer; }
+  .btns { display:flex; flex-wrap:wrap; gap:10px; margin-top:18px; }
+  .btn { font-size:1.1rem; padding:13px 22px; border:2px solid #000; border-radius:10px; background:#000; color:#fff; cursor:pointer; }
+  .btn.sec { background:#fff; color:#000; }
+  .btn:disabled { opacity:.35; }
+  .retour { padding:12px 14px; border-radius:10px; margin-top:16px; line-height:1.6; font-size:1.08rem; border:2px solid #000; }
+  .retour.ok { border-width:3px; font-weight:700; }
+  .retour.ko { border-style:solid; border-left-width:10px; }
+  .retour.info { border-style:dashed; }
+  .correction { margin-top:12px; padding:14px; border:2px dashed #000; border-radius:10px; line-height:1.9; font-size:1.08rem; }
+  .bilan { text-align:center; }
+  .bilan .note { font-size:2.6rem; font-weight:700; margin:8px 0; }
+  .aide { font-size:.92rem; margin-top:8px; }
+  @media (max-width:520px) { .btn { padding:12px 16px; font-size:1rem; } }
+</style>
+</head>
+<body>
+<header><div class="in"><h1>◯ Cercle trigonométrique — S5</h1><button id="accueil" hidden>☰ Thèmes</button></div></header>
+<main id="ecran"></main>
+
+<script>
+/* =====================================================================
+   Cercle trigonométrique S5 (Écoles européennes) — NOIR ET BLANC
+   Vignettes : 1) mesure d'un arc dans [−2π ; 2π]
+               2) mesure d'un arc quelconque (plusieurs tours)
+               3) mesure principale d'un point (dans ]−π ; π])
+   À compléter plus tard : cos, sin, tan.
+   ===================================================================== */
+const NB = 10;
+const $ = s => document.querySelector(s);
+const ecran = $("#ecran");
+const CLE = "cercle-trigo-scores";
+let serie = null;
+const alea = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const choisir = t => t[Math.floor(Math.random() * t.length)];
+const pgcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) [a, b] = [b, a % b]; return a; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+function maths(el){ if (window.renderMathInElement && el) renderMathInElement(el, { delimiters:[{ left:"\\(", right:"\\)", display:false }], throwOnError:false }); }
+const T = s => `\\(${s}\\)`;
+function lireScores(){ try { return JSON.parse(localStorage.getItem(CLE)) || {}; } catch(e) { return {}; } }
+function sauverScore(id, p){ try { const s = lireScores(); if (s[id] === undefined || p > s[id]) { s[id] = p; localStorage.setItem(CLE, JSON.stringify(s)); } } catch(e) {} }
+
+/* ---------- fractions de π ---------- */
+function red(p, q){ if (q < 0) { p = -p; q = -q; } const g = pgcd(p, q) || 1; return [p / g, q / g]; }
+function texPi(p, q){ [p, q] = red(p, q); if (p === 0) return "0";
+  const s = p < 0 ? "-" : "", a = Math.abs(p), num = (a === 1 ? "" : a) + "\\pi";
+  return q === 1 ? s + num : `${s}\\frac{${num}}{${q}}`; }
+function txtPi(p, q){ [p, q] = red(p, q); if (p === 0) return "0"; const a = Math.abs(p);
+  return (p < 0 ? "-" : "") + (a === 1 ? "" : a) + "π" + (q === 1 ? "" : "/" + q); }
+/* mesure principale de (p/q)π, dans ]−π ; π] */
+function principale(p, q){ [p, q] = red(p, q); let m = ((p % (2 * q)) + 2 * q) % (2 * q); if (m > q) m -= 2 * q; return red(m, q); }
+
+/* ---------- lecture de la réponse (copie du lecteur de l'appli Calcul littéral) ---------- */
+function normaliser(txt){
+  const SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+  return String(txt).replace(/[’‘´`′]/g, "'")
+    .replace(/[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, m => { const e = [...m].map(c => c === "⁻" ? "-" : SUP.indexOf(c)).join(""); return /^\d$/.test(e) ? "^" + e : "^(" + e + ")"; })
+    .replace(/[−–]/g, "-").replace(/[×·]/g, "*").replace(/:/g, "/").replace(/,/g, ".")
+    .replace(/[{}\s]/g, "").toLowerCase();
+}
+/* expression → fonction(env) ; multiplication implicite prioritaire : 6/3x = 6/(3x) */
+function lire(txt, vars){
+  const s = normaliser(txt); if (!s) return null;
+  const t = []; let k = 0;
+  while (k < s.length) {
+    const v = vars.find(v => s.startsWith(v, k));
+    if (v) { t.push({ v }); k += v.length; continue; }
+    const n = s.slice(k).match(/^\d+(?:\.\d+)?|^\.\d+/);
+    if (n) { t.push(n[0]); k += n[0].length; continue; }
+    if ("+-*/^()".includes(s[k])) { t.push(s[k]); k++; continue; }
+    return null;
+  }
+  let i = 0;
+  const vu = () => t[i], pris = c => (t[i] === c ? (i++, true) : false);
+  const debut = c => c !== undefined && (typeof c === "object" || c === "(" || /^[\d.]/.test(c));
+  function somme(){ let a = produit(); for(;;){ if (pris("+")){ const b = produit(), p = a; a = e => p(e) + b(e); } else if (pris("-")){ const b = produit(), p = a; a = e => p(e) - b(e); } else return a; } }
+  function produit(){ let a = implicite(); for(;;){ if (pris("*")){ const b = implicite(), p = a; a = e => p(e) * b(e); } else if (pris("/")){ const b = implicite(), p = a; a = e => p(e) / b(e); } else return a; } }
+  function implicite(){ let a = unaire(); while (debut(vu())){ const b = puissance(), p = a; a = e => p(e) * b(e); } return a; }
+  function unaire(){ if (pris("-")){ const a = unaire(); return e => -a(e); } if (pris("+")) return unaire(); return puissance(); }
+  function puissance(){ const a = primaire(); if (pris("^")){ const b = unaire(); return e => Math.pow(a(e), b(e)); } return a; }
+  function primaire(){ const c = t[i++]; if (c === undefined) throw 0;
+    if (typeof c === "object") return e => e[c.v];
+    if (c === "("){ const a = somme(); if (!pris(")")) throw 0; return a; }
+    if (/^[\d.]/.test(c)){ const v = parseFloat(c); return () => v; } throw 0; }
+  try { const f = somme(); return i === t.length ? f : null; } catch(e) { return null; }
+}
+function lireMesure(txt){
+  const s0 = String(txt).trim(); if (!s0) return { msg:"Écris une réponse." };
+  const s = s0.replace(/pi/gi, "π");
+  const f = lire(s, ["π"]); if (!f) return { msg:"Je ne comprends pas cette écriture. Exemple : -5π/6" };
+  const v1 = f({ "π":1 }), v2 = f({ "π":2 }), v0 = f({ "π":0 });
+  if (!isFinite(v1)) return { msg:"Je ne comprends pas cette écriture. Exemple : -5π/6" };
+  if (Math.abs(v1) > 1e-12 && (!/π/.test(s) || Math.abs(v2 - 2 * v1) > 1e-9 || Math.abs(v0) > 1e-9))
+    return { msg:"Donne la mesure en fonction de π, par exemple 5π/6 (et pas 5/6π, ni une valeur approchée)." };
+  let nonSimpl = false;
+  for (const m of normaliser(s).matchAll(/(\d+)π?\/(\d+)/g)) if (pgcd(+m[1], +m[2]) > 1) nonSimpl = true;
+  return { v:v1, nonSimpl };
+}
+
+/* ---------- figure : cercle trigonométrique en SVG ---------- */
+const R = 150;
+const P = (r, t) => [ (r * R * Math.cos(t)).toFixed(1), (-r * R * Math.sin(t)).toFixed(1) ];
+function figure(o){
+  // o = { mode:"secteurs"|"quadrillage", n, theta (en radians), arc:bool }
+  let g = `<svg viewBox="-205 -205 410 410" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif" font-size="17">`;
+  if (o.mode === "quadrillage") {
+    for (const k of [-1, -0.5, 0.5, 1]) {
+      g += `<line x1="${k * R}" y1="${-R}" x2="${k * R}" y2="${R}" stroke="#000" stroke-width="0.8" stroke-dasharray="4 4"/>`;
+      g += `<line x1="${-R}" y1="${k * R}" x2="${R}" y2="${k * R}" stroke="#000" stroke-width="0.8" stroke-dasharray="4 4"/>`;
+    }
+    g += `<line x1="${-R}" y1="${-R}" x2="${R}" y2="${R}" stroke="#000" stroke-width="0.8" stroke-dasharray="1.5 4"/>`;
+    g += `<line x1="${-R}" y1="${R}" x2="${R}" y2="${-R}" stroke="#000" stroke-width="0.8" stroke-dasharray="1.5 4"/>`;
+    g += `<text x="${0.5 * R + 3}" y="${R + 16}" font-size="13">1/2</text><text x="${-0.5 * R - 22}" y="${R + 16}" font-size="13">−1/2</text>`;
+    g += `<text x="${R + 4}" y="${-0.5 * R + 5}" font-size="13">1/2</text><text x="${R + 4}" y="${0.5 * R + 5}" font-size="13">−1/2</text>`;
+  } else {
+    for (let k = 0; k < o.n; k++) { const [x, y] = P(1, 2 * Math.PI * k / o.n);
+      g += `<line x1="0" y1="0" x2="${x}" y2="${y}" stroke="#000" stroke-width="1"/>`; }
+  }
+  // axes
+  g += `<line x1="-185" y1="0" x2="185" y2="0" stroke="#000" stroke-width="1.6"/><line x1="0" y1="185" x2="0" y2="-185" stroke="#000" stroke-width="1.6"/>`;
+  g += `<polygon points="185,0 175,-5 175,5" fill="#000"/><polygon points="0,-185 -5,-175 5,-175" fill="#000"/>`;
+  g += `<circle cx="0" cy="0" r="${R}" fill="none" stroke="#000" stroke-width="2.4"/>`;
+  g += `<circle cx="${R}" cy="0" r="3.5" fill="#000"/><text x="${R + 6}" y="18" font-weight="bold">I</text>`;
+  g += `<circle cx="0" cy="${-R}" r="3.5" fill="#000"/><text x="7" y="${-R - 7}" font-weight="bold">J</text>`;
+  g += `<text x="-16" y="17" font-weight="bold">O</text>`;
+  const t = o.theta;
+  if (o.arc) {
+    const tours = Math.abs(t) / (2 * Math.PI);
+    const r0 = tours > 1.001 ? 0.22 : 0.42, r1 = tours > 1.001 ? 0.82 : 0.6;
+    const N = Math.max(30, Math.ceil(Math.abs(t) * 40)); let pts = [];
+    for (let i = 0; i <= N; i++) { const u = t * i / N, r = r0 + (r1 - r0) * i / N; pts.push(P(r, u).join(",")); }
+    g += `<defs><marker id="fl" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="15" markerHeight="15" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#000"/></marker></defs>`;
+    g += `<polyline points="${pts.join(" ")}" fill="none" stroke="#000" stroke-width="2.6" marker-end="url(#fl)"/>`;
+    const [sx, sy] = P(r0, 0); g += `<circle cx="${sx}" cy="${sy}" r="4" fill="#fff" stroke="#000" stroke-width="2"/>`;
+  }
+  const [mx, my] = P(1, t), [lx, ly] = P(1.14, t);
+  g += `<line x1="0" y1="0" x2="${mx}" y2="${my}" stroke="#000" stroke-width="1.4" stroke-dasharray="7 4"/>`;
+  g += `<circle cx="${mx}" cy="${my}" r="7" fill="#000"/><text x="${lx}" y="${ly}" font-size="21" font-weight="bold" text-anchor="middle" dominant-baseline="central">M</text>`;
+  return g + `</svg>`;
+}
+
+/* ---------- génération ---------- */
+// angle k·(π/d) ; mode secteurs : pas 2π/n ; mode quadrillage : multiples de π/6 ou de π/4
+function tirage(){
+  if (Math.random() < 0.5) { const n = choisir([4, 6, 8, 12, 12, 3, 8]); return { mode:"secteurs", n, pas:[2, n] }; }
+  return { mode:"quadrillage", pas:choisir([[1, 6], [1, 6], [1, 4], [1, 3]]) };
+}
+function repere(p, q){
+  // angle de référence lu sur le quadrillage
+  const [a, b] = principale(p, q);
+  if (b === 1 || b === 2) return "M est sur un des axes : multiple de \\(\\frac{\\pi}{2}\\)";
+  if (b === 4) return "M est sur une diagonale du quadrillage : multiple impair de \\(\\frac{\\pi}{4}\\)";
+  if (b === 6) return "M est sur une droite \\(y = \\pm\\frac{1}{2}\\) : multiple impair de \\(\\frac{\\pi}{6}\\)";
+  return "M est sur une droite \\(x = \\pm\\frac{1}{2}\\) : multiple de \\(\\frac{\\pi}{3}\\)";
+}
+function indiceGrille(){ return "Repères du quadrillage : la droite \\(y=\\frac12\\) coupe le cercle en \\(\\frac{\\pi}{6}\\) et \\(\\frac{5\\pi}{6}\\) ; la droite \\(x=\\frac12\\) en \\(\\frac{\\pi}{3}\\) et \\(-\\frac{\\pi}{3}\\) ; les diagonales en \\(\\frac{\\pi}{4}\\), \\(\\frac{3\\pi}{4}\\)…"; }
+function indiceSecteurs(n){ return `Le cercle est partagé en ${n} secteurs égaux : chacun mesure \\(\\frac{2\\pi}{${n}} = ${texPi(2, n)}\\).`; }
+const SENS = "Sens direct (inverse des aiguilles d'une montre) : mesure positive ; sens indirect : mesure négative.";
+
+const THEMES = [
+  { id:"arc", titre:"Lire une mesure en radians", desc:"Mesure de l'arc dessiné, entre −2π et 2π (secteurs ou quadrillage).",
+    gen(){ const t = tirage(); const [a, b] = t.pas; const max = Math.round(2 * b / a);   // nombre de pas dans 2π
+      let k; do k = alea(-max, max); while (k === 0 || (Math.abs(k) === max && Math.random() < 0.7));
+      const [p, q] = red(k * a, b), sens = k > 0 ? "direct" : "indirect";
+      const corr = t.mode === "secteurs"
+        ? `Chaque secteur mesure ${T(texPi(2, t.n))}. L'arc parcourt ${Math.abs(k)} secteur${Math.abs(k) > 1 ? "s" : ""} dans le sens ${sens} : ${T(`${k < 0 ? "-" : ""}${Math.abs(k)}\\times${texPi(2, t.n)} = ${texPi(p, q)}`)}.`
+        : `${repere(p, q)}. L'arc part de I et tourne dans le sens ${sens} : la mesure est ${T(texPi(p, q))}.`;
+      return { fig:{ mode:t.mode, n:t.n, theta:Math.PI * p / q, arc:true }, p, q, cible:"arc",
+        consigne:"Donne la mesure en radians de l'arc orienté dessiné, de I jusqu'à M.",
+        indice:(t.mode === "secteurs" ? indiceSecteurs(t.n) : indiceGrille()) + " " + SENS, correction:corr }; } },
+  { id:"tours", titre:"Mesures avec plusieurs tours", desc:"L'arc peut faire un ou plusieurs tours complets : 17π/6, −9π/4…",
+    gen(){ const t = tirage(); const [a, b] = t.pas; const max = Math.round(2 * b / a);
+      const tours = choisir([1, 1, 1, 2, 2, 0]), reste = alea(1, max - 1), sg = choisir([1, 1, -1]);
+      const k = sg * (tours * max + reste); const [p, q] = red(k * a, b), [rp, rq] = red(reste * a, b);
+      const sens = sg > 0 ? "direct" : "indirect";
+      const detail = tours === 0 ? `aucun tour complet, seulement ${T(texPi(rp, rq))}`
+        : `${tours} tour${tours > 1 ? "s" : ""} complet${tours > 1 ? "s" : ""} (${T(tours === 1 ? "2\\pi" : `${tours}\\times 2\\pi = ${2 * tours}\\pi`)}) puis encore ${T(texPi(rp, rq))}`;
+      const calc = tours === 0 ? texPi(p, q) : `${sg < 0 ? "-\\left(" : ""}${2 * tours}\\pi + ${texPi(rp, rq)}${sg < 0 ? "\\right)" : ""} = ${texPi(p, q)}`;
+      return { fig:{ mode:t.mode, n:t.n, theta:Math.PI * p / q, arc:true }, p, q, cible:"arc",
+        consigne:"Donne la mesure en radians de l'arc orienté dessiné, de I jusqu'à M (attention aux tours complets).",
+        indice:"Compte d'abord les tours complets (chacun vaut \\(2\\pi\\)), puis ce qu'il reste jusqu'à M. " + (t.mode === "secteurs" ? indiceSecteurs(t.n) : indiceGrille()),
+        correction:`Dans le sens ${sens}, l'arc fait ${detail} : ${T(calc)}.` }; } },
+  { id:"principale", titre:"Lire la mesure principale", desc:"Le point M est placé : donne sa mesure principale, dans ]−π ; π].",
+    gen(){ const t = tirage(); const [a, b] = t.pas; const max = Math.round(2 * b / a), h = max / 2;
+      let k; do k = alea(Math.floor(-h) + 1, Math.floor(h)); while (k === 0 && Math.random() < 0.85);
+      const [p, q] = red(k * a, b);
+      const pourquoi = p === 0 ? "M est en I : la mesure principale est 0."
+        : q === 1 && p === 1 ? `M est le point diamétralement opposé à I : la mesure principale est ${T("\\pi")} (et non ${T("-\\pi")}, car l'intervalle est ${T("\\left]-\\pi\\,;\\,\\pi\\right]")}).`
+        : `M est ${p > 0 ? "au-dessus" : "en dessous"} de l'axe des abscisses : on va de I à M par le chemin le plus court, dans le sens ${p > 0 ? "direct" : "indirect"}. ` +
+          (t.mode === "secteurs" ? `On compte ${Math.abs(k)} secteur${Math.abs(k) > 1 ? "s" : ""} de ${T(texPi(2, t.n))} : ` : repere(p, q) + ". ") + `mesure principale ${T(texPi(p, q))}.`;
+      return { fig:{ mode:t.mode, n:t.n, theta:Math.PI * p / q, arc:false }, p, q, cible:"principale",
+        consigne:"Donne la mesure principale (dans \\(\\left]-\\pi\\,;\\,\\pi\\right]\\)) du point M.",
+        indice:"La mesure principale est dans \\(\\left]-\\pi\\,;\\,\\pi\\right]\\) : si M est au-dessus de l'axe des abscisses, elle est positive ; en dessous, elle est négative. " + (t.mode === "secteurs" ? indiceSecteurs(t.n) : indiceGrille()),
+        correction:pourquoi + `<div class="figure">${figure({ mode:t.mode, n:t.n, theta:Math.PI * p / q, arc:true })}</div>` }; } },
+];
+const BIENTOT = [
+  { titre:"Cosinus et sinus", desc:"Lire cos et sin sur le cercle (à venir)." },
+  { titre:"Tangente", desc:"Lire tan (à venir)." },
+];
+
+/* ---------- vérification ---------- */
+function verifier(ex, r){
+  const m = lireMesure(r); if (m.msg) return { ok:false, msg:m.msg };
+  const c = ex.p / ex.q, d = (m.v - c) / 2, memePoint = Math.abs(d - Math.round(d)) < 1e-9;
+  if (Math.abs(m.v - c) < 1e-9) return m.nonSimpl ? { ok:false, msg:"C'est la bonne valeur, mais simplifie la fraction." } : { ok:true };
+  if (memePoint) return { ok:false, msg: ex.cible === "principale"
+    ? "C'est bien une mesure de M, mais pas la mesure principale : elle doit être dans ]−π ; π]."
+    : "C'est une mesure du point M, mais pas celle de l'arc dessiné : regarde le sens et le nombre de tours." };
+  return { ok:false };
+}
+
+/* ---------- écrans ---------- */
+function menu(){
+  $("#accueil").hidden = true;
+  const sc = lireScores();
+  let h = `<p class="intro">Choisis une vignette. Chaque série contient ${NB} exercices tirés au hasard : tu peux la refaire autant de fois que tu veux.</p>`;
+  h += `<h2 class="annee">Mesures en radians</h2><div class="grille">`;
+  THEMES.forEach((t, i) => h += `<button class="theme" data-id="${t.id}"><div class="t">${i + 1}. ${esc(t.titre)}</div><div class="d">${esc(t.desc)}</div>${sc[t.id] !== undefined ? `<div class="s">Meilleur score : ${String(sc[t.id]).replace(".", ",")} / ${NB}</div>` : ""}</button>`);
+  h += `</div><h2 class="annee">Bientôt</h2><div class="grille">`;
+  BIENTOT.forEach(t => h += `<div class="theme bientot"><div class="t">${esc(t.titre)}</div><div class="d">${esc(t.desc)}</div></div>`);
+  ecran.innerHTML = h + `</div>`;
+  ecran.querySelectorAll("button.theme").forEach(b => b.onclick = () => demarrer(b.dataset.id));
+  window.scrollTo(0, 0);
+}
+function demarrer(id){ serie = { th:THEMES.find(t => t.id === id), n:0, points:0, ex:null, essais:0, fini:false }; $("#accueil").hidden = false; suivant(); }
+function suivant(){
+  if (serie.n >= NB) return bilan();
+  let ex; do ex = serie.th.gen(); while (serie.ex && ex.p === serie.ex.p && ex.q === serie.ex.q);
+  serie.ex = ex; serie.essais = 0; serie.fini = false; afficher();
+}
+function afficher(){
+  const ex = serie.ex, th = serie.th, sy = ["π", "−", "/", "(", ")"];
+  ecran.innerHTML = `<div class="carte">
+    <div class="haut"><span>${esc(th.titre)}</span><span>Exercice ${serie.n + 1} / ${NB} · Score : ${String(serie.points).replace(".", ",")}</span></div>
+    <div class="progress"><div style="width:${serie.n / NB * 100}%"></div></div>
+    <p class="consigne">${ex.consigne}</p>
+    <div class="figure">${figure(ex.fig)}</div>
+    <input type="text" id="rep" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Ta réponse, par exemple -5π/6">
+    <div class="symboles">${sy.map(c => `<button type="button" class="sym" data-c="${esc(c)}">${esc(c)}</button>`).join("")}</div>
+    <div class="aide">Écris la mesure en fonction de π : 5π/6, −π/3, 2π, 0… (tu peux aussi taper « pi »).</div>
+    <div class="btns">
+      <button class="btn" id="valider">Valider</button>
+      <button class="btn sec" id="indice">💡 Indice</button>
+      <button class="btn sec" id="voir">Voir la correction</button>
+    </div>
+    <div id="retour"></div>
+  </div>`;
+  const rep = $("#rep");
+  ecran.querySelectorAll(".sym").forEach(bt => { bt.onmousedown = e => e.preventDefault(); bt.onclick = () => {
+    const c = bt.dataset.c === "−" ? "-" : bt.dataset.c;
+    const d = rep.selectionStart ?? rep.value.length, f = rep.selectionEnd ?? d;
+    rep.value = rep.value.slice(0, d) + c + rep.value.slice(f); rep.setSelectionRange(d + c.length, d + c.length); rep.focus(); }; });
+  rep.addEventListener("keydown", e => { if (e.key === "Enter") $("#valider").click(); });
+  $("#valider").onclick = valider;
+  $("#indice").onclick = () => { $("#retour").innerHTML = `<div class="retour info">💡 ${ex.indice}</div>`; maths($("#retour")); };
+  $("#voir").onclick = () => conclure(false, true);
+  maths(ecran);
+}
+function valider(){
+  if (serie.fini) return suivant();
+  const v = verifier(serie.ex, $("#rep").value);
+  if (v.ok) return conclure(true);
+  serie.essais++;
+  if (serie.essais >= 2) return conclure(false, false, v.msg);
+  $("#retour").innerHTML = `<div class="retour ko">✘ ${v.msg ? esc(v.msg) : "Ce n'est pas ça."} Essaie encore (encore 1 essai).</div>`;
+}
+function conclure(ok, abandon, msg){
+  const ex = serie.ex; serie.fini = true;
+  const gain = ok ? (serie.essais === 0 ? 1 : 0.5) : 0; serie.points += gain;
+  const tete = ok ? `<div class="retour ok">✔ Bravo ! ${gain === 1 ? "+1 point" : "+0,5 point (2e essai)"}</div>`
+             : `<div class="retour ko">✘ ${abandon ? "Voici la correction." : (msg ? esc(msg) + " " : "") + "Ce n'était pas ça."}</div>`;
+  $("#retour").innerHTML = tete + `<div class="correction"><b>Réponse : ${T(texPi(ex.p, ex.q))}</b><br>${ex.correction}</div>`;
+  $("#valider").textContent = serie.n + 1 >= NB ? "Voir mon score" : "Exercice suivant →";
+  $("#indice").disabled = true; $("#voir").disabled = true;
+  serie.n++; $("#valider").onclick = suivant;
+  maths($("#retour")); $("#valider").focus();
+}
+function bilan(){
+  sauverScore(serie.th.id, serie.points);
+  const p = serie.points, msg = p >= 9 ? "Excellent !" : p >= 7 ? "Très bien !" : p >= 5 ? "C'est en bonne voie, continue." : "Refais une série : ça va venir !";
+  ecran.innerHTML = `<div class="carte bilan"><p>${esc(serie.th.titre)}</p>
+    <div class="note">${String(p).replace(".", ",")} / ${NB}</div><p>${msg}</p>
+    <div class="btns" style="justify-content:center"><button class="btn" id="encore">Nouvelle série</button><button class="btn sec" id="themes">Autres vignettes</button></div></div>`;
+  $("#encore").onclick = () => demarrer(serie.th.id);
+  $("#themes").onclick = menu;
+}
+$("#accueil").onclick = menu;
+menu();
+</script>
+</body>
+</html>

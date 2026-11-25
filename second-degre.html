@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Second degré — S5</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="maths(document.body)"></script>
+<style>
+  /* Appli entièrement en NOIR ET BLANC (S5ma6FRA) */
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; font-family:-apple-system, "Segoe UI", Helvetica, Arial, sans-serif; background:#fff; color:#000; }
+  header { background:#000; color:#fff; }
+  header .in { max-width:900px; margin:0 auto; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  header h1 { margin:0; font-size:1.3rem; }
+  header button { background:#000; color:#fff; border:2px solid #fff; border-radius:8px; padding:8px 12px; font-size:1rem; cursor:pointer; }
+  main { max-width:900px; margin:0 auto; padding:18px; }
+  .intro { margin:0 0 16px; }
+  .annee { margin:22px 0 10px; font-size:1.25rem; border-bottom:2px solid #000; padding-bottom:4px; }
+  .grille { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:12px; }
+  .theme { text-align:left; background:#fff; border:2px solid #000; border-left-width:8px; border-radius:12px; padding:14px 16px; cursor:pointer; font-size:1rem; color:#000; }
+  .theme .t { font-weight:700; font-size:1.05rem; margin-bottom:4px; }
+  .theme .d { font-size:.92rem; }
+  .theme .s { margin-top:8px; font-size:.9rem; font-weight:700; }
+  .theme.bientot { border-style:dashed; cursor:default; }
+  .carte { background:#fff; border:2px solid #000; border-radius:14px; padding:20px; }
+  .haut { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; font-size:.95rem; flex-wrap:wrap; }
+  .progress { height:10px; border:1.5px solid #000; border-radius:5px; margin-bottom:14px; overflow:hidden; }
+  .progress div { height:100%; background:#000; transition:width .3s; }
+  .consigne { font-size:1.1rem; margin:0 0 6px; }
+  .figure { text-align:center; margin:6px 0 12px; }
+  .figure svg { width:100%; max-width:420px; height:auto; }
+  input[type=text] { width:100%; font-size:1.3rem; padding:14px; border:2px solid #000; border-radius:10px; }
+  input[type=text]:focus { outline:3px solid #000; outline-offset:1px; }
+  .symboles { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .sym { min-width:56px; font-size:1.35rem; padding:10px 14px; border:2px solid #000; border-radius:10px; background:#fff; color:#000; cursor:pointer; }
+  .btns { display:flex; flex-wrap:wrap; gap:10px; margin-top:18px; }
+  .btn { font-size:1.1rem; padding:13px 22px; border:2px solid #000; border-radius:10px; background:#000; color:#fff; cursor:pointer; }
+  .btn.sec { background:#fff; color:#000; }
+  .btn:disabled { opacity:.35; }
+  .retour { padding:12px 14px; border-radius:10px; margin-top:16px; line-height:1.6; font-size:1.08rem; border:2px solid #000; }
+  .retour.ok { border-width:3px; font-weight:700; }
+  .retour.ko { border-style:solid; border-left-width:10px; }
+  .retour.info { border-style:dashed; }
+  .correction { margin-top:12px; padding:14px; border:2px dashed #000; border-radius:10px; line-height:1.9; font-size:1.08rem; }
+  .bilan { text-align:center; }
+  .bilan .note { font-size:2.6rem; font-weight:700; margin:8px 0; }
+  .aide { font-size:.92rem; margin-top:8px; }
+  @media (max-width:520px) { .btn { padding:12px 16px; font-size:1rem; } }
+
+  .rappel { border:2px solid #000; border-radius:10px; padding:10px 14px; margin:0 0 14px; line-height:1.7; background:#f2f2f2; }
+  .enonce { font-size:1.4rem; margin:8px 0 14px; }
+  .ligne { font-size:1.2rem; margin:10px 0; display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
+  input.petit { width:90px; font-size:1.2rem; padding:8px; border:2px solid #000; border-radius:8px; text-align:center; }
+  .choix { display:block; width:100%; text-align:left; font-size:1.15rem; padding:14px 16px; margin:8px 0; border:2px solid #000; border-radius:10px; background:#fff; cursor:pointer; color:#000; }
+  .choix.sel { background:#000; color:#fff; font-weight:700; }
+  table.tv { border-collapse:collapse; margin:10px auto; font-size:1.15rem; }
+  table.tv td { border:1.5px solid #000; padding:8px 14px; text-align:center; min-width:70px; }
+  table.tv td.lab { font-weight:bold; }
+  table.tv tr.var td { height:110px; }
+  table.tv td.fl { font-size:2.4rem; }
+  .fleche { font-size:2rem; width:64px; height:64px; border:2px solid #000; border-radius:10px; background:#fff; cursor:pointer; color:#000; }
+  .quatre { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:8px 0 14px; justify-items:center; }
+  .quatre svg { width:100%; height:auto; }
+  .assoc select { font-size:1.15rem; padding:6px 10px; border:2px solid #000; border-radius:8px; background:#fff; color:#000; }
+  .meth { margin:6px 0 10px; padding-left:10px; border-left:3px solid #000; }
+  .figure svg { max-width:420px; }
+</style>
+</head>
+<body>
+<header><div class="in"><h1>∪ Second degré — S5</h1><button id="accueil" hidden>☰ Vignettes</button></div></header>
+<main id="ecran"></main>
+<script>
+/* =====================================================================
+   Second degré — S5 (Écoles européennes) — NOIR ET BLANC (S5ma6FRA)
+   9 vignettes : sommet/axe (canonique, développée), convexité, lecture
+   graphique (factorisée, canonique), tableaux de variations (canonique,
+   développée), associer trinômes et courbes (canonique, développée).
+   ===================================================================== */
+const NB = 10;
+const $ = s => document.querySelector(s);
+const ecran = $("#ecran");
+const CLE = "second-degre-scores";
+let serie = null, dernierChamp = null, uid = 0;
+const alea = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const aleaNZ = (a, b) => { let v; do v = alea(a, b); while (v === 0); return v; };
+const choisir = t => t[Math.floor(Math.random() * t.length)];
+const melanger = t => { const c = [...t]; for (let i = c.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [c[i], c[j]] = [c[j], c[i]]; } return c; };
+const pgcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) [a, b] = [b, a % b]; return a; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+function maths(el){ if (window.renderMathInElement && el) renderMathInElement(el, { delimiters:[{ left:"\\(", right:"\\)", display:false }], throwOnError:false }); }
+const T = s => `\\(${s}\\)`;
+function lireScores(){ try { return JSON.parse(localStorage.getItem(CLE)) || {}; } catch(e) { return {}; } }
+function sauverScore(id, p){ try { const s = lireScores(); if (s[id] === undefined || p > s[id]) { s[id] = p; localStorage.setItem(CLE, JSON.stringify(s)); } } catch(e) {} }
+
+/* ---------- nombres et écritures LaTeX ---------- */
+function fr(v){ for (let d = 1; d <= 24; d++) if (Math.abs(v * d - Math.round(v * d)) < 1e-9) return [Math.round(v * d), d]; return [v, 1]; }
+function texNb(v){ const [n, d] = fr(v); return d === 1 ? String(n) : `${n < 0 ? "-" : ""}\\frac{${Math.abs(n)}}{${d}}`; }
+const par = v => v < 0 ? `(${texNb(v)})` : texNb(v);                 // parenthèses autour d'un négatif
+const sg = v => (v < 0 ? " - " : " + ") + texNb(Math.abs(v));        // « + 5 » / « - 3 »
+function coefTex(a){ return a === 1 ? "" : a === -1 ? "-" : texNb(a); }
+function texPoly(L){ let s = ""; for (const [c, m] of L) { if (c === 0) continue; const ab = Math.abs(c);
+  const cs = (m && ab === 1) ? "" : texNb(ab); s += (s ? (c < 0 ? " - " : " + ") : (c < 0 ? "-" : "")) + cs + m; } return s || "0"; }
+const xMoins = r => r === 0 ? "x" : `(x ${r > 0 ? "-" : "+"} ${texNb(Math.abs(r))})`;
+function texCan(a, al, be){ return coefTex(a) + (al === 0 ? "x^2" : `${xMoins(al)}^2`) + (be ? sg(be) : ""); }
+function texDev(a, b, c){ return texPoly([[a, "x^2"], [b, "x"], [c, ""]]); }
+function texFact(a, r1, r2){ return coefTex(a) + (r1 === r2 ? (r1 === 0 ? "x^2" : `${xMoins(r1)}^2`) : xMoins(r1) + xMoins(r2)); }
+const dev = (a, al, be) => ({ a, b:-2 * a * al, c:a * al * al + be });
+const expr = (a, al, be) => `(${a})*(x-(${al}))^2+(${be})`;
+const P = (a, al, be, x) => a * (x - al) ** 2 + be;
+
+/* ---------- lecteur d'expressions (repris de l'appli Calcul littéral) ---------- */
+function normaliser(txt){
+  const SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+  return String(txt).replace(/[’‘´`′]/g, "'")
+    .replace(/[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, m => { const e = [...m].map(c => c === "⁻" ? "-" : SUP.indexOf(c)).join(""); return /^\d$/.test(e) ? "^" + e : "^(" + e + ")"; })
+    .replace(/[−–]/g, "-").replace(/[×·]/g, "*").replace(/:/g, "/").replace(/,/g, ".")
+    .replace(/[{}\s]/g, "").toLowerCase();
+}
+/* expression → fonction(env) ; multiplication implicite prioritaire : 6/3x = 6/(3x) */
+function lire(txt, vars){
+  const s = normaliser(txt); if (!s) return null;
+  const t = []; let k = 0;
+  while (k < s.length) {
+    const v = vars.find(v => s.startsWith(v, k));
+    if (v) { t.push({ v }); k += v.length; continue; }
+    const n = s.slice(k).match(/^\d+(?:\.\d+)?|^\.\d+/);
+    if (n) { t.push(n[0]); k += n[0].length; continue; }
+    if ("+-*/^()".includes(s[k])) { t.push(s[k]); k++; continue; }
+    return null;
+  }
+  let i = 0;
+  const vu = () => t[i], pris = c => (t[i] === c ? (i++, true) : false);
+  const debut = c => c !== undefined && (typeof c === "object" || c === "(" || /^[\d.]/.test(c));
+  function somme(){ let a = produit(); for(;;){ if (pris("+")){ const b = produit(), p = a; a = e => p(e) + b(e); } else if (pris("-")){ const b = produit(), p = a; a = e => p(e) - b(e); } else return a; } }
+  function produit(){ let a = implicite(); for(;;){ if (pris("*")){ const b = implicite(), p = a; a = e => p(e) * b(e); } else if (pris("/")){ const b = implicite(), p = a; a = e => p(e) / b(e); } else return a; } }
+  function implicite(){ let a = unaire(); while (debut(vu())){ const b = puissance(), p = a; a = e => p(e) * b(e); } return a; }
+  function unaire(){ if (pris("-")){ const a = unaire(); return e => -a(e); } if (pris("+")) return unaire(); return puissance(); }
+  function puissance(){ const a = primaire(); if (pris("^")){ const b = unaire(); return e => Math.pow(a(e), b(e)); } return a; }
+  function primaire(){ const c = t[i++]; if (c === undefined) throw 0;
+    if (typeof c === "object") return e => e[c.v];
+    if (c === "("){ const a = somme(); if (!pris(")")) throw 0; return a; }
+    if (/^[\d.]/.test(c)){ const v = parseFloat(c); return () => v; } throw 0; }
+  try { const f = somme(); return i === t.length ? f : null; } catch(e) { return null; }
+}
+const ESSAIS = [0.7, 1.3, 2.1, -1.4, 3.7, -2.6];
+function egales(r, attendu, vars){
+  const a = lire(r, vars), b = lire(attendu, vars); if (!a || !b) return null;
+  return ESSAIS.every((x, n) => { const e = Object.fromEntries(vars.map((v, j) => [v, x + 0.53 * j * (n + 1)]));
+    const u = a(e), w = b(e); return isFinite(u) && isFinite(w) && Math.abs(u - w) <= 1e-9 * Math.max(1, Math.abs(w)); });
+}
+/* termes de premier niveau (hors parenthèses) */
+function termes(r){
+  const s = normaliser(r); let p = 0, n = 1;
+  for (let k = 0; k < s.length; k++) { const c = s[k];
+    if (c === "(") p++; else if (c === ")") p--;
+    else if ((c === "+" || c === "-") && p === 0 && k > 0 && !"^*/(".includes(s[k - 1])) n++; }
+  return n;
+}
+/* contenus des parenthèses de premier niveau */
+function groupes(r){
+  const s = normaliser(r), g = []; let p = 0, d = 0;
+  for (let k = 0; k < s.length; k++) { if (s[k] === "(") { if (!p) d = k + 1; p++; } else if (s[k] === ")") { p--; if (!p) g.push(s.slice(d, k)); } }
+  return g;
+}
+/* coefficients (entiers) d'un groupe de degré ≤ 2 en v */
+function coefsGroupe(g, v){
+  const f = lire(g, [v]); if (!f) return null;
+  const y = x => f({ [v]: x }); const c = y(0), b1 = y(1) - c, b2 = y(2) - c;
+  const a = (b2 - 2 * b1) / 2, b = b1 - a;
+  return { a, b, c };
+}
+function nombre(r){
+  const s = String(r).trim().replace(/\s/g, "").replace(/[−–]/g, "-").replace(",", ".");
+  const m = s.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/);
+  if (m) return +m[2] ? +m[1] / +m[2] : NaN;
+  return s === "" ? NaN : Number(s);
+}
+
+function lireExpr(r){ r = String(r); if (/=/.test(r)) r = r.split("=").pop(); return r; }
+/* forme canonique : k(x ± n)² ± m, k x² ± m, (x ± n)² … */
+function estCanonique(r){
+  const s = normaliser(r).replace(/\*/g, "");
+  const k = "(?:[-+]?(?:\\d+(?:\\.\\d+)?|\\(-?\\d+(?:\\.\\d+)?(?:/\\d+)?\\)|\\d+/\\d+)?|-)";
+  const carre = "(?:\\(x[-+]\\d+(?:\\.\\d+)?\\)|x)\\^2", m = "[-+]\\d+(?:\\.\\d+)?(?:/\\d+)?";
+  return new RegExp(`^${k}${carre}(?:${m})?$`).test(s) || new RegExp(`^[-+]?\\d+(?:\\.\\d+)?(?:/\\d+)?[-+]${k.replace("[-+]?", "")}${carre}$`).test(s);
+}
+function estFactorisee(r){
+  if (!/\(/.test(r) && !/^[-+]?[\d.]*x\^?2?$/.test(normaliser(r))) return false;
+  if (termes(r) > 1) return false;
+  for (const g of groupes(r)) { const c = coefsGroupe(g, "x"); if (c && Math.abs(c.a) > 1e-9) return false; }
+  return true;
+}
+
+/* ---------- graphique en SVG ---------- */
+function graphe(courbes, o = {}){
+  const L = 6, k = o.petit ? 19 : 30, pad = 14, W = 2 * L * k + 2 * pad, id = "c" + (++uid);
+  const X = x => (pad + (x + L) * k).toFixed(1), Y = y => (pad + (L - y) * k).toFixed(1);
+  let g = `<svg viewBox="0 0 ${W} ${W}" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif" style="max-width:${o.petit ? 260 : 420}px">`;
+  g += `<defs><clipPath id="${id}"><rect x="${pad}" y="${pad}" width="${2 * L * k}" height="${2 * L * k}"/></clipPath></defs>`;
+  for (let i = -L; i <= L; i++) {
+    g += `<line x1="${X(i)}" y1="${Y(-L)}" x2="${X(i)}" y2="${Y(L)}" stroke="#aaa" stroke-width="0.6"/>`;
+    g += `<line x1="${X(-L)}" y1="${Y(i)}" x2="${X(L)}" y2="${Y(i)}" stroke="#aaa" stroke-width="0.6"/>`;
+  }
+  g += `<line x1="${X(-L)}" y1="${Y(0)}" x2="${X(L)}" y2="${Y(0)}" stroke="#000" stroke-width="1.6"/><line x1="${X(0)}" y1="${Y(-L)}" x2="${X(0)}" y2="${Y(L)}" stroke="#000" stroke-width="1.6"/>`;
+  const fs = o.petit ? 9 : 11, pas = o.petit ? 2 : 1;
+  for (let i = -L + 1; i < L; i++) if (i && i % pas === 0) {
+    g += `<text x="${X(i)}" y="${+Y(0) + fs + 2}" font-size="${fs}" text-anchor="middle">${i < 0 ? "−" + -i : i}</text>`;
+    g += `<text x="${+X(0) - 3}" y="${+Y(i) + fs / 3}" font-size="${fs}" text-anchor="end">${i < 0 ? "−" + -i : i}</text>`;
+  }
+  g += `<text x="${+X(0) - 3}" y="${+Y(0) + fs + 2}" font-size="${fs}" text-anchor="end">0</text>`;
+  for (const c of courbes) {
+    let pts = []; for (let x = -L - 0.5; x <= L + 0.5; x += 0.05) { const y = P(c.a, c.al, c.be, x); if (Math.abs(y) < 40) pts.push(`${X(x)},${Y(y)}`); }
+    g += `<polyline points="${pts.join(" ")}" fill="none" stroke="#000" stroke-width="${o.petit ? 2.4 : 3}" clip-path="url(#${id})"/>`;
+    for (const [px, py] of (c.points || [])) if (Math.abs(px) <= L && Math.abs(py) <= L) g += `<circle cx="${X(px)}" cy="${Y(py)}" r="${o.petit ? 3.5 : 4.5}" fill="#000" stroke="#fff" stroke-width="1.5"/>`;
+  }
+  if (o.nom) g += `<rect x="${pad + 3}" y="${pad + 3}" width="${o.nom.length * 9 + 14}" height="22" fill="#fff" stroke="#000"/><text x="${pad + 10}" y="${pad + 19}" font-size="15" font-weight="bold">${o.nom}</text>`;
+  return g + `</svg>`;
+}
+/* points à marquer : sommet et points symétriques lisibles */
+function pointsCanon(a, al, be){
+  const h = Number.isInteger(a) ? 1 : 2, y = be + a * h * h, L = [[al, be]];
+  for (const x of [al - h, al + h]) L.push([x, y]); return L;
+}
+
+/* ---------- tableaux de variations ---------- */
+function tableau(a, al, be){
+  const croit = a < 0;
+  return `<table class="tv"><tr><td class="lab">\\(x\\)</td><td>\\(-\\infty\\)</td><td>${T(texNb(al))}</td><td>\\(+\\infty\\)</td></tr>
+    <tr class="var"><td class="lab">\\(P(x)\\)</td><td class="fl">${croit ? "↗" : "↘"}</td><td style="vertical-align:${croit ? "top" : "bottom"}">${T(texNb(be))}</td><td class="fl">${croit ? "↘" : "↗"}</td></tr></table>`;
+}
+function tableauSaisie(){
+  return `<table class="tv"><tr><td class="lab">\\(x\\)</td><td>\\(-\\infty\\)</td><td><input type="text" class="petit" id="tal" placeholder="?" inputmode="text"></td><td>\\(+\\infty\\)</td></tr>
+    <tr class="var"><td class="lab">\\(P(x)\\)</td><td><button type="button" class="fleche" id="f1">?</button></td><td><input type="text" class="petit" id="tbe" placeholder="?"></td><td><button type="button" class="fleche" id="f2">?</button></td></tr></table>
+    <div class="aide">Écris α et la valeur de P(α), puis touche les flèches pour choisir ↗ ou ↘.</div>`;
+}
+function verifTableau(a, al, be){
+  const va = nombre($("#tal").value), vb = nombre($("#tbe").value), f1 = $("#f1").textContent, f2 = $("#f2").textContent;
+  if (isNaN(va) || isNaN(vb) || f1 === "?" || f2 === "?") return { ok:false, msg:"Complète tout le tableau (α, la valeur en α et les deux flèches)." };
+  const err = [];
+  if (Math.abs(va - al) > 1e-9) err.push("la valeur de x où le sens change");
+  if (Math.abs(vb - be) > 1e-9) err.push("l'extremum P(α)");
+  if (f1 !== (a < 0 ? "↗" : "↘") || f2 !== (a < 0 ? "↘" : "↗")) err.push("le sens des flèches");
+  return err.length ? { ok:false, msg:"À revoir : " + err.join(", ") + "." } : { ok:true };
+}
+
+/* ---------- briques communes ---------- */
+const SYM = ["x", "²", "(", ")", "−", "/"];
+function zoneSommet(){
+  return `<div class="ligne">Sommet : \\(S\\Big(\\)<input type="text" class="petit" id="sal" placeholder="α">\\(\\;;\\;\\)<input type="text" class="petit" id="sbe" placeholder="β">\\(\\Big)\\)</div>
+    <div class="ligne">Axe de symétrie : \\(d : x =\\) <input type="text" class="petit" id="sax" placeholder="?"></div>
+    <div class="aide">Des nombres : entiers, décimaux (2,5) ou fractions (7/2).</div>`;
+}
+function verifSommet(al, be){
+  const a = nombre($("#sal").value), b = nombre($("#sbe").value), d = nombre($("#sax").value);
+  if ([a, b, d].some(isNaN)) return { ok:false, msg:"Complète les trois cases avec des nombres." };
+  const err = [];
+  if (Math.abs(a - al) > 1e-9) err.push(Math.abs(a + al) < 1e-9 ? "α (attention au signe)" : "α");
+  if (Math.abs(b - be) > 1e-9) err.push("β");
+  if (Math.abs(d - al) > 1e-9) err.push("l'axe de symétrie");
+  return err.length ? { ok:false, msg:"À revoir : " + err.join(", ") + "." } : { ok:true };
+}
+const zoneExpr = ph => `<input type="text" id="rep" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="${ph}">
+  <div class="aide">Exemples d'écriture : 2(x−3)²+1, −(x+1)(x−4), (1/2)(x−2)². Pour un coefficient fractionnaire, mets-le entre parenthèses.</div>`;
+function tirerCanon(opt = {}){
+  const A = opt.graph ? [1, -1, 2, -2, 0.5, -0.5] : opt.entier ? [1, -1, 2, -2, 3, -3] : [1, -1, 2, -2, 3, -3, 0.5, -0.5, 4, -5];
+  for (;;) {
+    const a = choisir(A), al = opt.graph ? alea(-4, 4) : (opt.alNZ ? aleaNZ(-5, 5) : (Math.random() < 0.1 ? 0 : aleaNZ(-6, 6))), be = opt.graph ? alea(-4, 4) : alea(-9, 9);
+    if (opt.graph) { const pts = pointsCanon(a, al, be).slice(1).filter(([x, y]) => Math.abs(x) <= 6 && Math.abs(y) <= 6); if (!pts.length) continue; }
+    return { a, al, be };
+  }
+}
+
+/* ---------- les vignettes ---------- */
+const RAPPEL_CAN = `Si \\(P(x) = a(x-\\alpha)^2+\\beta\\) (forme canonique), alors la parabole a pour sommet \\(S(\\alpha\\,;\\beta)\\) et pour axe de symétrie la droite \\(d : x = \\alpha\\).`;
+const RAPPEL_ALPHA = `Si \\(P(x) = ax^2+bx+c\\), alors \\(\\alpha = -\\dfrac{b}{2a}\\).`;
+
+function methodes3(a, al, be){
+  const { b, c } = dev(a, al, be), D = b * b - 4 * a * c;
+  const k = -2 * al;   // b/a
+  let m1;
+  if (a === 1) m1 = `\\(P(x) = ${texDev(1, b, c)} = ${xMoins(al)}^2 - ${par(al) === texNb(al) ? texNb(al * al) : texNb(al * al)}${sg(c)} = ${texCan(1, al, be)}\\)`;
+  else m1 = `\\(P(x) = ${coefTex(a)}\\left(${texPoly([[1, "x^2"], [k, "x"]])}\\right)${sg(c)}\\)<br>\\(\\phantom{P(x)} = ${coefTex(a)}\\left[${xMoins(al)}^2 - ${texNb(al * al)}\\right]${sg(c)}\\)<br>\\(\\phantom{P(x)} = ${coefTex(a)}${xMoins(al)}^2${sg(-a * al * al)}${sg(c)} = ${texCan(a, al, be)}\\)`;
+  const m2 = `\\(\\alpha = -\\dfrac{b}{2a} = -\\dfrac{${texNb(b)}}{2\\times${par(a)}} = ${texNb(al)}\\)<br>\\(\\beta = P(${texNb(al)}) = ${par(a)}\\times${par(al)}^2${b < 0 ? " - " : " + "}${texNb(Math.abs(b))}\\times${par(al)}${sg(c)} = ${texNb(be)}\\)`;
+  const m3 = `\\(\\Delta = b^2-4ac = ${par(b)}^2 - 4\\times${par(a)}\\times${par(c)} = ${texNb(D)}\\)<br>\\(\\alpha = -\\dfrac{b}{2a} = ${texNb(al)}\\quad\\) et \\(\\quad\\beta = -\\dfrac{\\Delta}{4a} = -\\dfrac{${texNb(D)}}{4\\times${par(a)}} = ${texNb(be)}\\)`;
+  return `<div class="meth"><b>Méthode 1 : forme canonique par le calcul</b><br>${m1}</div>
+    <div class="meth"><b>Méthode 2 : calcul de α, puis β = P(α)</b><br>${m2}</div>
+    <div class="meth"><b>Méthode 3 : formules de α et β</b><br>${m3}</div>`;
+}
+
+function exAssocier(developpee){
+  // 4 paraboles : même |α|,|β| de base, on joue sur les signes de α, β et a
+  for (;;) {
+    const al0 = alea(1, 3), be0 = alea(1, 4);
+    const combos = melanger([[1, 1, 1], [-1, 1, 1], [1, -1, 1], [-1, -1, 1], [1, 1, -1], [-1, 1, -1], [1, -1, -1], [-1, -1, -1]]).slice(0, 4);
+    const A = developpee ? [1, 2] : [1, 2, 0.5];
+    const L = combos.map(([s1, s2, s3]) => { const a = s3 * choisir(A); return { a, al:s1 * al0, be:s2 * be0 }; });
+    if (L.some(c => !pointsCanon(c.a, c.al, c.be).slice(1).some(([x, y]) => Math.abs(x) <= 6 && Math.abs(y) <= 6))) continue;
+    const ordre = melanger([0, 1, 2, 3]);          // ordre[i] = numéro de la courbe du trinôme i
+    const courbes = []; L.forEach((c, i) => courbes[ordre[i]] = c);
+    const ecr = c => { if (!developpee) return texCan(c.a, c.al, c.be); const d = dev(c.a, c.al, c.be); return texDev(d.a, d.b, d.c); };
+    const opts = `<option value="">—</option>` + [1, 2, 3, 4].map(n => `<option value="${n - 1}">C${n}</option>`).join("");
+    return {
+      consigne:`Associe chaque trinôme à sa courbe.`, sol:ordre,
+      rappel: developpee ? RAPPEL_ALPHA + " " + RAPPEL_CAN : RAPPEL_CAN + " Si \\(a > 0\\), la parabole est tournée vers le haut ; si \\(a < 0\\), vers le bas.",
+      figure:`<div class="quatre">${courbes.map((c, n) => graphe([{ ...c, points:pointsCanon(c.a, c.al, c.be) }], { petit:true, nom:"C" + (n + 1) })).join("")}</div>`,
+      zone: L.map((c, i) => `<div class="ligne assoc">\\(P_${i + 1}(x) = ${ecr(c)}\\) <select id="as${i}">${opts}</select></div>`).join(""),
+      verif(){ const v = [0, 1, 2, 3].map(i => $("#as" + i).value);
+        if (v.some(x => x === "")) return { ok:false, msg:"Choisis une courbe pour chaque trinôme." };
+        const bons = v.filter((x, i) => +x === ordre[i]).length;
+        return bons === 4 ? { ok:true } : { ok:false, msg:`${bons} association${bons > 1 ? "s" : ""} correcte${bons > 1 ? "s" : ""} sur 4.` }; },
+      indice: developpee ? "Pour chaque trinôme, calcule \\(\\alpha = -\\frac{b}{2a}\\) puis \\(\\beta = P(\\alpha)\\), et regarde le signe de a. Tu peux aussi utiliser \\(P(0) = c\\) : la courbe coupe l'axe des ordonnées au point \\((0\\,;c)\\)."
+        : "Pour chaque trinôme, lis le sommet \\(S(\\alpha\\,;\\beta)\\) et le signe de a (vers le haut ou vers le bas).",
+      correction: L.map((c, i) => `\\(P_${i + 1}\\) : sommet \\(S(${texNb(c.al)}\\,;${texNb(c.be)})\\), \\(a = ${texNb(c.a)}\\) ${c.a > 0 ? "> 0 (vers le haut)" : "< 0 (vers le bas)"} → courbe <b>C${ordre[i] + 1}</b>`).join("<br>"),
+    };
+  }
+}
+
+const THEMES = [
+  { id:"sommet-can", titre:"Sommet et axe de symétrie", desc:"À partir de la forme canonique a(x − α)² + β.",
+    gen(){ const { a, al, be } = tirerCanon();
+      return { consigne:`Soit \\(P(x) = ${texCan(a, al, be)}\\). Donne les coordonnées du sommet S de la parabole et l'équation de son axe de symétrie.`,
+        rappel:RAPPEL_CAN, zone:zoneSommet(), verif:() => verifSommet(al, be), sol:{ al, be },
+        indice:"Attention aux signes : \\((x+3)^2 = (x-(-3))^2\\), donc dans ce cas \\(\\alpha = -3\\). Et \\(\\beta\\) est le nombre ajouté à la fin (0 s'il n'y en a pas).",
+        correction:`\\(P(x) = ${texCan(a, al, be)} = ${coefTex(a)}\\left(x - ${par(al)}\\right)^2 + ${par(be)}\\) : \\(\\alpha = ${texNb(al)}\\) et \\(\\beta = ${texNb(be)}\\).<br>Sommet \\(S(${texNb(al)}\\,;${texNb(be)})\\) ; axe de symétrie \\(d : x = ${texNb(al)}\\).` }; } },
+  { id:"sommet-dev", titre:"Sommet et axe (forme développée)", desc:"À partir de ax² + bx + c : trois méthodes dans la correction.",
+    gen(){ const { a, al, be } = tirerCanon({ entier:true, alNZ:true }), d = dev(a, al, be);
+      return { consigne:`Soit \\(P(x) = ${texDev(d.a, d.b, d.c)}\\). Donne les coordonnées du sommet S de la parabole et l'équation de son axe de symétrie.`,
+        rappel:RAPPEL_ALPHA, zone:zoneSommet(), verif:() => verifSommet(al, be), sol:{ al, be },
+        indice:`Ici \\(a = ${texNb(d.a)}\\), \\(b = ${texNb(d.b)}\\), \\(c = ${texNb(d.c)}\\). Calcule \\(\\alpha = -\\frac{b}{2a}\\), puis \\(\\beta = P(\\alpha)\\).`,
+        correction:methodes3(a, al, be) + `Sommet \\(S(${texNb(al)}\\,;${texNb(be)})\\) ; axe de symétrie \\(d : x = ${texNb(al)}\\).` }; } },
+  { id:"convexite", titre:"Convexe ou concave ?", desc:"Une parabole ou un trinôme (canonique, développé ou factorisé).",
+    gen(){ const sorte = choisir(["graphe", "graphe", "can", "dev", "fact"]); let a, html, pourquoi;
+      if (sorte === "graphe") { const c = tirerCanon({ graph:true }); a = c.a;
+        html = `<div class="figure">${graphe([{ ...c, points:[] }])}</div>`;
+        pourquoi = a > 0 ? "La parabole est tournée vers le haut : la fonction est convexe." : "La parabole est tournée vers le bas : la fonction est concave."; }
+      else if (sorte === "can") { const c = tirerCanon(); a = c.a; html = `<div class="enonce">\\(P(x) = ${texCan(c.a, c.al, c.be)}\\)</div>`; pourquoi = `Le coefficient devant le carré est \\(a = ${texNb(a)}\\).`; }
+      else if (sorte === "dev") { const c = tirerCanon({ entier:true }), d = dev(c.a, c.al, c.be); a = c.a;
+        const ordre = Math.random() < 0.3 ? [[d.c, ""], [d.b, "x"], [d.a, "x^2"]] : [[d.a, "x^2"], [d.b, "x"], [d.c, ""]];
+        html = `<div class="enonce">\\(P(x) = ${texPoly(ordre)}\\)</div>`; pourquoi = `Le coefficient de \\(x^2\\) est \\(a = ${texNb(a)}\\).`; }
+      else { a = choisir([1, -1, 2, -2, 3, -3, 0.5, -0.5]); const r1 = alea(-6, 6), r2 = alea(-6, 6);
+        html = `<div class="enonce">\\(P(x) = ${texFact(a, r1, r2)}\\)</div>`; pourquoi = `Le coefficient devant le produit est \\(a = ${texNb(a)}\\).`; }
+      const bon = a > 0 ? 0 : 1;
+      return { consigne:"La fonction P est-elle convexe ou concave ?", rappel:"Si \\(a > 0\\), P est convexe (parabole tournée vers le haut) ; si \\(a < 0\\), P est concave (tournée vers le bas).",
+        figure:html, zone:`<button class="choix" data-i="0">Convexe</button><button class="choix" data-i="1">Concave</button>`, qcm:true, sol:bon,
+        verif:() => serie.choix === null ? { ok:false, msg:"Choisis une réponse.", attente:true } : { ok:serie.choix === bon },
+        indice:"Seul le signe du coefficient a (celui de \\(x^2\\)) compte.",
+        correction:`${pourquoi} ${sorte !== "graphe" ? (a > 0 ? "\\(a > 0\\) : P est <b>convexe</b>." : "\\(a < 0\\) : P est <b>concave</b>.") : ""}` }; } },
+  { id:"lire-fact", titre:"Lire la forme factorisée", desc:"Lire sur la parabole une forme factorisée (si elle existe).",
+    gen(){ const cas = Math.random(); let a, al, be, r1, r2, pts, attendu, corr;
+      if (cas < 0.55) { for (;;) { a = choisir([1, -1, 2, -2, 0.5, -0.5]); r1 = alea(-5, 4); r2 = alea(r1 + 1, 5); const d = (r2 - r1) / 2;
+          if (!Number.isInteger(d) || (!Number.isInteger(a) && d % 2)) continue; al = (r1 + r2) / 2; be = -a * d * d; if (Math.abs(be) <= 6 && Math.abs(be) >= 1) break; }
+        pts = [[r1, 0], [r2, 0], [al, be]]; if (Math.abs(P(a, al, be, 0)) <= 6 && r1 !== 0 && r2 !== 0) pts.push([0, P(a, al, be, 0)]);
+        attendu = `(${a})*(x-(${r1}))*(x-(${r2}))`;
+        corr = `La parabole coupe l'axe des abscisses en \\(x_1 = ${texNb(r1)}\\) et \\(x_2 = ${texNb(r2)}\\), donc \\(P(x) = a${xMoins(r1)}${xMoins(r2)}\\).<br>Le sommet \\(S(${texNb(al)}\\,;${texNb(be)})\\) est sur la parabole : \\(${texNb(be)} = a\\times${par(al - r1)}\\times${par(al - r2)} = ${texNb((al - r1) * (al - r2))}a\\), donc \\(a = ${texNb(a)}\\).<br>\\(P(x) = ${texFact(a, r1, r2)}\\)`; }
+      else if (cas < 0.85) { a = choisir([1, -1, 2, -2, 0.5, -0.5]); al = alea(-4, 4); be = 0; r1 = r2 = al;
+        pts = pointsCanon(a, al, 0); attendu = `(${a})*(x-(${al}))^2`; const h = Number.isInteger(a) ? 1 : 2;
+        corr = `La parabole touche l'axe des abscisses en un seul point, d'abscisse \\(${texNb(al)}\\) : c'est une racine double, donc \\(P(x) = a${al === 0 ? "x^2" : xMoins(al) + "^2"}\\) (carré parfait).<br>Le point \\((${texNb(al + h)}\\,;${texNb(a * h * h)})\\) est sur la parabole : \\(${texNb(a * h * h)} = a\\times${texNb(h * h)}\\), donc \\(a = ${texNb(a)}\\).<br>\\(P(x) = ${texFact(a, al, al)}\\)`; }
+      else { a = choisir([1, -1, 2, -2, 0.5, -0.5]); al = alea(-4, 4); be = Math.sign(a) * alea(1, 4); pts = pointsCanon(a, al, be); attendu = null;
+        corr = "La parabole ne coupe pas l'axe des abscisses : P n'a pas de racine, donc <b>pas de forme factorisée</b>."; }
+      return { consigne:"Voici la parabole représentant un trinôme P. Donne la forme factorisée de \\(P(x)\\) si elle existe.",
+        rappel:"Si la parabole coupe l'axe des abscisses en \\(x_1\\) et \\(x_2\\) : \\(P(x) = a(x-x_1)(x-x_2)\\). Si elle le touche en un seul point \\(x_0\\) : \\(P(x) = a(x-x_0)^2\\) (carré parfait). Sinon, pas de forme factorisée.",
+        figure:`<div class="figure">${graphe([{ a, al, be, points:pts }])}</div>`,
+        sol:attendu ? texFact(a, r1, r2) : "Pas de forme factorisée", zone:zoneExpr("P(x) = …") + `<div class="btns" style="margin-top:8px"><button type="button" class="btn sec" id="aucune">Pas de forme factorisée</button></div>`, expr:true,
+        verif(){ const r = lireExpr($("#rep").value).trim();
+          if (/^(aucune|non|pas)/i.test(r)) return attendu ? { ok:false, msg:"Si, ce trinôme se factorise : regarde où la parabole rencontre l'axe des abscisses." } : { ok:true };
+          if (!r) return { ok:false, msg:"Écris une réponse.", attente:true };
+          const eg = egales(r, attendu || expr(a, al, be), ["x"]);
+          if (eg === null) return { ok:false, msg:"Je ne comprends pas cette écriture." };
+          if (!attendu) return { ok:false, msg:eg ? "C'est bien P(x), mais ce n'est pas une forme factorisée : la parabole ne coupe pas l'axe des abscisses." : "" };
+          if (!eg) return { ok:false };
+          return estFactorisee(r) ? { ok:true } : { ok:false, msg:"C'est égal, mais ce n'est pas une forme factorisée." }; },
+        indice:"Repère d'abord où la parabole rencontre l'axe des abscisses, puis trouve a grâce à un autre point marqué (le sommet par exemple).",
+        correction:corr }; } },
+  { id:"lire-can", titre:"Lire la forme canonique", desc:"Lire sur la parabole la forme a(x − α)² + β.",
+    gen(){ const { a, al, be } = tirerCanon({ graph:true }), pts = pointsCanon(a, al, be), h = Number.isInteger(a) ? 1 : 2;
+      return { consigne:"Voici la parabole représentant un trinôme P. Donne la forme canonique de \\(P(x)\\).",
+        rappel:RAPPEL_CAN + " En partant du sommet, si on avance de 1, la courbe monte de a (ou descend si a < 0).",
+        figure:`<div class="figure">${graphe([{ a, al, be, points:pts }])}</div>`, zone:zoneExpr("P(x) = a(x − α)² + β"), expr:true, sol:texCan(a, al, be),
+        verif(){ const r = lireExpr($("#rep").value); if (!r.trim()) return { ok:false, msg:"Écris une réponse.", attente:true };
+          const eg = egales(r, expr(a, al, be), ["x"]); if (eg === null) return { ok:false, msg:"Je ne comprends pas cette écriture." };
+          if (!eg) return { ok:false }; return estCanonique(r) ? { ok:true } : { ok:false, msg:"C'est égal, mais ce n'est pas la forme canonique a(x − α)² + β." }; },
+        indice:`Lis le sommet \\(S(\\alpha\\,;\\beta)\\). Puis, à partir de S, avance de ${h} : de combien la courbe monte-t-elle ou descend-elle ?`,
+        correction:`Le sommet est \\(S(${texNb(al)}\\,;${texNb(be)})\\), donc \\(P(x) = a${al === 0 ? "x^2" : xMoins(al) + "^2"}${be ? sg(be) : ""}\\).<br>En partant de S, on avance de ${h} et on ${a > 0 ? "monte" : "descend"} de \\(${texNb(Math.abs(a * h * h))}\\)${h === 2 ? ", donc \\(a\\times 2^2 = " + texNb(a * 4) + "\\)" : ""} : \\(a = ${texNb(a)}\\).<br>\\(P(x) = ${texCan(a, al, be)}\\)` }; } },
+  { id:"var-can", titre:"Tableau de variations", desc:"À partir de la forme canonique a(x − α)² + β.",
+    gen(){ const { a, al, be } = tirerCanon();
+      return { consigne:`Soit \\(P(x) = ${texCan(a, al, be)}\\). Complète le tableau de variations de P.`, tableau:true,
+        rappel:RAPPEL_CAN + " Si \\(a > 0\\) : P décroît puis croît, minimum \\(\\beta\\) en \\(\\alpha\\). Si \\(a < 0\\) : P croît puis décroît, maximum \\(\\beta\\) en \\(\\alpha\\).",
+        zone:tableauSaisie(), verif:() => verifTableau(a, al, be), sol:{ a, al, be },
+        indice:`Lis \\(\\alpha\\) et \\(\\beta\\) dans la forme canonique, puis regarde le signe de \\(a = ${texNb(a)}\\).`,
+        correction:`\\(\\alpha = ${texNb(al)}\\), \\(\\beta = ${texNb(be)}\\) et \\(a = ${texNb(a)}\\) ${a > 0 ? "> 0 : P est décroissante puis croissante, de minimum" : "< 0 : P est croissante puis décroissante, de maximum"} \\(${texNb(be)}\\) atteint en \\(${texNb(al)}\\).${tableau(a, al, be)}` }; } },
+  { id:"var-dev", titre:"Tableau de variations (forme développée)", desc:"À partir de ax² + bx + c.",
+    gen(){ const { a, al, be } = tirerCanon({ entier:true, alNZ:true }), d = dev(a, al, be);
+      return { consigne:`Soit \\(P(x) = ${texDev(d.a, d.b, d.c)}\\). Complète le tableau de variations de P.`, tableau:true,
+        rappel:RAPPEL_ALPHA + " Si \\(a > 0\\) : P décroît puis croît (minimum en \\(\\alpha\\)) ; si \\(a < 0\\) : P croît puis décroît (maximum en \\(\\alpha\\)).",
+        zone:tableauSaisie(), verif:() => verifTableau(a, al, be), sol:{ a, al, be },
+        indice:`Ici \\(a = ${texNb(d.a)}\\) et \\(b = ${texNb(d.b)}\\). Calcule \\(\\alpha = -\\frac{b}{2a}\\), puis \\(P(\\alpha)\\).`,
+        correction:`\\(\\alpha = -\\dfrac{b}{2a} = -\\dfrac{${texNb(d.b)}}{2\\times${par(a)}} = ${texNb(al)}\\) et \\(P(${texNb(al)}) = ${par(a)}\\times${par(al)}^2${d.b < 0 ? " - " : " + "}${texNb(Math.abs(d.b))}\\times${par(al)}${sg(d.c)} = ${texNb(be)}\\).<br>\\(a = ${texNb(a)}\\) ${a > 0 ? "> 0 : minimum" : "< 0 : maximum"} \\(${texNb(be)}\\) en \\(${texNb(al)}\\).${tableau(a, al, be)}` }; } },
+  { id:"assoc-can", titre:"Associer trinômes et courbes", desc:"4 trinômes sous forme canonique, 4 paraboles.", gen:() => exAssocier(false) },
+  { id:"assoc-dev", titre:"Associer trinômes et courbes (forme développée)", desc:"4 trinômes sous forme développée, 4 paraboles.", gen:() => exAssocier(true) },
+];
+
+/* ---------- écrans ---------- */
+function menu(){
+  $("#accueil").hidden = true;
+  const sc = lireScores();
+  let h = `<p class="intro">Choisis une vignette. Chaque série contient ${NB} exercices tirés au hasard : tu peux la refaire autant de fois que tu veux.</p><div class="grille">`;
+  THEMES.forEach((t, i) => h += `<button class="theme" data-id="${t.id}"><div class="t">${i + 1}. ${esc(t.titre)}</div><div class="d">${esc(t.desc)}</div>${sc[t.id] !== undefined ? `<div class="s">Meilleur score : ${String(sc[t.id]).replace(".", ",")} / ${NB}</div>` : ""}</button>`);
+  ecran.innerHTML = h + `</div>`;
+  ecran.querySelectorAll("button.theme").forEach(b => b.onclick = () => demarrer(b.dataset.id));
+  window.scrollTo(0, 0);
+}
+function demarrer(id){ serie = { th:THEMES.find(t => t.id === id), n:0, points:0, ex:null, essais:0, fini:false, choix:null }; $("#accueil").hidden = false; suivant(); }
+function suivant(){
+  if (serie.n >= NB) return bilan();
+  serie.ex = serie.th.gen(); serie.essais = 0; serie.fini = false; serie.choix = null; afficher();
+}
+function afficher(){
+  const ex = serie.ex, th = serie.th, num = THEMES.indexOf(th) + 1;
+  ecran.innerHTML = `<div class="carte">
+    <div class="haut"><span>${num}. ${esc(th.titre)}</span><span>Exercice ${serie.n + 1} / ${NB} · Score : ${String(serie.points).replace(".", ",")}</span></div>
+    <div class="progress"><div style="width:${serie.n / NB * 100}%"></div></div>
+    <div class="rappel"><b>Rappel du cours.</b> ${ex.rappel}</div>
+    <p class="consigne">${ex.consigne}</p>
+    ${ex.figure || ""}
+    <div id="zone">${ex.zone}</div>
+    ${ex.expr ? `<div class="symboles">${SYM.map(c => `<button type="button" class="sym" data-c="${esc(c)}">${esc(c)}</button>`).join("")}</div>` : ""}
+    <div class="btns">
+      <button class="btn" id="valider">Valider</button>
+      <button class="btn sec" id="indice">💡 Indice</button>
+      <button class="btn sec" id="voir">Voir la correction</button>
+    </div>
+    <div id="retour"></div>
+  </div>`;
+  ecran.querySelectorAll("#zone input").forEach(i => { i.setAttribute("autocomplete", "off"); i.addEventListener("focus", () => dernierChamp = i);
+    i.addEventListener("keydown", e => { if (e.key === "Enter") $("#valider").click(); }); });
+  dernierChamp = ecran.querySelector("#zone input");
+  ecran.querySelectorAll(".choix").forEach(b => b.onclick = () => { if (serie.fini) return; serie.choix = +b.dataset.i;
+    ecran.querySelectorAll(".choix").forEach(x => x.classList.remove("sel")); b.classList.add("sel"); });
+  ecran.querySelectorAll(".fleche").forEach(b => b.onclick = () => { if (serie.fini) return; b.textContent = b.textContent === "↗" ? "↘" : "↗"; });
+  const au = $("#aucune"); if (au) au.onclick = () => { if (!serie.fini) $("#rep").value = "Pas de forme factorisée"; };
+  ecran.querySelectorAll(".sym").forEach(bt => { bt.onmousedown = e => e.preventDefault(); bt.onclick = () => {
+    const rep = dernierChamp; if (!rep) return;
+    let c = bt.dataset.c; c = c === "−" ? "-" : c === "²" ? "^2" : c;
+    const d = rep.selectionStart ?? rep.value.length, f = rep.selectionEnd ?? d;
+    rep.value = rep.value.slice(0, d) + c + rep.value.slice(f); rep.setSelectionRange(d + c.length, d + c.length); rep.focus(); }; });
+  $("#valider").onclick = valider;
+  $("#indice").onclick = () => { $("#retour").innerHTML = `<div class="retour info">💡 ${ex.indice}</div>`; maths($("#retour")); };
+  $("#voir").onclick = () => conclure(false, true);
+  maths(ecran);
+}
+function valider(){
+  if (serie.fini) return suivant();
+  const v = serie.ex.verif();
+  if (v.ok) return conclure(true);
+  if (v.attente) { $("#retour").innerHTML = `<div class="retour info">${esc(v.msg)}</div>`; return; }
+  serie.essais++;
+  if (serie.essais >= 2) return conclure(false, false, v.msg);
+  $("#retour").innerHTML = `<div class="retour ko">✘ ${v.msg ? esc(v.msg) : "Ce n'est pas ça."} Essaie encore (encore 1 essai).</div>`;
+}
+function conclure(ok, abandon, msg){
+  const ex = serie.ex; serie.fini = true;
+  const gain = ok ? (serie.essais === 0 ? 1 : 0.5) : 0; serie.points += gain;
+  const tete = ok ? `<div class="retour ok">✔ Bravo ! ${gain === 1 ? "+1 point" : "+0,5 point (2e essai)"}</div>`
+             : `<div class="retour ko">✘ ${abandon ? "Voici la correction." : (msg ? esc(msg) + " " : "") + "Ce n'était pas ça."}</div>`;
+  $("#retour").innerHTML = tete + `<div class="correction"><b>Correction :</b><br>${ex.correction}</div>`;
+  ecran.querySelectorAll("#zone input, #zone select").forEach(i => i.disabled = true);
+  $("#valider").textContent = serie.n + 1 >= NB ? "Voir mon score" : "Exercice suivant →";
+  $("#indice").disabled = true; $("#voir").disabled = true;
+  serie.n++; $("#valider").onclick = suivant;
+  maths($("#retour")); $("#valider").focus();
+}
+function bilan(){
+  sauverScore(serie.th.id, serie.points);
+  const p = serie.points, msg = p >= 9 ? "Excellent !" : p >= 7 ? "Très bien !" : p >= 5 ? "C'est en bonne voie, continue." : "Refais une série : ça va venir !";
+  ecran.innerHTML = `<div class="carte bilan"><p>${esc(serie.th.titre)}</p>
+    <div class="note">${String(p).replace(".", ",")} / ${NB}</div><p>${msg}</p>
+    <div class="btns" style="justify-content:center"><button class="btn" id="encore">Nouvelle série</button><button class="btn sec" id="themes">Autres vignettes</button></div></div>`;
+  $("#encore").onclick = () => demarrer(serie.th.id);
+  $("#themes").onclick = menu;
+}
+$("#accueil").onclick = menu;
+menu();
+</script>
+</body>
+</html>

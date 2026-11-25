@@ -399,6 +399,37 @@ const THEMES = [
         correction:`\\(\\alpha = -\\dfrac{b}{2a} = -\\dfrac{${texNb(d.b)}}{2\\times${par(a)}} = ${texNb(al)}\\) et \\(P(${texNb(al)}) = ${par(a)}\\times${par(al)}^2${d.b < 0 ? " - " : " + "}${texNb(Math.abs(d.b))}\\times${par(al)}${sg(d.c)} = ${texNb(be)}\\).<br>\\(a = ${texNb(a)}\\) ${a > 0 ? "> 0 : minimum" : "< 0 : maximum"} \\(${texNb(be)}\\) en \\(${texNb(al)}\\).${tableau(a, al, be)}` }; } },
   { id:"assoc-can", titre:"Associer trinômes et courbes", desc:"4 trinômes sous forme canonique, 4 paraboles.", gen:() => exAssocier(false) },
   { id:"assoc-dev", titre:"Associer trinômes et courbes (forme développée)", desc:"4 trinômes sous forme développée, 4 paraboles.", gen:() => exAssocier(true) },
+  { id:"formes", titre:"Reconnaître la forme d'un trinôme", desc:"Développée, canonique, factorisée… ou autre ?",
+    gen(){
+      const NOMS = ["Forme développée", "Forme canonique", "Forme factorisée", "Autre"];
+      const sorte = choisir([0, 1, 2, 3, 3]); let tex, pourquoi;
+      const A = [1, -1, 2, -2, 3, -3, 0.5, -0.5, 4, -5];
+      if (sorte === 0) { let a, b, c; do { a = choisir([1, -1, 2, -2, 3, -3, 4, -5]); b = aleaNZ(-9, 9); c = alea(-9, 9); } while (false);
+        const L = [[a, "x^2"], [b, "x"], [c, ""]]; tex = texPoly(Math.random() < 0.25 ? melanger(L) : L);
+        pourquoi = "C'est une somme de termes en \\(x^2\\), en \\(x\\) et constant, sans parenthèses : forme <b>développée</b> \\(ax^2+bx+c\\)."; }
+      else if (sorte === 1) { const a = choisir(A), al = aleaNZ(-6, 6), be = aleaNZ(-9, 9);
+        tex = Math.random() < 0.2 ? texNb(be) + (a < 0 ? " - " : " + ") + coefTex(Math.abs(a)) + xMoins(al) + "^2" : texCan(a, al, be);
+        pourquoi = `C'est de la forme \\(a(x-\\alpha)^2+\\beta\\) avec \\(a = ${texNb(a)}\\), \\(\\alpha = ${texNb(al)}\\), \\(\\beta = ${texNb(be)}\\) : forme <b>canonique</b>.`; }
+      else if (sorte === 2) { const k = alea(1, 3);
+        if (k === 1) { const a = choisir(A), r1 = alea(-6, 6); let r2; do r2 = alea(-6, 6); while (r2 === r1); tex = texFact(a, r1, r2); }
+        else if (k === 2) { const p = choisir([2, 3, -2, 5]), q = aleaNZ(-7, 7), r2 = aleaNZ(-6, 6); tex = `(${texPoly([[p, "x"], [q, ""]])})${xMoins(r2)}`; }
+        else { const a = choisir([1, -1, 2, 3, -4]), r = aleaNZ(-7, 7); tex = coefTex(a) + "x" + xMoins(r); }
+        pourquoi = "C'est un produit de facteurs du premier degré (éventuellement multiplié par une constante) : forme <b>factorisée</b>."; }
+      else { const k = alea(1, 6), a = choisir([1, -1, 2, -2, 3]), r1 = aleaNZ(-6, 6), r2 = aleaNZ(-6, 6), m = aleaNZ(-9, 9), b = aleaNZ(-7, 7);
+        if (k === 1) tex = `${xMoins(r1)}${xMoins(r2 === r1 ? r1 + 1 : r2)}${sg(m)}`;
+        else if (k === 2) tex = `${coefTex(a)}${xMoins(r1)}^2${b < 0 ? " - " : " + "}${coefTex(Math.abs(b))}x`;
+        else if (k === 3) tex = `${coefTex(a)}x${xMoins(r1)}${sg(m)}`;
+        else if (k === 4) tex = `${xMoins(r1)}^2 - ${xMoins(r2 === r1 ? r1 + 2 : r2)}`;
+        else if (k === 5) tex = `${texPoly([[a, "x^2"]])}${b < 0 ? " - " : " + "}${texNb(Math.abs(b))}${xMoins(r1)}`;
+        else tex = `${xMoins(r1)}${xMoins(r2 === r1 ? r1 + 1 : r2)}${a < 0 ? " + " : " - "}${coefTex(Math.abs(a))}${xMoins(r1)}`;
+        pourquoi = "Ce n'est ni une somme développée \\(ax^2+bx+c\\), ni \\(a(x-\\alpha)^2+\\beta\\), ni un produit de facteurs du premier degré : il y a un terme ajouté ou retranché en plus d'un produit ou d'un carré. Pour obtenir une des trois formes, il faudrait développer ou transformer l'expression."; }
+      return { consigne:"Sous quelle forme ce trinôme est-il écrit ?", sol:sorte,
+        rappel:"Forme développée : \\(ax^2+bx+c\\). Forme canonique : \\(a(x-\\alpha)^2+\\beta\\). Forme factorisée : \\(a(x-x_1)(x-x_2)\\), un produit de facteurs du premier degré.",
+        figure:`<div class="enonce">\\(P(x) = ${tex}\\)</div>`,
+        zone:NOMS.map((n, i) => `<button class="choix" data-i="${i}">${n}</button>`).join(""), qcm:true,
+        verif:() => serie.choix === null ? { ok:false, msg:"Choisis une réponse.", attente:true } : { ok:serie.choix === sorte },
+        indice:"Regarde la dernière opération effectuée : une somme de monômes ? un carré plus une constante ? un produit ?",
+        correction:`Réponse : <b>${NOMS[sorte]}</b>. ${pourquoi}` }; } },
 ];
 
 /* ---------- écrans ---------- */

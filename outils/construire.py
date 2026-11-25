@@ -135,7 +135,7 @@ for c in CAT["classes"]:
         for d in da:
             if d.get("dossier") and d["dossier"] not in ids: sys.exit(f"Dossier inconnu « {d['dossier']} » pour {d['titre']}")
         cartes_d = "".join(
-            f'<a class="carte-mois" href="{x["id"]}.html"><span class="nom">{k + 1}. {e(x["titre"])}</span>'
+            f'<a class="carte-mois" href="{x["id"]}.html"><span class="nom">{e(x["titre"])}</span>'
             f'<span class="info">{nb(sum(1 for d in da if d.get("dossier") == x["id"]))}</span></a>'
             for k, x in enumerate(sousdos))
         autres = [d for d in da if not d.get("dossier")]

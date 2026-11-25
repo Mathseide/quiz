@@ -24,19 +24,19 @@
     "S5ma6FRA": [
       {
         "id": "rappels",
-        "titre": "Rappels"
+        "titre": "Chap00 – Rappels"
       },
       {
         "id": "chap1-racines-n-iemes",
-        "titre": "Chap1 – Racines n-ièmes"
+        "titre": "Chap01 – Racines n-ièmes"
       },
       {
         "id": "chap2-second-degre",
-        "titre": "Chap2 – 2nd degré"
+        "titre": "Chap02 – 2nd degré"
       },
       {
         "id": "trigonometrie",
-        "titre": "Trigonométrie"
+        "titre": "Chap03 – Trigonométrie"
       }
     ]
   },

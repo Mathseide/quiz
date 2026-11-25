@@ -20,6 +20,26 @@
     "2027-05",
     "2027-06"
   ],
+  "dossiers": {
+    "S5ma6FRA": [
+      {
+        "id": "rappels",
+        "titre": "Rappels"
+      },
+      {
+        "id": "chap1-racines-n-iemes",
+        "titre": "Chap1 – Racines n-ièmes"
+      },
+      {
+        "id": "chap2-second-degre",
+        "titre": "Chap2 – 2nd degré"
+      },
+      {
+        "id": "trigonometrie",
+        "titre": "Trigonométrie"
+      }
+    ]
+  },
   "documents": [
     {
       "code": "S6ma5FRB-Quiz-261107",
@@ -116,7 +136,8 @@
     {
       "code": "S5ma6FRA-Aide-261122",
       "titre": "Calcul mental – Tables, opérations et décimaux",
-      "fichier": "calcul-mental.html"
+      "fichier": "calcul-mental.html",
+      "dossier": "rappels"
     },
     {
       "code": "S6ma5FRB-Aide-261122",
@@ -131,7 +152,8 @@
     {
       "code": "S5ma6FRA-Aide-261122",
       "titre": "Racines carrées – Entraînement par thèmes",
-      "fichier": "racines-carrees.html"
+      "fichier": "racines-carrees.html",
+      "dossier": "rappels"
     },
     {
       "code": "S6ma5FRB-Aide-261122",
@@ -161,12 +183,14 @@
     {
       "code": "S5ma6FRA-Aide-261125",
       "titre": "Cercle trigonométrique – Mesures en radians",
-      "fichier": "cercle-trigo.html"
+      "fichier": "cercle-trigo.html",
+      "dossier": "trigonometrie"
     },
     {
       "code": "S5ma6FRA-Aide-261125",
       "titre": "Second degré – Sommet, variations, lecture graphique",
-      "fichier": "second-degre.html"
+      "fichier": "second-degre.html",
+      "dossier": "chap2-second-degre"
     }
   ]
 }

@@ -7,7 +7,8 @@ Chaque document du catalogue a un code « classe-type-aammjj » :
   - type Aide  → page « Supports et aides » de la classe (liste permanente)
   - type DM    → page « Travail maison » du mois correspondant
   - type Quiz  → page « Quiz » du mois correspondant (fichier chiffré)
-Champs : code, titre, fichier (chemin depuis la racine du site), masque (facultatif).
+Champs : code, titre, fichier (chemin depuis la racine du site), masque (facultatif),
+dossier (facultatif : sous-dossier de « Supports et aides », déclaré dans CAT["dossiers"][classe]).
 Les QR codes sont générés en SVG par outils/qrcode/svg.js (Node).
 """
 import html, json, os, re, shutil, subprocess, sys
@@ -126,11 +127,34 @@ for c in CAT["classes"]:
         for s, t, ic in SECTIONS)
     page(base + "index.html", c, [("Accueil", ""), (c, None)], f'<div class="grille">{menu}</div>', classe=c)
 
-    # Supports et aides (liste permanente)
-    page(base + "aides/index.html", f"{c} — Supports et aides",
-         [("Accueil", ""), (c, base), ("Supports et aides", None)],
-         tableau([d for d in dc if d["type"] == "aides"], 3, avec_date=False, vide="Aucune aide pour le moment."),
-         classe=c, section="aides")
+    # Supports et aides (liste permanente, éventuellement en sous-dossiers)
+    da = [d for d in dc if d["type"] == "aides"]
+    sousdos = CAT.get("dossiers", {}).get(c, [])
+    if sousdos:
+        ids = [x["id"] for x in sousdos]
+        for d in da:
+            if d.get("dossier") and d["dossier"] not in ids: sys.exit(f"Dossier inconnu « {d['dossier']} » pour {d['titre']}")
+        cartes_d = "".join(
+            f'<a class="carte-mois" href="{x["id"]}.html"><span class="nom">{k + 1}. {e(x["titre"])}</span>'
+            f'<span class="info">{nb(sum(1 for d in da if d.get("dossier") == x["id"]))}</span></a>'
+            for k, x in enumerate(sousdos))
+        autres = [d for d in da if not d.get("dossier")]
+        page(base + "aides/index.html", f"{c} — Supports et aides",
+             [("Accueil", ""), (c, base), ("Supports et aides", None)],
+             f'<div class="grille mois">{cartes_d}</div>' + (tableau(autres, 3, avec_date=False) if autres else ""),
+             classe=c, section="aides")
+        for k, x in enumerate(sousdos):
+            prec = f'<a href="{sousdos[k-1]["id"]}.html">← {e(sousdos[k-1]["titre"])}</a>' if k > 0 else "<span></span>"
+            suiv = f'<a href="{sousdos[k+1]["id"]}.html">{e(sousdos[k+1]["titre"])} →</a>' if k < len(sousdos) - 1 else "<span></span>"
+            page(base + f"aides/{x['id']}.html", f"{c} — {x['titre']}",
+                 [("Accueil", ""), (c, base), ("Supports et aides", base + "aides/"), (x["titre"], None)],
+                 tableau([d for d in da if d.get("dossier") == x["id"]], 3, avec_date=False, vide="Aucun document pour le moment.")
+                 + f'<div class="pagemois">{prec}{suiv}</div>', classe=c, section="aides")
+    else:
+        page(base + "aides/index.html", f"{c} — Supports et aides",
+             [("Accueil", ""), (c, base), ("Supports et aides", None)],
+             tableau(da, 3, avec_date=False, vide="Aucune aide pour le moment."),
+             classe=c, section="aides")
 
     # Travail maison et Quiz : une page par mois
     for s, t, ic in SECTIONS[1:]:

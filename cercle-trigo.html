@@ -57,10 +57,10 @@
 <script>
 /* =====================================================================
    Cercle trigonométrique S5 (Écoles européennes) — NOIR ET BLANC
-   Vignettes : 1) mesure d'un arc dans [−2π ; 2π]
-               2) mesure d'un arc quelconque (plusieurs tours)
-               3) mesure principale d'un point (dans ]−π ; π])
-   À compléter plus tard : cos, sin, tan.
+   Vignettes : 1) lire la mesure d'un arc dans [−2π ; 2π]
+               2) lire la mesure principale d'un point (dans ]−π ; π])
+               3) placer le point associé à un réel de [−2π ; 2π]
+               4) placer le point associé à un réel quelconque
    ===================================================================== */
 const NB = 10;
 const $ = s => document.querySelector(s);
@@ -160,7 +160,7 @@ function figure(o){
   g += `<circle cx="0" cy="${-R}" r="3.5" fill="#000"/><text x="7" y="${-R - 7}" font-weight="bold">J</text>`;
   g += `<text x="-16" y="17" font-weight="bold">O</text>`;
   const t = o.theta;
-  if (o.arc) {
+  if (o.arc && t !== null && t !== undefined) {
     const tours = Math.abs(t) / (2 * Math.PI);
     const r0 = tours > 1.001 ? 0.22 : 0.42, r1 = tours > 1.001 ? 0.82 : 0.6;
     const N = Math.max(30, Math.ceil(Math.abs(t) * 40)); let pts = [];
@@ -169,6 +169,9 @@ function figure(o){
     g += `<polyline points="${pts.join(" ")}" fill="none" stroke="#000" stroke-width="2.6" marker-end="url(#fl)"/>`;
     const [sx, sy] = P(r0, 0); g += `<circle cx="${sx}" cy="${sy}" r="4" fill="#fff" stroke="#000" stroke-width="2"/>`;
   }
+  if (o.eleve !== undefined && o.eleve !== null) { const [ax, ay] = P(1, o.eleve);
+    g += `<circle cx="${ax}" cy="${ay}" r="9" fill="#fff" stroke="#000" stroke-width="3"/>`; }
+  if (t === null || t === undefined) return g + `</svg>`;
   const [mx, my] = P(1, t), [lx, ly] = P(1.14, t);
   g += `<line x1="0" y1="0" x2="${mx}" y2="${my}" stroke="#000" stroke-width="1.4" stroke-dasharray="7 4"/>`;
   g += `<circle cx="${mx}" cy="${my}" r="7" fill="#000"/><text x="${lx}" y="${ly}" font-size="21" font-weight="bold" text-anchor="middle" dominant-baseline="central">M</text>`;
@@ -193,6 +196,30 @@ function indiceGrille(){ return "Repères du quadrillage : la droite \\(y=\\frac
 function indiceSecteurs(n){ return `Le cercle est partagé en ${n} secteurs égaux : chacun mesure \\(\\frac{2\\pi}{${n}} = ${texPi(2, n)}\\).`; }
 const SENS = "Sens direct (inverse des aiguilles d'une montre) : mesure positive ; sens indirect : mesure négative.";
 
+/* positions possibles du point à placer (angles en radians, dans [0 ; 2π[) */
+function positions(t){
+  const L = [];
+  if (t.mode === "secteurs") for (let k = 0; k < t.n; k++) L.push(2 * Math.PI * k / t.n);
+  else { for (let k = 0; k < 12; k++) L.push(Math.PI * k / 6); for (const k of [1, 3, 5, 7]) L.push(Math.PI * k / 4); }
+  return L;
+}
+function explPlacer(p, q, t){
+  const [a, b] = t.pas, [mp, mq] = principale(p, q), v = p / q, sens = v > 0 ? "direct" : "indirect";
+  let h = "";
+  if (Math.abs(v) > 2) {           // on se ramène à la mesure principale
+    const k = Math.round((v - mp / mq) / 2), deux = Math.abs(2 * k) === 2 ? "2\\pi" : `${Math.abs(2 * k)}\\pi`;
+    h = `${T(`${texPi(p, q)} = ${texPi(mp, mq)} ${k > 0 ? "+" : "-"} ${deux}`)} : ${Math.abs(k) > 1 ? `les ${Math.abs(k)} tours complets` : "le tour complet"} (sens ${k > 0 ? "direct" : "indirect"}) ne ${Math.abs(k) > 1 ? "changent" : "change"} pas la position, donc M est le même point que pour ${T(texPi(mp, mq))}. `;
+    p = mp; q = mq;
+  }
+  const w = p / q, s2 = w > 0 ? "direct" : "indirect";
+  if (w === 0) return h + "M est en I.";
+  if (t.mode === "secteurs") { const k = Math.round(Math.abs(w) * t.n / 2);
+    return h + `On part de I et on tourne de ${T(texPi(Math.abs(p), q))} dans le sens ${s2}, soit ${k} secteur${k > 1 ? "s" : ""} de ${T(texPi(2, t.n))}.`; }
+  return h + `On part de I et on tourne de ${T(texPi(Math.abs(p), q))} dans le sens ${s2}. ${repere(p, q)}.`;
+}
+const CONSIGNE_PL = "Touche le cercle pour placer le point M associé au réel ";
+const INDICE_PL = "Le réel positif : on tourne dans le sens direct (inverse des aiguilles d'une montre) ; négatif : sens indirect. ";
+
 const THEMES = [
   { id:"arc", titre:"Lire une mesure en radians", desc:"Mesure de l'arc dessiné, entre −2π et 2π (secteurs ou quadrillage).",
     gen(){ const t = tirage(); const [a, b] = t.pas; const max = Math.round(2 * b / a);   // nombre de pas dans 2π
@@ -204,18 +231,6 @@ const THEMES = [
       return { fig:{ mode:t.mode, n:t.n, theta:Math.PI * p / q, arc:true }, p, q, cible:"arc",
         consigne:"Donne la mesure en radians de l'arc orienté dessiné, de I jusqu'à M.",
         indice:(t.mode === "secteurs" ? indiceSecteurs(t.n) : indiceGrille()) + " " + SENS, correction:corr }; } },
-  { id:"tours", titre:"Mesures avec plusieurs tours", desc:"L'arc peut faire un ou plusieurs tours complets : 17π/6, −9π/4…",
-    gen(){ const t = tirage(); const [a, b] = t.pas; const max = Math.round(2 * b / a);
-      const tours = choisir([1, 1, 1, 2, 2, 0]), reste = alea(1, max - 1), sg = choisir([1, 1, -1]);
-      const k = sg * (tours * max + reste); const [p, q] = red(k * a, b), [rp, rq] = red(reste * a, b);
-      const sens = sg > 0 ? "direct" : "indirect";
-      const detail = tours === 0 ? `aucun tour complet, seulement ${T(texPi(rp, rq))}`
-        : `${tours} tour${tours > 1 ? "s" : ""} complet${tours > 1 ? "s" : ""} (${T(tours === 1 ? "2\\pi" : `${tours}\\times 2\\pi = ${2 * tours}\\pi`)}) puis encore ${T(texPi(rp, rq))}`;
-      const calc = tours === 0 ? texPi(p, q) : `${sg < 0 ? "-\\left(" : ""}${2 * tours}\\pi + ${texPi(rp, rq)}${sg < 0 ? "\\right)" : ""} = ${texPi(p, q)}`;
-      return { fig:{ mode:t.mode, n:t.n, theta:Math.PI * p / q, arc:true }, p, q, cible:"arc",
-        consigne:"Donne la mesure en radians de l'arc orienté dessiné, de I jusqu'à M (attention aux tours complets).",
-        indice:"Compte d'abord les tours complets (chacun vaut \\(2\\pi\\)), puis ce qu'il reste jusqu'à M. " + (t.mode === "secteurs" ? indiceSecteurs(t.n) : indiceGrille()),
-        correction:`Dans le sens ${sens}, l'arc fait ${detail} : ${T(calc)}.` }; } },
   { id:"principale", titre:"Lire la mesure principale", desc:"Le point M est placé : donne sa mesure principale, dans ]−π ; π].",
     gen(){ const t = tirage(); const [a, b] = t.pas; const max = Math.round(2 * b / a), h = max / 2;
       let k; do k = alea(Math.floor(-h) + 1, Math.floor(h)); while (k === 0 && Math.random() < 0.85);
@@ -228,10 +243,22 @@ const THEMES = [
         consigne:"Donne la mesure principale (dans \\(\\left]-\\pi\\,;\\,\\pi\\right]\\)) du point M.",
         indice:"La mesure principale est dans \\(\\left]-\\pi\\,;\\,\\pi\\right]\\) : si M est au-dessus de l'axe des abscisses, elle est positive ; en dessous, elle est négative. " + (t.mode === "secteurs" ? indiceSecteurs(t.n) : indiceGrille()),
         correction:pourquoi + `<div class="figure">${figure({ mode:t.mode, n:t.n, theta:Math.PI * p / q, arc:true })}</div>` }; } },
-];
-const BIENTOT = [
-  { titre:"Cosinus et sinus", desc:"Lire cos et sin sur le cercle (à venir)." },
-  { titre:"Tangente", desc:"Lire tan (à venir)." },
+  { id:"placer", titre:"Placer un point", desc:"Placer le point associé à un réel entre −2π et 2π.",
+    gen(){ const t = tirage(); const [a, b] = t.pas; const max = Math.round(2 * b / a);
+      let k; do k = alea(-max, max); while (k === 0 || (Math.abs(k) === max && Math.random() < 0.8));
+      const [p, q] = red(k * a, b);
+      return { type:"placer", fig:{ mode:t.mode, n:t.n, theta:null }, pos:positions(t), t, p, q,
+        consigne:CONSIGNE_PL + T(texPi(p, q)) + ".",
+        indice:INDICE_PL + (t.mode === "secteurs" ? indiceSecteurs(t.n) : indiceGrille()),
+        correction:explPlacer(p, q, t) }; } },
+  { id:"placer-tours", titre:"Placer un point (tous les réels)", desc:"Le réel n'est pas forcément entre −2π et 2π : 17π/6, −13π/4…",
+    gen(){ const t = tirage(); const [a, b] = t.pas; const max = Math.round(2 * b / a);
+      const tours = choisir([1, 1, 1, 2, 2, 0]), reste = alea(1, max - 1), sg = choisir([1, 1, -1]);
+      const k = sg * (tours * max + reste); const [p, q] = red(k * a, b);
+      return { type:"placer", fig:{ mode:t.mode, n:t.n, theta:null }, pos:positions(t), t, p, q,
+        consigne:CONSIGNE_PL + T(texPi(p, q)) + ".",
+        indice:"Retire (ou ajoute) des tours complets de \\(2\\pi\\) pour te ramener à la mesure principale, puis place le point. " + (t.mode === "secteurs" ? indiceSecteurs(t.n) : indiceGrille()),
+        correction:explPlacer(p, q, t) }; } },
 ];
 
 /* ---------- vérification ---------- */
@@ -245,15 +272,21 @@ function verifier(ex, r){
   return { ok:false };
 }
 
+function verifierPlace(ex, a){
+  const d = (a - Math.PI * ex.p / ex.q) / (2 * Math.PI);
+  if (Math.abs(d - Math.round(d)) < 1e-6) return { ok:true };
+  const [mp, mq] = principale(ex.p, ex.q);
+  return { ok:false, msg: Math.abs(Math.abs(a - Math.PI * mp / mq) - Math.PI) < 1e-6 ? "Tu as placé le point diamétralement opposé." :
+    (Math.abs(((a + Math.PI * mp / mq) / (2 * Math.PI)) % 1) < 1e-6 || Math.abs(((a + Math.PI * mp / mq) / (2 * Math.PI)) % 1 - 1) < 1e-6) ? "Attention au sens de rotation." : "" };
+}
+
 /* ---------- écrans ---------- */
 function menu(){
   $("#accueil").hidden = true;
   const sc = lireScores();
   let h = `<p class="intro">Choisis une vignette. Chaque série contient ${NB} exercices tirés au hasard : tu peux la refaire autant de fois que tu veux.</p>`;
-  h += `<h2 class="annee">Mesures en radians</h2><div class="grille">`;
+  h += `<h2 class="annee">Mesures en radians sur le cercle trigonométrique</h2><div class="grille">`;
   THEMES.forEach((t, i) => h += `<button class="theme" data-id="${t.id}"><div class="t">${i + 1}. ${esc(t.titre)}</div><div class="d">${esc(t.desc)}</div>${sc[t.id] !== undefined ? `<div class="s">Meilleur score : ${String(sc[t.id]).replace(".", ",")} / ${NB}</div>` : ""}</button>`);
-  h += `</div><h2 class="annee">Bientôt</h2><div class="grille">`;
-  BIENTOT.forEach(t => h += `<div class="theme bientot"><div class="t">${esc(t.titre)}</div><div class="d">${esc(t.desc)}</div></div>`);
   ecran.innerHTML = h + `</div>`;
   ecran.querySelectorAll("button.theme").forEach(b => b.onclick = () => demarrer(b.dataset.id));
   window.scrollTo(0, 0);
@@ -262,7 +295,7 @@ function demarrer(id){ serie = { th:THEMES.find(t => t.id === id), n:0, points:0
 function suivant(){
   if (serie.n >= NB) return bilan();
   let ex; do ex = serie.th.gen(); while (serie.ex && ex.p === serie.ex.p && ex.q === serie.ex.q);
-  serie.ex = ex; serie.essais = 0; serie.fini = false; afficher();
+  serie.ex = ex; serie.essais = 0; serie.fini = false; serie.choix = null; afficher();
 }
 function afficher(){
   const ex = serie.ex, th = serie.th, sy = ["π", "−", "/", "(", ")"];
@@ -270,10 +303,10 @@ function afficher(){
     <div class="haut"><span>${esc(th.titre)}</span><span>Exercice ${serie.n + 1} / ${NB} · Score : ${String(serie.points).replace(".", ",")}</span></div>
     <div class="progress"><div style="width:${serie.n / NB * 100}%"></div></div>
     <p class="consigne">${ex.consigne}</p>
-    <div class="figure">${figure(ex.fig)}</div>
-    <input type="text" id="rep" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Ta réponse, par exemple -5π/6">
+    <div class="figure" id="fig">${figure(ex.fig)}</div>
+    ${ex.type === "placer" ? `<div class="aide">Touche le cercle à l'endroit voulu : le point M se place sur la graduation la plus proche. Tu peux le déplacer avant de valider.</div>` : `<input type="text" id="rep" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Ta réponse, par exemple -5π/6">
     <div class="symboles">${sy.map(c => `<button type="button" class="sym" data-c="${esc(c)}">${esc(c)}</button>`).join("")}</div>
-    <div class="aide">Écris la mesure en fonction de π : 5π/6, −π/3, 2π, 0… (tu peux aussi taper « pi »).</div>
+    <div class="aide">Écris la mesure en fonction de π : 5π/6, −π/3, 2π, 0… (tu peux aussi taper « pi »).</div>`}
     <div class="btns">
       <button class="btn" id="valider">Valider</button>
       <button class="btn sec" id="indice">💡 Indice</button>
@@ -282,11 +315,20 @@ function afficher(){
     <div id="retour"></div>
   </div>`;
   const rep = $("#rep");
-  ecran.querySelectorAll(".sym").forEach(bt => { bt.onmousedown = e => e.preventDefault(); bt.onclick = () => {
+  if (ex.type === "placer") $("#fig").onclick = e => {
+    if (serie.fini) return;
+    const svg = $("#fig svg"), pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    const c = pt.matrixTransform(svg.getScreenCTM().inverse());
+    let a = Math.atan2(-c.y, c.x); if (a < 0) a += 2 * Math.PI;
+    let best = ex.pos[0], dm = 9;
+    for (const u of ex.pos) { const d = Math.min(Math.abs(u - a), 2 * Math.PI - Math.abs(u - a)); if (d < dm) { dm = d; best = u; } }
+    serie.choix = best; $("#fig").innerHTML = figure({ ...ex.fig, theta:best });
+  };
+  else ecran.querySelectorAll(".sym").forEach(bt => { bt.onmousedown = e => e.preventDefault(); bt.onclick = () => {
     const c = bt.dataset.c === "−" ? "-" : bt.dataset.c;
     const d = rep.selectionStart ?? rep.value.length, f = rep.selectionEnd ?? d;
     rep.value = rep.value.slice(0, d) + c + rep.value.slice(f); rep.setSelectionRange(d + c.length, d + c.length); rep.focus(); }; });
-  rep.addEventListener("keydown", e => { if (e.key === "Enter") $("#valider").click(); });
+  if (rep) rep.addEventListener("keydown", e => { if (e.key === "Enter") $("#valider").click(); });
   $("#valider").onclick = valider;
   $("#indice").onclick = () => { $("#retour").innerHTML = `<div class="retour info">💡 ${ex.indice}</div>`; maths($("#retour")); };
   $("#voir").onclick = () => conclure(false, true);
@@ -294,7 +336,9 @@ function afficher(){
 }
 function valider(){
   if (serie.fini) return suivant();
-  const v = verifier(serie.ex, $("#rep").value);
+  const ex = serie.ex;
+  if (ex.type === "placer" && (serie.choix === null || serie.choix === undefined)) { $("#retour").innerHTML = `<div class="retour info">Touche d'abord le cercle pour placer M.</div>`; return; }
+  const v = ex.type === "placer" ? verifierPlace(ex, serie.choix) : verifier(ex, $("#rep").value);
   if (v.ok) return conclure(true);
   serie.essais++;
   if (serie.essais >= 2) return conclure(false, false, v.msg);
@@ -305,6 +349,11 @@ function conclure(ok, abandon, msg){
   const gain = ok ? (serie.essais === 0 ? 1 : 0.5) : 0; serie.points += gain;
   const tete = ok ? `<div class="retour ok">✔ Bravo ! ${gain === 1 ? "+1 point" : "+0,5 point (2e essai)"}</div>`
              : `<div class="retour ko">✘ ${abandon ? "Voici la correction." : (msg ? esc(msg) + " " : "") + "Ce n'était pas ça."}</div>`;
+  if (ex.type === "placer") {
+    const faux = !ok && serie.choix !== null && serie.choix !== undefined;
+    $("#fig").innerHTML = figure({ ...ex.fig, theta:Math.PI * ex.p / ex.q, arc:true, eleve: faux ? serie.choix : null });
+    $("#retour").innerHTML = tete + `<div class="correction">${ex.correction}${faux ? "<br>Sur la figure, le rond vide est le point que tu avais placé." : ""}</div>`;
+  } else
   $("#retour").innerHTML = tete + `<div class="correction"><b>Réponse : ${T(texPi(ex.p, ex.q))}</b><br>${ex.correction}</div>`;
   $("#valider").textContent = serie.n + 1 >= NB ? "Voir mon score" : "Exercice suivant →";
   $("#indice").disabled = true; $("#voir").disabled = true;

@@ -68,6 +68,8 @@ const ecran = $("#ecran");
 const CLE = "cercle-trigo-scores";
 let serie = null;
 const alea = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const melanger = t => { const c = [...t]; for (let i = c.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [c[i], c[j]] = [c[j], c[i]]; } return c; };
+const aleaNZ = (a, b) => { let v; do v = alea(a, b); while (v === 0); return v; };
 const choisir = t => t[Math.floor(Math.random() * t.length)];
 const pgcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) [a, b] = [b, a % b]; return a; };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
@@ -81,6 +83,7 @@ function red(p, q){ if (q < 0) { p = -p; q = -q; } const g = pgcd(p, q) || 1; re
 function texPi(p, q){ [p, q] = red(p, q); if (p === 0) return "0";
   const s = p < 0 ? "-" : "", a = Math.abs(p), num = (a === 1 ? "" : a) + "\\pi";
   return q === 1 ? s + num : `${s}\\frac{${num}}{${q}}`; }
+const par = v => v < 0 ? `(${v})` : String(v);
 function txtPi(p, q){ [p, q] = red(p, q); if (p === 0) return "0"; const a = Math.abs(p);
   return (p < 0 ? "-" : "") + (a === 1 ? "" : a) + "π" + (q === 1 ? "" : "/" + q); }
 /* mesure principale de (p/q)π, dans ]−π ; π] */
@@ -259,13 +262,54 @@ const THEMES = [
         consigne:CONSIGNE_PL + T(texPi(p, q)) + ".",
         indice:"Retire (ou ajoute) des tours complets de \\(2\\pi\\) pour te ramener à la mesure principale, puis place le point. " + (t.mode === "secteurs" ? indiceSecteurs(t.n) : indiceGrille()),
         correction:explPlacer(p, q, t) }; } },
+  { id:"conversion", titre:"Degrés ⇄ radians", desc:"Convertir des degrés en radians (en fonction de π), et inversement.",
+    gen(){ const q = choisir([2, 3, 4, 6, 12, 12, 6, 4, 3, 5, 10, 9, 18, 36]); let p;
+      do p = alea(-4 * q, 4 * q); while (p === 0 || pgcd(p, q) !== 1 || (Math.random() < 0.6 && p < 0));
+      const deg = 180 * p / q, L = 180, g = pgcd(deg, L);
+      if (Math.random() < 0.5) {
+        const etape = `${T(`${deg}^\\circ = ${par(deg)}\\times\\frac{\\pi}{180} = ${deg < 0 ? "-" : ""}\\frac{${Math.abs(deg)}\\pi}{180} = ${texPi(p, q)}`)}`;
+        return { type:"radians", p, q, cible:"exact", fig:null,
+          consigne:`Convertis ${T(deg + "^\\circ")} en radians (en fonction de π).`,
+          indice:"\\(180^\\circ = \\pi\\) rad, donc on multiplie par \\(\\frac{\\pi}{180}\\) et on simplifie la fraction.",
+          correction:`On multiplie par \\(\\frac{\\pi}{180}\\) : ${etape} (on simplifie par ${g}).` };
+      }
+      return { type:"degres", deg, p, q, fig:null, reponseTex:deg + "^\\circ",
+        consigne:`Convertis ${T(texPi(p, q))} rad en degrés.`,
+        indice:"\\(\\pi\\) rad \\(= 180^\\circ\\) : remplace \\(\\pi\\) par 180.",
+        correction:`On remplace \\(\\pi\\) par \\(180^\\circ\\) : ${T(`${texPi(p, q)} = ${q === 1 ? `${p}\\times 180` : `\\frac{${Math.abs(p) === 1 ? (p < 0 ? "-" : "") + "180" : p + "\\times 180"}}{${q}}`} = ${deg}^\\circ`)}.` };
+    } },
+  { id:"addition", titre:"Additionner des fractions de π", desc:"Calculs comme −π/3 + π/4 ou −13π/6 + 2π.",
+    gen(){ let termes;
+      if (Math.random() < 0.4) { const q = choisir([2, 3, 4, 6, 6, 12]); let p; do p = alea(-5 * q, 5 * q); while (pgcd(p, q) !== 1 || Math.abs(p) < q);
+        const k = -Math.sign(p) * choisir([1, 1, 2]); termes = melanger([[p, q], [2 * k, 1]]); if (Math.random() < 0.5) termes = [[p, q], [2 * k, 1]]; }
+      else { const n = Math.random() < 0.75 ? 2 : 3; termes = [];
+        while (termes.length < n) { const q = choisir([1, 2, 3, 4, 6, 12]); const p = aleaNZ(-2 * q, 2 * q);
+          if (pgcd(p, q) !== 1 || termes.some(t => t[1] === q)) continue; termes.push([p, q]); } }
+      const L = termes.reduce((m, [, q]) => m * q / pgcd(m, q), 1), num = termes.reduce((s, [p, q]) => s + p * L / q, 0);
+      const [P, Q] = red(num, L);
+      const ecr = T2 => T2.map(([p, q], i) => i === 0 ? texPi(p, q) : (p < 0 ? " - " : " + ") + texPi(Math.abs(p), q)).join("");
+      const egal = L === 1 ? "" : " = " + ecr(termes.map(([p, q]) => [p * L / q, L])).replace(/\\frac\{(\d*)\\pi\}\{(\d+)\}/g, (m, a, b) => `\\frac{${a}\\pi}{${b}}`);
+      // écriture « brute » au dénominateur commun (sans simplification)
+      const brut = termes.map(([p, q], i) => { const a = p * L / q, s = Math.abs(a) === 1 ? "" : Math.abs(a);
+        return (i === 0 ? (a < 0 ? "-" : "") : (a < 0 ? " - " : " + ")) + (L === 1 ? `${s}\\pi` : `\\frac{${s}\\pi}{${L}}`); }).join("");
+      const tot = L === 1 ? "" : ` = ${num < 0 ? "-" : ""}\\frac{${Math.abs(num) === 1 ? "" : Math.abs(num)}\\pi}{${L}}`;
+      return { type:"radians", p:P, q:Q, cible:"exact", fig:null,
+        consigne:`Calcule et donne le résultat sous forme simplifiée : ${T(ecr(termes))}`,
+        indice:"Mets toutes les fractions au même dénominateur (\\(2\\pi = \\frac{12\\pi}{6}\\) par exemple), puis ajoute les numérateurs.",
+        correction:`Dénominateur commun : ${L}.<br>${T(`${ecr(termes)} = ${brut}${tot}${(L !== Q || num !== P) && L !== 1 ? " = " + texPi(P, Q) : ""}`)}` };
+    } },
 ];
 
 /* ---------- vérification ---------- */
 function verifier(ex, r){
+  if (ex.type === "degres") { const t = String(r).replace(/°|degrés?|deg/gi, "").replace(",", ".").replace(/−/g, "-").trim();
+    if (!t) return { ok:false, msg:"Écris une réponse." };
+    if (!/^[-+]?\d+(\.\d+)?$/.test(t)) return { ok:false, msg:"Écris un nombre de degrés, par exemple 135." };
+    return Math.abs(parseFloat(t) - ex.deg) < 1e-9 ? { ok:true } : { ok:false }; }
   const m = lireMesure(r); if (m.msg) return { ok:false, msg:m.msg };
   const c = ex.p / ex.q, d = (m.v - c) / 2, memePoint = Math.abs(d - Math.round(d)) < 1e-9;
   if (Math.abs(m.v - c) < 1e-9) return m.nonSimpl ? { ok:false, msg:"C'est la bonne valeur, mais simplifie la fraction." } : { ok:true };
+  if (ex.cible === "exact") return { ok:false };
   if (memePoint) return { ok:false, msg: ex.cible === "principale"
     ? "C'est bien une mesure de M, mais pas la mesure principale : elle doit être dans ]−π ; π]."
     : "C'est une mesure du point M, mais pas celle de l'arc dessiné : regarde le sens et le nombre de tours." };
@@ -285,7 +329,7 @@ function menu(){
   $("#accueil").hidden = true;
   const sc = lireScores();
   let h = `<p class="intro">Choisis une vignette. Chaque série contient ${NB} exercices tirés au hasard : tu peux la refaire autant de fois que tu veux.</p>`;
-  h += `<h2 class="annee">Mesures en radians sur le cercle trigonométrique</h2><div class="grille">`;
+  h += `<h2 class="annee">Radians et cercle trigonométrique</h2><div class="grille">`;
   THEMES.forEach((t, i) => h += `<button class="theme" data-id="${t.id}"><div class="t">${i + 1}. ${esc(t.titre)}</div><div class="d">${esc(t.desc)}</div>${sc[t.id] !== undefined ? `<div class="s">Meilleur score : ${String(sc[t.id]).replace(".", ",")} / ${NB}</div>` : ""}</button>`);
   ecran.innerHTML = h + `</div>`;
   ecran.querySelectorAll("button.theme").forEach(b => b.onclick = () => demarrer(b.dataset.id));
@@ -298,15 +342,15 @@ function suivant(){
   serie.ex = ex; serie.essais = 0; serie.fini = false; serie.choix = null; afficher();
 }
 function afficher(){
-  const ex = serie.ex, th = serie.th, sy = ["π", "−", "/", "(", ")"];
+  const ex = serie.ex, th = serie.th, sy = ex.type === "degres" ? ["−"] : ["π", "−", "/", "(", ")"];
   ecran.innerHTML = `<div class="carte">
     <div class="haut"><span>${esc(th.titre)}</span><span>Exercice ${serie.n + 1} / ${NB} · Score : ${String(serie.points).replace(".", ",")}</span></div>
     <div class="progress"><div style="width:${serie.n / NB * 100}%"></div></div>
     <p class="consigne">${ex.consigne}</p>
-    <div class="figure" id="fig">${figure(ex.fig)}</div>
-    ${ex.type === "placer" ? `<div class="aide">Touche le cercle à l'endroit voulu : le point M se place sur la graduation la plus proche. Tu peux le déplacer avant de valider.</div>` : `<input type="text" id="rep" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Ta réponse, par exemple -5π/6">
+    ${ex.fig ? `<div class="figure" id="fig">${figure(ex.fig)}</div>` : ""}
+    ${ex.type === "placer" ? `<div class="aide">Touche le cercle à l'endroit voulu : le point M se place sur la graduation la plus proche. Tu peux le déplacer avant de valider.</div>` : `<input type="text" id="rep" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="${ex.type === "degres" ? "Ta réponse en degrés, par exemple 135" : "Ta réponse, par exemple -5π/6"}">
     <div class="symboles">${sy.map(c => `<button type="button" class="sym" data-c="${esc(c)}">${esc(c)}</button>`).join("")}</div>
-    <div class="aide">Écris la mesure en fonction de π : 5π/6, −π/3, 2π, 0… (tu peux aussi taper « pi »).</div>`}
+    <div class="aide">${ex.type === "degres" ? "Écris un nombre de degrés (le symbole ° est facultatif)." : "Écris le résultat en fonction de π : 5π/6, −π/3, 2π, 0… (tu peux aussi taper « pi »)."}</div>`}
     <div class="btns">
       <button class="btn" id="valider">Valider</button>
       <button class="btn sec" id="indice">💡 Indice</button>
@@ -354,7 +398,7 @@ function conclure(ok, abandon, msg){
     $("#fig").innerHTML = figure({ ...ex.fig, theta:Math.PI * ex.p / ex.q, arc:true, eleve: faux ? serie.choix : null });
     $("#retour").innerHTML = tete + `<div class="correction">${ex.correction}${faux ? "<br>Sur la figure, le rond vide est le point que tu avais placé." : ""}</div>`;
   } else
-  $("#retour").innerHTML = tete + `<div class="correction"><b>Réponse : ${T(texPi(ex.p, ex.q))}</b><br>${ex.correction}</div>`;
+  $("#retour").innerHTML = tete + `<div class="correction"><b>Réponse : ${T(ex.reponseTex || texPi(ex.p, ex.q))}</b><br>${ex.correction}</div>`;
   $("#valider").textContent = serie.n + 1 >= NB ? "Voir mon score" : "Exercice suivant →";
   $("#indice").disabled = true; $("#voir").disabled = true;
   serie.n++; $("#valider").onclick = suivant;

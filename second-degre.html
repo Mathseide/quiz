@@ -178,7 +178,9 @@ function nombre(r){
   return s === "" ? NaN : Number(s);
 }
 
-function lireExpr(r){ r = String(r); if (/=/.test(r)) r = r.split("=").pop(); return r; }
+function lireExpr(r){ r = String(r); if (/=/.test(r)) r = r.split("=").pop();
+  // tolère un coefficient fractionnaire sans parenthèses : 1/2(x+2)(x-3) → (1/2)(x+2)(x-3)
+  return r.replace(/(^|[+\-−(])\s*(\d+(?:[.,]\d+)?)\s*\/\s*(\d+(?:[.,]\d+)?)\s*(?=[(xX])/g, "$1($2/$3)"); }
 /* forme canonique : k(x ± n)² ± m, k x² ± m, (x ± n)² … */
 function estCanonique(r){
   const s = normaliser(r).replace(/\*/g, "");
@@ -262,7 +264,7 @@ function verifSommet(al, be){
   return err.length ? { ok:false, msg:"À revoir : " + err.join(", ") + "." } : { ok:true };
 }
 const zoneExpr = ph => `<input type="text" id="rep" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="${ph}">
-  <div class="aide">Exemples d'écriture : 2(x−3)²+1, −(x+1)(x−4), (1/2)(x−2)². Pour un coefficient fractionnaire, mets-le entre parenthèses.</div>`;
+  <div class="aide">Exemples d'écriture : 2(x−3)²+1, −(x+1)(x−4), 1/2(x−2)².</div>`;
 function tirerCanon(opt = {}){
   const A = opt.graph ? [1, -1, 2, -2, 0.5, -0.5] : opt.entier ? [1, -1, 2, -2, 3, -3] : [1, -1, 2, -2, 3, -3, 0.5, -0.5, 4, -5];
   for (;;) {

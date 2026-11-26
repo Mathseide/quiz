@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Racines n-ièmes — S5</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="maths(document.body)"></script>
+<style>
+  /* Appli entièrement en NOIR ET BLANC (S5ma6FRA) */
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; font-family:-apple-system, "Segoe UI", Helvetica, Arial, sans-serif; background:#fff; color:#000; }
+  header { background:#000; color:#fff; }
+  header .in { max-width:900px; margin:0 auto; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  header h1 { margin:0; font-size:1.3rem; }
+  header button { background:#000; color:#fff; border:2px solid #fff; border-radius:8px; padding:8px 12px; font-size:1rem; cursor:pointer; }
+  main { max-width:900px; margin:0 auto; padding:18px; }
+  .intro { margin:0 0 16px; }
+  .annee { margin:22px 0 10px; font-size:1.25rem; border-bottom:2px solid #000; padding-bottom:4px; }
+  .grille { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:12px; }
+  .theme { text-align:left; background:#fff; border:2px solid #000; border-left-width:8px; border-radius:12px; padding:14px 16px; cursor:pointer; font-size:1rem; color:#000; }
+  .theme .t { font-weight:700; font-size:1.05rem; margin-bottom:4px; }
+  .theme .d { font-size:.92rem; }
+  .theme .s { margin-top:8px; font-size:.9rem; font-weight:700; }
+  .theme.bientot { border-style:dashed; cursor:default; }
+  .carte { background:#fff; border:2px solid #000; border-radius:14px; padding:20px; }
+  .haut { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; font-size:.95rem; flex-wrap:wrap; }
+  .progress { height:10px; border:1.5px solid #000; border-radius:5px; margin-bottom:14px; overflow:hidden; }
+  .progress div { height:100%; background:#000; transition:width .3s; }
+  .consigne { font-size:1.1rem; margin:0 0 6px; }
+  .figure { text-align:center; margin:6px 0 12px; }
+  .figure svg { width:100%; max-width:420px; height:auto; }
+  input[type=text] { width:100%; font-size:1.3rem; padding:14px; border:2px solid #000; border-radius:10px; }
+  input[type=text]:focus { outline:3px solid #000; outline-offset:1px; }
+  .symboles { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .sym { min-width:56px; font-size:1.35rem; padding:10px 14px; border:2px solid #000; border-radius:10px; background:#fff; color:#000; cursor:pointer; }
+  .btns { display:flex; flex-wrap:wrap; gap:10px; margin-top:18px; }
+  .btn { font-size:1.1rem; padding:13px 22px; border:2px solid #000; border-radius:10px; background:#000; color:#fff; cursor:pointer; }
+  .btn.sec { background:#fff; color:#000; }
+  .btn:disabled { opacity:.35; }
+  .retour { padding:12px 14px; border-radius:10px; margin-top:16px; line-height:1.6; font-size:1.08rem; border:2px solid #000; }
+  .retour.ok { border-width:3px; font-weight:700; }
+  .retour.ko { border-style:solid; border-left-width:10px; }
+  .retour.info { border-style:dashed; }
+  .correction { margin-top:12px; padding:14px; border:2px dashed #000; border-radius:10px; line-height:1.9; font-size:1.08rem; }
+  .bilan { text-align:center; }
+  .bilan .note { font-size:2.6rem; font-weight:700; margin:8px 0; }
+  .aide { font-size:.92rem; margin-top:8px; }
+  @media (max-width:520px) { .btn { padding:12px 16px; font-size:1rem; } }
+
+  .rappel { border:2px solid #000; border-radius:10px; padding:10px 14px; margin:0 0 14px; line-height:1.7; background:#f2f2f2; }
+  .enonce { font-size:1.4rem; margin:8px 0 14px; }
+  .ligne { font-size:1.2rem; margin:10px 0; display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
+  input.petit { width:90px; font-size:1.2rem; padding:8px; border:2px solid #000; border-radius:8px; text-align:center; }
+  .choix { display:block; width:100%; text-align:left; font-size:1.15rem; padding:14px 16px; margin:8px 0; border:2px solid #000; border-radius:10px; background:#fff; cursor:pointer; color:#000; }
+  .choix.sel { background:#000; color:#fff; font-weight:700; }
+  table.tv { border-collapse:collapse; margin:10px auto; font-size:1.15rem; }
+  table.tv td { border:1.5px solid #000; padding:8px 14px; text-align:center; min-width:70px; }
+  table.tv td.lab { font-weight:bold; }
+  table.tv tr.var td { height:110px; }
+  table.tv td.fl { font-size:2.4rem; }
+  .fleche { font-size:2rem; width:64px; height:64px; border:2px solid #000; border-radius:10px; background:#fff; cursor:pointer; color:#000; }
+  .quatre { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:8px 0 14px; justify-items:center; }
+  .quatre svg { width:100%; height:auto; }
+  .assoc select { font-size:1.15rem; padding:6px 10px; border:2px solid #000; border-radius:8px; background:#fff; color:#000; }
+  .meth { margin:6px 0 10px; padding-left:10px; border-left:3px solid #000; }
+  .figure svg { max-width:420px; }
+  .gros { font-size:1.5rem; align-items:center; gap:12px; }
+  .pw, .rac { display:inline-flex; align-items:flex-start; font-family:"Times New Roman", serif; }
+  .bz { font-size:2.4rem; line-height:1; padding-top:26px; }
+  .exp input { width:84px; font-size:1.1rem; padding:6px; border:2px solid #000; border-radius:8px; text-align:center; margin-left:3px; }
+  .rac input.idx { width:54px; font-size:1rem; padding:5px; border:2px solid #000; border-radius:8px; text-align:center; margin-top:10px; margin-right:-6px; }
+  .rac .sign { font-size:4.2rem; line-height:1; transform:scaleX(.8); }
+  .rac .sous { display:inline-flex; align-items:flex-start; border-top:3px solid #000; margin-top:11px; padding:4px 8px 0 4px; }
+  .rac .sous .bz { padding-top:30px; }
+  input.moyen { width:160px; font-size:1.3rem; padding:10px; border:2px solid #000; border-radius:10px; text-align:center; }
+  .consigne .katex { font-size:1.45em; }
+  .correction .katex { font-size:1.3em; }
+  .consigne { line-height:2.2; }
+</style>
+</head>
+<body>
+<header><div class="in"><h1>ⁿ√ Racines n-ièmes — S5</h1><button id="accueil" hidden>☰ Activités</button></div></header>
+<main id="ecran"></main>
+<script>
+/* =====================================================================
+   Racines n-ièmes et puissances rationnelles — S5 (Écoles européennes)
+   NOIR ET BLANC (S5ma6FRA) — Chap01
+   Activités : 1) racine ↔ puissance  2) calculs sans calculatrice
+               3) simplifier (résultat en exposant / en racine)
+               4) propriétés des puissances (notations mélangées)
+   ===================================================================== */
+const NB = 10;
+const $ = s => document.querySelector(s);
+const ecran = $("#ecran");
+const CLE = "racines-n-iemes-scores";
+let serie = null, dernierChamp = null;
+const alea = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const choisir = t => t[Math.floor(Math.random() * t.length)];
+const pgcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) [a, b] = [b, a % b]; return a; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+function maths(el){ if (window.renderMathInElement && el) renderMathInElement(el, { delimiters:[{ left:"\\(", right:"\\)", display:false }], throwOnError:false }); }
+const T = s => `\\(\\displaystyle ${s}\\)`;
+function lireScores(){ try { return JSON.parse(localStorage.getItem(CLE)) || {}; } catch(e) { return {}; } }
+function sauverScore(id, p){ try { const s = lireScores(); if (s[id] === undefined || p > s[id]) { s[id] = p; localStorage.setItem(CLE, JSON.stringify(s)); } } catch(e) {} }
+
+/* ---------- rationnels [num, den] ---------- */
+const Q = (n, d = 1) => { if (d < 0) { n = -n; d = -d; } const g = pgcd(n, d) || 1; return [n / g, d / g]; };
+const add = (x, y) => Q(x[0] * y[1] + y[0] * x[1], x[1] * y[1]);
+const sub = (x, y) => add(x, [-y[0], y[1]]);
+const mul = (x, y) => Q(x[0] * y[0], x[1] * y[1]);
+const val = x => x[0] / x[1];
+const eqQ = (x, y) => x[0] === y[0] && x[1] === y[1];
+function texQ(x){ return x[1] === 1 ? String(x[0]) : `${x[0] < 0 ? "-" : ""}\\frac{${Math.abs(x[0])}}{${x[1]}}`; }
+function txtQ(x){ return x[1] === 1 ? String(x[0]) : `${x[0]}/${x[1]}`; }
+const texB = b => String(b);                                     // base : nombre ou lettre a
+function texPow(b, e){ return eqQ(e, [1, 1]) ? texB(b) : `${texB(b)}^{${texQ(e)}}`; }
+function texRac(b, n, m = 1){ const r = m === 1 ? texB(b) : `${texB(b)}^{${m}}`; return n === 2 ? `\\sqrt{${r}}` : `\\sqrt[${n}]{${r}}`; }
+/* un terme b^e écrit soit en racine, soit en puissance */
+function texTerme(b, e, notation){
+  if (e[1] === 1) return texPow(b, e);
+  if (notation === "rac" && e[0] > 0) return texRac(b, e[1], e[0]);
+  if (notation === "rac" && e[0] < 0) return `\\frac{1}{${texRac(b, e[1], -e[0])}}`;
+  return texPow(b, e);
+}
+const NOT = () => Math.random() < 0.5 ? "rac" : "pow";
+
+/* ---------- lecture d'un nombre rationnel ---------- */
+function lireQ(t){
+  t = String(t).replace(/−/g, "-").replace(/,/g, ".").replace(/\s/g, "").replace(/^\((.*)\)$/, "$1");
+  if (!t) return null;
+  let m = t.match(/^(-?)(\d+(?:\.\d+)?)(?:\/(-?\d+(?:\.\d+)?))?$/) || t.match(/^(-?)\((-?\d+)\)\/(\d+)$/);
+  if (!m) return { err:true };
+  const n = parseFloat(m[2]) * (m[1] ? -1 : 1), d = m[3] !== undefined ? parseFloat(m[3]) : 1;
+  if (d === 0) return { err:true };
+  const nonSimpl = m[3] !== undefined && Number.isInteger(n) && Number.isInteger(d) && (pgcd(n, d) > 1 || Math.abs(d) === 1);
+  return { v:n / d, nonSimpl };
+}
+
+/* ---------- zones de réponse ---------- */
+const base = b => `<span class="bz">${b === "a" ? "<i>a</i>" : b}</span>`;
+const zoneExp = b => `<div class="ligne gros">Réponse : <span class="pw">${base(b)}<span class="exp"><input type="text" id="ex" placeholder="?"></span></span></div>
+  <div class="aide">Écris l'exposant : un entier ou une fraction simplifiée (2/3, −1/4…).</div>`;
+const zoneRac = b => `<div class="ligne gros">Réponse : <span class="rac"><input type="text" id="ri" class="idx" placeholder="n"><span class="sign">√</span><span class="sous">${base(b)}<span class="exp"><input type="text" id="re" placeholder="m"></span></span></span></div>
+  <div class="aide">En haut à gauche : l'indice de la racine. Sous la racine : l'exposant (laisse la case vide s'il vaut 1).</div>`;
+const zoneNb = () => `<div class="ligne gros">Réponse : <input type="text" id="rep" class="moyen" placeholder="?"></div>
+  <div class="aide">Un entier, ou une fraction simplifiée (2/3, −1/8…).</div>`;
+function verifQ(champ, cible, quoi){
+  const r = lireQ($(champ).value);
+  if (!r) return { ok:false, msg:"Écris une réponse.", attente:true };
+  if (r.err) return { ok:false, msg:`Écris ${quoi} sous forme d'un entier ou d'une fraction, par exemple 2/3.` };
+  if (Math.abs(r.v - val(cible)) > 1e-9) return { ok:false };
+  return r.nonSimpl ? { ok:false, msg:"C'est la bonne valeur, mais simplifie la fraction." } : { ok:true };
+}
+const verifExp = e => verifQ("#ex", e, "l'exposant");
+const verifNb = x => verifQ("#rep", x, "le résultat");
+function verifRac(e){        // cible b^(m/n) écrite ⁿ√(b^m), m/n irréductible
+  const ti = $("#ri").value.trim(), te = $("#re").value.trim();
+  const n = ti === "" ? 2 : lireQ(ti), m = te === "" ? { v:1 } : lireQ(te);
+  if (ti === "" && te === "") return { ok:false, msg:"Complète l'indice et l'exposant.", attente:true };
+  const nn = typeof n === "number" ? n : n && n.v;
+  if (!m || m.err || nn === undefined || !Number.isInteger(nn) || nn < 2 || !Number.isInteger(m.v)) return { ok:false, msg:"L'indice doit être un entier au moins égal à 2, et l'exposant un entier." };
+  if (Math.abs(m.v / nn - val(e)) > 1e-9) return { ok:false };
+  if (pgcd(m.v, nn) > 1) return { ok:false, msg:"C'est égal, mais simplifie : l'indice et l'exposant ont un diviseur commun." };
+  return { ok:true };
+}
+
+/* ---------- rappels ---------- */
+const R_DEF = "Pour \\(a > 0\\) et \\(n \\geq 2\\) : \\(\\sqrt[n]{a} = a^{\\frac{1}{n}}\\) et \\(\\sqrt[n]{a^m} = a^{\\frac{m}{n}}\\).";
+const R_CALC = "\\(\\sqrt[n]{a} = b\\) signifie \\(b^n = a\\) (avec \\(b \\geq 0\\) si n est pair). Et \\(a^{\\frac{m}{n}} = \\left(\\sqrt[n]{a}\\right)^m\\), \\(a^{-x} = \\frac{1}{a^x}\\).";
+const R_PROP = "Pour \\(a > 0\\) : \\(a^x \\times a^y = a^{x+y}\\), \\(\\dfrac{a^x}{a^y} = a^{x-y}\\), \\(\\left(a^x\\right)^y = a^{xy}\\), et \\(\\sqrt[n]{a^m} = a^{\\frac{m}{n}}\\).";
+const BASES = [2, 3, 5, 6, 7, 10, 11, "a"];
+const noteA = b => b === "a" ? " (avec \\(a > 0\\))" : "";
+
+/* ---------- les vignettes ---------- */
+const THEMES = [
+  { act:1, id:"conv1", titre:"Niveau 1 : ⁿ√a ⇄ a^(1/n)", desc:"Passer de la racine n-ième à la puissance 1/n, et inversement.",
+    gen(){ const b = choisir(BASES), n = alea(2, 7), e = Q(1, n);
+      if (Math.random() < 0.5) return { rappel:R_DEF, consigne:`Écris sous forme de puissance${noteA(b)} : ${T(texRac(b, n))}`, zone:zoneExp(b), verif:() => verifExp(e), sol:{ e },
+        indice:"La racine n-ième, c'est la puissance \\(\\frac{1}{n}\\).", correction:T(`${texRac(b, n)} = ${texPow(b, e)}`) };
+      return { rappel:R_DEF, consigne:`Écris sous forme de racine${noteA(b)} : ${T(texPow(b, e))}`, zone:zoneRac(b), verif:() => verifRac(e), sol:{ e, rac:true },
+        indice:"Le dénominateur de l'exposant devient l'indice de la racine.", correction:T(`${texPow(b, e)} = ${texRac(b, n)}`) }; } },
+  { act:1, id:"conv2", titre:"Niveau 2 : ⁿ√(aᵐ) ⇄ a^(m/n)", desc:"Avec un exposant sous la racine, et parfois un exposant négatif.",
+    gen(){ const b = choisir(BASES); let n, m; do { n = alea(2, 7); m = alea(2, 7); } while (pgcd(m, n) > 1 || m === n);
+      const neg = Math.random() < 0.25, e = Q(neg ? -m : m, n);
+      if (Math.random() < 0.5) { const ecr = neg ? `\\frac{1}{${texRac(b, n, m)}}` : texRac(b, n, m);
+        return { rappel:R_DEF + " Et \\(\\frac{1}{a^x} = a^{-x}\\).", consigne:`Écris sous forme de puissance${noteA(b)} : ${T(ecr)}`, zone:zoneExp(b), verif:() => verifExp(e), sol:{ e },
+          indice:"L'exposant sous la racine va au numérateur, l'indice de la racine au dénominateur." + (neg ? " Et diviser par une puissance, c'est changer le signe de l'exposant." : ""),
+          correction:T(`${ecr} = ${neg ? `\\frac{1}{${texPow(b, Q(m, n))}} = ` : ""}${texPow(b, e)}`) }; }
+      const e2 = Q(m, n);
+      return { rappel:R_DEF, consigne:`Écris sous forme de racine${noteA(b)} : ${T(texPow(b, e2))}`, zone:zoneRac(b), verif:() => verifRac(e2), sol:{ e:e2, rac:true },
+        indice:"Le dénominateur de l'exposant devient l'indice de la racine, le numérateur devient l'exposant sous la racine.", correction:T(`${texPow(b, e2)} = ${texRac(b, n, m)}`) }; } },
+  { act:2, id:"calc1", titre:"Niveau 1 : calculer des racines n-ièmes", desc:"∛8, ⁴√81, ⁵√(−32), ∛(8/27)… sans calculatrice.",
+    gen(){ let r, n;
+      for (;;) { n = choisir([2, 3, 3, 4, 4, 5, 6]); r = choisir([2, 3, 4, 5, 10, 2, 3]);
+        if (r ** n <= 100000 && !(r === 10 && n > 5) && !(r === 4 && n > 4) && !(r === 5 && n > 4)) break; }
+      const k = Math.random(); let rad, res, txt;
+      if (k < 0.2 && n % 2) { rad = `-${r ** n}`; res = Q(-r); txt = `car \\((-${r})^{${n}} = -${r ** n}\\)`; }
+      else if (k < 0.35) { const d = choisir([2, 3, 5].filter(x => x !== r && x ** n <= 3125)); if (d === undefined) { rad = String(r ** n); res = Q(r); txt = `car \\(${r}^{${n}} = ${r ** n}\\)`; }
+        else { rad = `\\frac{${r ** n}}{${d ** n}}`; res = Q(r, d); txt = `car \\(\\left(${texQ(res)}\\right)^{${n}} = ${rad}\\)`; } }
+      else if (k < 0.45) { rad = `\\frac{1}{${r ** n}}`; res = Q(1, r); txt = `car \\(\\left(\\frac{1}{${r}}\\right)^{${n}} = ${rad}\\)`; }
+      else { rad = String(r ** n); res = Q(r); txt = `car \\(${r}^{${n}} = ${r ** n}\\)`; }
+      const ecr = n === 2 ? `\\sqrt{${rad}}` : `\\sqrt[${n}]{${rad}}`;
+      return { rappel:R_CALC, consigne:`Calcule sans calculatrice : ${T(ecr)}`, zone:zoneNb(), verif:() => verifNb(res), sol:{ x:res },
+        indice:`Cherche le nombre qui, élevé à la puissance ${n}, donne ${T(rad)}.`, correction:`${T(`${ecr} = ${texQ(res)}`)} ${txt}.` }; } },
+  { act:2, id:"calc2", titre:"Niveau 2 : calculer des puissances rationnelles", desc:"8^(2/3), 16^(−3/4), 25^0,5… sans calculatrice.",
+    gen(){ let r, n, p;
+      for (;;) { n = choisir([2, 3, 4, 5]); r = choisir([2, 3, 4, 5, 10, 2, 3]); p = choisir([1, 2, 3, -1, -2, 2, 3, -3]);
+        if (r ** n <= 10000 && Math.abs(r ** Math.abs(p)) <= 1000 && pgcd(p, n) === 1) break; }
+      const x = r ** n, e = Q(p, n), res = p > 0 ? Q(r ** p) : Q(1, r ** -p);
+      const dec = Math.random() < 0.3 && [2, 4, 5].includes(n);
+      const ecrE = dec ? String(val(e)).replace(".", "{,}") : texQ(e);
+      const ecr = `${x}^{${ecrE}}`;
+      const etapes = (dec ? `${ecr} = ${x}^{${texQ(e)}} = ` : `${ecr} = `) + (p < 0 ? (p === -1 ? `\\frac{1}{${x}^{${texQ(Q(1, n))}}} = \\frac{1}{${texRac(x, n)}}` : `\\frac{1}{${x}^{${texQ(Q(-p, n))}}} = \\frac{1}{\\left(${texRac(x, n)}\\right)^{${-p}}} = \\frac{1}{${r}^{${-p}}}`) : (p === 1 ? `${texRac(x, n)}` : `\\left(${texRac(x, n)}\\right)^{${p}} = ${r}^{${p}}`)) + ` = ${texQ(res)}`;
+      return { rappel:R_CALC, consigne:`Calcule sans calculatrice : ${T(ecr)}`, zone:zoneNb(), verif:() => verifNb(res), sol:{ x:res },
+        indice:`Commence par la racine : ${T(`${texRac(x, n)}`)}, puis élève à la puissance ${Math.abs(p)}${p < 0 ? " et prends l'inverse" : ""}.`, correction:T(etapes) }; } },
+  { act:3, id:"simp1", titre:"Niveau 1 : simplifier — résultat en exposant", desc:"∛(2⁶) = 2², ⁶√(5⁴) = 5^(2/3)…",
+    gen(){ let n, m, g; do { n = alea(2, 10); m = alea(2, 15); g = pgcd(m, n); } while (g === 1 || m === n);
+      const b = choisir(BASES), e = Q(m, n), src = Math.random() < 0.75 ? texRac(b, n, m) : `\\left(${b}^{${m}}\\right)^{\\frac{1}{${n}}}`;
+      return { rappel:R_DEF, consigne:`Simplifie et écris le résultat sous forme de puissance${noteA(b)} : ${T(src)}`, zone:zoneExp(b), verif:() => verifExp(e), sol:{ e },
+        indice:"Écris d'abord la puissance \\(\\frac{m}{n}\\), puis simplifie la fraction.", correction:T(`${src} = ${b}^{\\frac{${m}}{${n}}} = ${texPow(b, e)}`) }; } },
+  { act:3, id:"simp2", titre:"Niveau 2 : simplifier — résultat en racine n-ième", desc:"⁶√(5⁴) = ∛(5²), 7^(6/8) = ⁴√(7³)…",
+    gen(){ let n, m, g, e; do { n = alea(4, 12); m = alea(2, 15); g = pgcd(m, n); e = Q(m, n); } while (g === 1 || e[1] === 1);
+      const b = choisir(BASES), src = Math.random() < 0.7 ? texRac(b, n, m) : `${b}^{\\frac{${m}}{${n}}}`;
+      return { rappel:R_DEF, consigne:`Simplifie et écris le résultat avec une racine${noteA(b)} : ${T(src)}`, zone:zoneRac(b), verif:() => verifRac(e), sol:{ e, rac:true },
+        indice:`Passe par la puissance : ${T(`${b}^{\\frac{${m}}{${n}}}`)}, simplifie la fraction, puis reviens à une racine.`,
+        correction:T(`${src} = ${src.startsWith("\\sqrt") ? `${b}^{\\frac{${m}}{${n}}} = ` : ""}${texPow(b, e)} = ${texRac(b, e[1], e[0])}`) }; } },
+  { act:4, id:"prop1", titre:"Niveau 1 : produits et quotients", desc:"∛2 × √2, a^(2/3) ÷ ⁴√a… notations mélangées.",
+    gen(){ const b = choisir(BASES), F = [[1, 2], [1, 3], [2, 3], [1, 4], [3, 4], [1, 5], [2, 5], [1, 6], [5, 6], [3, 2], [1, 1], [4, 3]];
+      for (;;) { const quot = Math.random() < 0.4, k = quot ? 2 : choisir([2, 2, 3]);
+        const es = Array.from({ length:k }, () => Q(...choisir(F))); if (new Set(es.map(String)).size < k) continue;
+        const res = quot ? sub(es[0], es[1]) : es.reduce(add); if (res[0] === 0) continue;
+        const nots = es.map(NOT), ecr = quot ? `\\dfrac{${texTerme(b, es[0], nots[0])}}{${texTerme(b, es[1], nots[1])}}` : es.map((e, i) => texTerme(b, e, nots[i])).join(" \\times ");
+        const pw = quot ? `\\dfrac{${texPow(b, es[0])}}{${texPow(b, es[1])}}` : es.map(e => texPow(b, e)).join(" \\times ");
+        const ex = quot ? `${texQ(es[0])} - ${es[1][0] < 0 ? `\\left(${texQ(es[1])}\\right)` : texQ(es[1])}` : es.map(texQ).join(" + ");
+        return { rappel:R_PROP, consigne:`Écris sous la forme d'une seule puissance de ${T(b)}${noteA(b)} : ${T(ecr)}`, zone:zoneExp(b), verif:() => verifExp(res), sol:{ e:res },
+          indice:`Écris chaque terme sous forme de puissance de ${T(b)}, puis ${quot ? "soustrais" : "additionne"} les exposants.`,
+          correction:T(`${ecr} = ${pw} = ${b}^{${ex}} = ${texPow(b, res)}`) }; } } },
+  { act:4, id:"prop2", titre:"Niveau 2 : puissances de puissances et mélanges", desc:"(∛a)², √(∛7), (a^(1/2) × ∛a)⁶…",
+    gen(){ const b = choisir(BASES), F = [[1, 2], [1, 3], [2, 3], [1, 4], [3, 4], [2, 5], [3, 2], [5, 2]];
+      const t = alea(1, 4); let ecr, etapes, res;
+      if (t === 1) { const e = Q(...choisir(F)), k = Q(...choisir([[2, 1], [3, 1], [4, 1], [6, 1], [1, 2], [2, 3], [3, 4], [-1, 1], [-2, 1]])); res = mul(e, k);
+        const A = texTerme(b, e, NOT()); ecr = `\\left(${A}\\right)^{${texQ(k)}}`; etapes = `\\left(${texPow(b, e)}\\right)^{${texQ(k)}} = ${b}^{${texQ(e)} \\times ${k[0] < 0 ? `(${texQ(k)})` : texQ(k)}}`; }
+      else if (t === 2) { const n = choisir([2, 3, 4]), e = Q(...choisir([[2, 1], [1, 2], [1, 3], [2, 3], [3, 1], [3, 2], [5, 1]])); res = mul(e, Q(1, n));
+        const A = texTerme(b, e, NOT()); ecr = n === 2 ? `\\sqrt{${A}}` : `\\sqrt[${n}]{${A}}`; etapes = `\\left(${texPow(b, e)}\\right)^{\\frac{1}{${n}}} = ${b}^{${texQ(e)} \\times \\frac{1}{${n}}}`; }
+      else if (t === 3) { const e1 = Q(...choisir(F)); let e2; do e2 = Q(...choisir(F)); while (eqQ(e1, e2)); const s = add(e1, e2);
+        const k = Q(s[1] * choisir([1, 1, 2])); res = mul(s, k);
+        ecr = `\\left(${texTerme(b, e1, NOT())} \\times ${texTerme(b, e2, NOT())}\\right)^{${texQ(k)}}`; etapes = `\\left(${b}^{${texQ(e1)} + ${texQ(e2)}}\\right)^{${texQ(k)}} = \\left(${texPow(b, s)}\\right)^{${texQ(k)}} = ${b}^{${texQ(s)} \\times ${texQ(k)}}`; }
+      else { const e1 = Q(...choisir(F)), k = Q(choisir([2, 3, 4])); let e2; do e2 = Q(...choisir(F)); while (eqQ(mul(e1, k), e2));
+        const p = mul(e1, k); res = sub(p, e2);
+        ecr = `\\dfrac{\\left(${texTerme(b, e1, NOT())}\\right)^{${texQ(k)}}}{${texTerme(b, e2, NOT())}}`; etapes = `\\dfrac{${texPow(b, p)}}{${texPow(b, e2)}} = ${b}^{${texQ(p)} - ${texQ(e2)}}`; }
+      if (res[0] === 0) return this.gen();
+      return { rappel:R_PROP, consigne:`Écris sous la forme d'une seule puissance de ${T(b)}${noteA(b)} : ${T(ecr)}`, zone:zoneExp(b), verif:() => verifExp(res), sol:{ e:res },
+        indice:`Écris tout sous forme de puissances de ${T(b)}. Puissance de puissance : on multiplie les exposants ; une racine n-ième, c'est la puissance \\(\\frac{1}{n}\\).`,
+        correction:T(`${ecr} = ${etapes} = ${texPow(b, res)}`) }; } },
+];
+const ACTIVITES = { 1:"1. Racine n-ième ⇄ puissance rationnelle", 2:"2. Calculer sans calculatrice", 3:"3. Simplifier des exposants", 4:"4. Propriétés des puissances" };
+
+/* ---------- écrans ---------- */
+function menu(){
+  $("#accueil").hidden = true;
+  const sc = lireScores();
+  let h = `<p class="intro">Choisis une activité et un niveau. Chaque série contient ${NB} exercices tirés au hasard : tu peux la refaire autant de fois que tu veux.</p>`;
+  for (const a of [1, 2, 3, 4]) {
+    h += `<h2 class="annee">${ACTIVITES[a]}</h2><div class="grille">`;
+    THEMES.filter(t => t.act === a).forEach(t => h += `<button class="theme" data-id="${t.id}"><div class="t">${esc(t.titre)}</div><div class="d">${esc(t.desc)}</div>${sc[t.id] !== undefined ? `<div class="s">Meilleur score : ${String(sc[t.id]).replace(".", ",")} / ${NB}</div>` : ""}</button>`);
+    h += `</div>`;
+  }
+  ecran.innerHTML = h;
+  ecran.querySelectorAll("button.theme").forEach(b => b.onclick = () => demarrer(b.dataset.id));
+  window.scrollTo(0, 0);
+}
+function demarrer(id){ serie = { th:THEMES.find(t => t.id === id), n:0, points:0, ex:null, essais:0, fini:false }; $("#accueil").hidden = false; suivant(); }
+function suivant(){
+  if (serie.n >= NB) return bilan();
+  let ex, k = 0; do ex = serie.th.gen(); while (serie.ex && ex.consigne === serie.ex.consigne && ++k < 20);
+  serie.ex = ex; serie.essais = 0; serie.fini = false; afficher();
+}
+function afficher(){
+  const ex = serie.ex, th = serie.th;
+  ecran.innerHTML = `<div class="carte">
+    <div class="haut"><span>${esc(ACTIVITES[th.act])} — ${esc(th.titre)}</span><span>Exercice ${serie.n + 1} / ${NB} · Score : ${String(serie.points).replace(".", ",")}</span></div>
+    <div class="progress"><div style="width:${serie.n / NB * 100}%"></div></div>
+    <div class="rappel"><b>Rappel du cours.</b> ${ex.rappel}</div>
+    <p class="consigne">${ex.consigne}</p>
+    <div id="zone">${ex.zone}</div>
+    <div class="symboles">${["−", "/"].map(c => `<button type="button" class="sym" data-c="${c}">${c}</button>`).join("")}</div>
+    <div class="btns">
+      <button class="btn" id="valider">Valider</button>
+      <button class="btn sec" id="indice">💡 Indice</button>
+      <button class="btn sec" id="voir">Voir la correction</button>
+    </div>
+    <div id="retour"></div>
+  </div>`;
+  ecran.querySelectorAll("#zone input").forEach(i => { i.setAttribute("autocomplete", "off"); i.setAttribute("autocorrect", "off"); i.setAttribute("autocapitalize", "none"); i.setAttribute("spellcheck", "false");
+    i.addEventListener("focus", () => dernierChamp = i); i.addEventListener("keydown", e => { if (e.key === "Enter") $("#valider").click(); }); });
+  dernierChamp = ecran.querySelector("#zone input");
+  ecran.querySelectorAll(".sym").forEach(bt => { bt.onmousedown = e => e.preventDefault(); bt.onclick = () => {
+    const rep = dernierChamp; if (!rep) return; const c = bt.dataset.c === "−" ? "-" : bt.dataset.c;
+    const d = rep.selectionStart ?? rep.value.length, f = rep.selectionEnd ?? d;
+    rep.value = rep.value.slice(0, d) + c + rep.value.slice(f); rep.setSelectionRange(d + c.length, d + c.length); rep.focus(); }; });
+  $("#valider").onclick = valider;
+  $("#indice").onclick = () => { $("#retour").innerHTML = `<div class="retour info">💡 ${ex.indice}</div>`; maths($("#retour")); };
+  $("#voir").onclick = () => conclure(false, true);
+  maths(ecran);
+}
+function valider(){
+  if (serie.fini) return suivant();
+  const v = serie.ex.verif();
+  if (v.ok) return conclure(true);
+  if (v.attente) { $("#retour").innerHTML = `<div class="retour info">${esc(v.msg)}</div>`; return; }
+  serie.essais++;
+  if (serie.essais >= 2) return conclure(false, false, v.msg);
+  $("#retour").innerHTML = `<div class="retour ko">✘ ${v.msg ? esc(v.msg) : "Ce n'est pas ça."} Essaie encore (encore 1 essai).</div>`;
+}
+function conclure(ok, abandon, msg){
+  const ex = serie.ex; serie.fini = true;
+  const gain = ok ? (serie.essais === 0 ? 1 : 0.5) : 0; serie.points += gain;
+  const tete = ok ? `<div class="retour ok">✔ Bravo ! ${gain === 1 ? "+1 point" : "+0,5 point (2e essai)"}</div>`
+             : `<div class="retour ko">✘ ${abandon ? "Voici la correction." : (msg ? esc(msg) + " " : "") + "Ce n'était pas ça."}</div>`;
+  $("#retour").innerHTML = tete + `<div class="correction"><b>Correction :</b><br>${ex.correction}</div>`;
+  ecran.querySelectorAll("#zone input").forEach(i => i.disabled = true);
+  $("#valider").textContent = serie.n + 1 >= NB ? "Voir mon score" : "Exercice suivant →";
+  $("#indice").disabled = true; $("#voir").disabled = true;
+  serie.n++; $("#valider").onclick = suivant;
+  maths($("#retour")); $("#valider").focus();
+}
+function bilan(){
+  sauverScore(serie.th.id, serie.points);
+  const p = serie.points, msg = p >= 9 ? "Excellent !" : p >= 7 ? "Très bien !" : p >= 5 ? "C'est en bonne voie, continue." : "Refais une série : ça va venir !";
+  ecran.innerHTML = `<div class="carte bilan"><p>${esc(ACTIVITES[serie.th.act])} — ${esc(serie.th.titre)}</p>
+    <div class="note">${String(p).replace(".", ",")} / ${NB}</div><p>${msg}</p>
+    <div class="btns" style="justify-content:center"><button class="btn" id="encore">Nouvelle série</button><button class="btn sec" id="themes">Autres activités</button></div></div>`;
+  $("#encore").onclick = () => demarrer(serie.th.id);
+  $("#themes").onclick = menu;
+}
+$("#accueil").onclick = menu;
+menu();
+</script>
+</body>
+</html>
